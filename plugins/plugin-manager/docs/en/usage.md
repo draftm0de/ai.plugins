@@ -12,7 +12,7 @@ Provide an accessible source folder. Language and output are resolved per reposi
 
 ## Choose a workflow
 
-Choose init, update, verify, export or publish. For example, in Claude Code use `/plugin-manager:init SOURCE OUTPUT`. In Codex/GPT select the relevant capability or describe the action. Claude slash-command UI is not assumed for every host.
+Choose init, update, plugin-verify, marketplace-verify, verify, export or publish. For example, in Claude Code use `/plugin-manager:init SOURCE OUTPUT`. In Codex/GPT select the relevant capability or describe the action. Claude slash-command UI is not assumed for every host.
 
 ## Understand the output
 
@@ -29,3 +29,9 @@ Update reads current sources again. Publish can resume from a private journal af
 ## Specialized workflows
 
 [Publish](publish.md) proposes a commit message and performs commit → push → PR → checks → merge only after approval. No version approval, tags or releases. Export creates a website ZIP from existing Markdown; that ZIP is not an installation package.
+
+### Verify an existing project
+
+`/plugin-manager:plugin-verify PATH` checks a plugin; `/plugin-manager:marketplace-verify PATH` checks a marketplace. `/plugin-manager:verify PATH` detects the type. Select the target from the current user project or an explicit path, never automatically from the manager installation. Wrong or ambiguous roots cause an error without changes. In Codex select the capability or request verification in natural language. Results report structural validity, type, path and limits, not host acceptance.
+
+Configure would write mappings or metadata; verify only reads. Configure and separate create actions are not implemented yet.

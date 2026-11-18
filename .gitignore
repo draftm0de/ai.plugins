@@ -12,3 +12,6 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+# Machine-specific development checkout mapping.
+.local/

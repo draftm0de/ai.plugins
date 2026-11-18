@@ -28,7 +28,7 @@ make install-local TARGET=claude
 make install-local TARGET=codex
 ```
 
-Nach lokalen Änderungen: `make update-local TARGET=claude` beziehungsweise `TARGET=codex`. Die lokale Entwicklungskopie des Managers verwendet `plugin-manager-dev`. [Entwicklerdokumentation](plugins/plugin-manager/docs/de/development.md).
+Nach lokalen Änderungen: `make update-local TARGET=claude` beziehungsweise `TARGET=codex`. Beide lokalen Plugins verwenden denselben Entwicklungs-Marketplace `draftmode-ai-plugins-dev`. [Entwicklerdokumentation](plugins/plugin-manager/docs/de/development.md).
 
 Lokale IDE-Dateien, Caches, temporäre Dateien und `dist/` werden auf allen Ebenen ignoriert. Es werden keine ZIPs für die Plugin-Installation benötigt.
 
@@ -45,4 +45,25 @@ Die technische Plugin-Identität hat sich zu `plugin-manager` geändert. Bestehe
 3. **Draftmode AI Plugins** in Claude bzw. Codex synchronisieren.
 4. Prüfen, dass **Plugin Manager** und **Interview Coach** angeboten werden, und den Coach installieren.
 
-Der Coach besitzt keinen eigenen Marketplace. Sein Repository wird über den Default-Branch ohne Tag oder Versionsbindung referenziert. Der Zugriff auf beide Repositories muss möglich sein. Der gemeinsame lokale Entwicklungs-Marketplace und die Harmonisierung des Plugin Managers folgen erst nach diesem Importtest; die bisherigen lokalen Make-Befehle betreffen weiterhin nur den Manager.
+Der Coach besitzt keinen eigenen Marketplace. Sein Repository wird über den Default-Branch ohne Tag oder Versionsbindung referenziert. Der Zugriff auf beide Repositories muss möglich sein. Der gemeinsame lokale Entwicklungs-Marketplace enthält die Arbeitsstände beider Plugins. Die Create-/Configure-Aktionen werden separat weiterentwickelt.
+
+## Lokale Zuordnung und Prüfung
+
+Auf diesem Rechner sind die Zuordnungen bereits in `.local/marketplace.json` eingerichtet. Diese Datei bleibt Git-ignoriert. Auf einem neuen Rechner `local-marketplace.example.json` nach `.local/marketplace.json` kopieren und den Coach-Pfad anpassen; relative Pfade beziehen sich auf die Marketplace-Wurzel. Im Coach-Repository zeigt dessen eigene `.local/marketplace.json` zurück auf diesen Marketplace.
+
+`make install-local TARGET=claude` oder `TARGET=codex` funktioniert im Marketplace- und im Coach-Repository. Beide Aufrufe installieren **beide Plugins** aus den lokalen Arbeitsständen im selben Katalog. `make update-local` erneuert beide Snapshots. `DRY_RUN=1` erstellt nur Snapshots und zeigt die Befehle. Es werden keine ZIPs oder GitHub-Updates benötigt und keine persönlichen Plugins durch unsere Tests verändert.
+
+```sh
+make marketplace-verify
+make plugin-verify SOURCE=../ai.plugin.interview-coach
+make verify SOURCE=../ai.plugin.interview-coach
+```
+
+`verify` erkennt den Repository-Typ. Die expliziten Aktionen lehnen den falschen Typ ab. Alle Prüfungen lesen nur Dateien; entfernte Repository-Inhalte und Host-Abnahme werden nicht als geprüft ausgegeben. Bei der Skill-Ausführung ist das Benutzerprojekt der Zielordner, niemals automatisch das Installationsverzeichnis des Managers.
+
+- `plugin-verify`: Plugin-Identität, Skills und Host-Manifeste prüfen.
+- `marketplace-verify`: Kataloge, lokale Plugins und externe Verweise prüfen.
+- `configure` würde Konfiguration schreiben oder reparieren; diese Aktion ist noch nicht implementiert.
+- `plugin-create` und `marketplace-create` sind als getrennte spätere Aktionen vorgesehen.
+
+Nach Installation eine neue lokale Host-Sitzung öffnen. Nur die gewünschte reguläre oder Entwicklungskopie eines Plugins aktivieren. Frühere `plugin-manager-dev`-Installationen werden nicht automatisch gelöscht; entferne/deaktiviere sie nach erfolgreicher Gegenprobe. Die CLI-Installation belegt keine automatische Synchronisierung in eine Desktop-/Web-Kontooberfläche.

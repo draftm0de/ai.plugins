@@ -1,9 +1,9 @@
 ---
-description: Audit the plugin structure and report production-readiness gaps. Distinguish automated structural checks from unverified host acceptance.
-argument-hint: source-path [output-path]
+description: Detect the user-selected repository type and verify it read-only. Reject ambiguous roots; never default to the installed manager directory.
+argument-hint: repository-path
 ---
 
-Audit the plugin structure and report production-readiness gaps. Distinguish automated structural checks from unverified host acceptance.
+Detect the user-selected repository type and verify it read-only. Reject ambiguous roots; never default to the installed manager directory.
 
 Arguments: $ARGUMENTS
 

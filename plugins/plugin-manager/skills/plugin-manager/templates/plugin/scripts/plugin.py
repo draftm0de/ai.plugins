@@ -2,6 +2,7 @@
 """Validate repository imports and manage local development snapshots. Never publish implicitly."""
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import re
@@ -261,6 +262,17 @@ def install_local(target, update=False, dry_run=False):
     if target == 'chatgpt':
         raise ValueError('Local installation is supported here for Claude Code and Codex, not the ChatGPT web/account importer')
     manifest, _, market, _ = configuration()
+    if manifest.get('extensions', {}).get(CONFIG_KEY, {}).get('catalogs') is False:
+        for parent in ROOT.parents:
+            helper = parent / 'scripts/local_plugins.py'
+            if (parent / 'marketplace.json').is_file() and helper.is_file():
+                catalog = json.loads((parent / 'marketplace.json').read_text())
+                if any('path' in entry and (parent / entry['path']).resolve() == ROOT.resolve() for entry in catalog['plugins']):
+                    spec = importlib.util.spec_from_file_location('shared_local_marketplace', helper)
+                    shared = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(shared)
+                    return shared.install_local(target, update, dry_run, root=parent)
+        raise ValueError('Plugin has no own catalog; use its shared marketplace checkout for local development')
     version, portable, claude = payload()
     market = manifest['name'] + '-dev'
     # The checkout path and generated snapshot must remain available while installed.

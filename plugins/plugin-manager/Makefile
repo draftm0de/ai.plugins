@@ -3,7 +3,7 @@ export PYTHONDONTWRITEBYTECODE := 1
 PYTHON ?= python3
 TARGET ?= claude
 DRY_RUN ?= 0
-SOURCE ?=
+SOURCE ?= .
 OUTPUT ?=
 LANGUAGES ?=
 REPOSITORY ?=
@@ -39,7 +39,7 @@ validate-docs:
 .PHONY: verify init-plugin
 verify:
 	@test -n "$(SOURCE)" || (echo "SOURCE is required" >&2; exit 2)
-	$(PYTHON) skills/plugin-manager/scripts/plugin_audit.py verify --source "$(SOURCE)"
+	$(PYTHON) skills/plugin-manager/scripts/verify.py --source "$(SOURCE)" --kind auto
 init-plugin:
 	@test -n "$(SOURCE)" -a -n "$(OUTPUT)" || (echo "SOURCE and OUTPUT are required" >&2; exit 2)
 	$(PYTHON) skills/plugin-manager/scripts/plugin_audit.py init --source "$(SOURCE)" --output "$(OUTPUT)" $(if $(LANGUAGES),--languages $(LANGUAGES),) $(if $(DEFAULT_LANGUAGE),--default-language $(DEFAULT_LANGUAGE),) $(if $(REPOSITORY),--repository "$(REPOSITORY)",) $(if $(AUTHOR),--author "$(AUTHOR)",) $(if $(PLUGIN_NAME),--plugin-name "$(PLUGIN_NAME)",)

@@ -45,7 +45,7 @@ Run these commands from the repository. Python 3, Make and the selected host CLI
 
 3. Open a new local session and verify the change. Enable only the intended remote or development copy to avoid duplicate skill names.
 
-These commands create a filtered snapshot under `dist/local-development/` and register it through the host CLI as a separate `plugin-manager-dev` marketplace. Uncommitted edits are included; no commit, push or ZIP is needed. The generated content hash is only a local cache identifier and is never written to the source manifest. Keep the checkout and snapshot available while using the installation.
+These commands create a filtered snapshot under `ai.plugins/dist/local-development/` and register it through the host CLI as a separate `draftmode-ai-plugins-dev` marketplace. Uncommitted edits are included; no commit, push or ZIP is needed. The generated content hash is only a local cache identifier and is never written to the source manifest. Keep the checkout and snapshot available while using the installation.
 
 With `DRY_RUN=1`, the snapshot is created and commands are displayed without invoking the host CLI. Example: `make install-local TARGET=codex DRY_RUN=1`. This does not change installed plugins.
 
@@ -53,7 +53,7 @@ This workflow covers local Claude Code and Codex installations. Import through a
 
 ### Metadata and export
 
-`make sync-plugin` updates host manifests from `plugin.json`; `make check-plugin` validates them without changes. All four plugin commands live directly in the `Makefile`. `install.sh` is an optional forwarding wrapper, for example `bash install.sh install-local --target claude`; it has no default action.
+`make sync-plugin` updates host manifests from `plugin.json`; `make check-plugin` validates them without changes. Local Make commands delegate to the shared marketplace. `install.sh` is an optional forwarding wrapper, for example `bash install.sh install-local --target claude`; it has no default action.
 
 Regular repository imports use [plugin settings](installation.md). Plugin ZIP building and the old `package`, `install` and `update` Make targets are removed. The **update** skill action for documentation remains available. The separate website export remains available through `make check-docs-export` and `make export-docs`.
 
@@ -68,3 +68,7 @@ Update maintains configured languages from current sources. Example: `make init-
 Init uses a confirmed plugin name for `plugin.json` and both marketplace catalogs; local development appends `-dev`. If the name is missing or unclear, the agent asks before initialization. `PLUGIN_NAME` may differ from the bundled skill name; its folder and frontmatter remain unchanged. Without the parameter, the helper defaults to the source skill name.
 
 This plugin lives under `plugins/plugin-manager/` in `ai.plugins`. The shared marketplace is `draftmode-ai-plugins`; its catalogs live at the repository root. This plugin has no separate committed marketplace. Commands above run from the plugin folder; the root Makefile forwards the main checks and local installation commands.
+
+Shared local installation includes Manager and Interview Coach. The marketplace `.local/marketplace.json` maps the coach to its local checkout; the coach file points back to the marketplace. Both files are Git-ignored; `local-marketplace.example.json` provides examples. `make install-local` and `make update-local` work from either repository and from the bundled manager folder. The shared development catalog contains filtered local copies, not GitHub sources.
+
+At the marketplace root use `make marketplace-verify`; for the coach use `make plugin-verify SOURCE=../ai.plugin.interview-coach`. `make verify SOURCE=…` detects the type. Verification changes no files and executes no target code. The internal `plugin_audit.py` template audit remains for scaffold tests; it is no longer the general verify action.
