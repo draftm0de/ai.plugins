@@ -14,19 +14,35 @@ def expected(root=ROOT):
     codex = {'name':config['name'], 'interface':{'displayName':config['displayName']}, 'plugins':[]}
     seen = set()
     for entry in config['plugins']:
-        relative = entry['path']
-        if not relative.startswith('./plugins/') or '..' in Path(relative).parts:
-            raise ValueError('Plugin path must be under ./plugins/')
-        path = root/relative
-        if any(part.is_symlink() for part in (path, *path.parents)) or not path.resolve().is_relative_to(root.resolve()):
-            raise ValueError('Plugin path must not escape the repository or use symlinks')
-        manifest = json.loads((path/'plugin.json').read_text())
-        name = manifest['name']
+        if 'repository' in entry:
+            if 'path' in entry:
+                raise ValueError('Choose either a local path or remote repository')
+            repository=entry['repository']
+            if not re.fullmatch(r'https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\.git', repository):
+                raise ValueError('Remote source must be a GitHub HTTPS clone URL')
+            name=entry['name']
+            description=entry['description']
+            display_name=entry['displayName']
+            claude_source={'source':'url','url':repository}
+            codex_source={'source':'url','url':repository}
+        else:
+            relative = entry['path']
+            if not relative.startswith('./plugins/') or '..' in Path(relative).parts:
+                raise ValueError('Plugin path must be under ./plugins/')
+            path = root/relative
+            if any(part.is_symlink() for part in (path, *path.parents)) or not path.resolve().is_relative_to(root.resolve()):
+                raise ValueError('Plugin path must not escape the repository or use symlinks')
+            manifest = json.loads((path/'plugin.json').read_text())
+            name = manifest['name']
+            description=manifest['description']
+            display_name=manifest.get('extensions', {}).get('com.openai', {}).get('interface', {}).get('displayName', name)
+            claude_source=relative
+            codex_source={'source':'local','path':relative}
         if name in seen or not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', name):
             raise ValueError('Duplicate or invalid plugin name')
         seen.add(name)
-        claude['plugins'].append({'name':name,'source':relative,'description':manifest['description']})
-        codex['plugins'].append({'name':name,'source':{'source':'local','path':relative},'policy':{'installation':'AVAILABLE','authentication':'ON_INSTALL'},'category':'Productivity'})
+        claude['plugins'].append({'name':name,'source':claude_source,'description':description,'displayName':display_name})
+        codex['plugins'].append({'name':name,'source':codex_source,'policy':{'installation':'AVAILABLE','authentication':'ON_INSTALL'},'category':'Productivity'})
     return {'.claude-plugin/marketplace.json':claude,'.agents/plugins/marketplace.json':codex}
 
 def sync(check=False):

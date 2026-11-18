@@ -8,6 +8,12 @@
   "plugins": [
     {
       "path": "./plugins/plugin-manager"
+    },
+    {
+      "name": "interview-coach",
+      "displayName": "Interview Coach",
+      "description": "Adaptive job interview coaching with role-specific practice, feedback, interviewer research and private training progress.",
+      "repository": "https://github.com/draftm0de/ai.plugin.interview-coach.git"
     }
   ]
 }

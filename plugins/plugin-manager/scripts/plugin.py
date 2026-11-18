@@ -91,6 +91,9 @@ def repository_files(manifest=None):
         raise ValueError('Marketplace name must equal plugin name')
     interface = manifest.get('extensions', {}).get('com.openai', {}).get('interface', {})
     claude = {key: manifest[key] for key in ('name', 'description', 'author', 'homepage', 'repository', 'license', 'keywords') if key in manifest}
+    display_name = manifest.get('extensions', {}).get('com.openai', {}).get('interface', {}).get('displayName')
+    if display_name:
+        claude['displayName'] = display_name
     if config.get('catalogs', True) is False:
         return {'.claude-plugin/plugin.json': claude}
     owner = manifest.get('author', {'name': name})
@@ -129,6 +132,9 @@ def payload():
     manifest, skill_root, market, extra = configuration()
     # Host metadata is derived from the portable manifest; no duplicate version source.
     claude = {key: manifest[key] for key in ('name', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords') if key in manifest}
+    display_name = manifest.get('extensions', {}).get('com.openai', {}).get('interface', {}).get('displayName')
+    if display_name:
+        claude['displayName'] = display_name
     files = {}
     def collect(folder, destination):
         if not folder.exists():

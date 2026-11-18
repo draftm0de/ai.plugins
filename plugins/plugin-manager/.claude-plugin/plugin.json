@@ -13,5 +13,6 @@
     "plugins",
     "documentation",
     "publishing"
-  ]
+  ],
+  "displayName": "Plugin Manager"
 }
