@@ -1,0 +1,13 @@
+{
+  "name": "draftmode-ai-plugins",
+  "displayName": "Draftmode AI Plugins",
+  "owner": {
+    "name": "Peter Fux",
+    "url": "https://draftmode.io"
+  },
+  "plugins": [
+    {
+      "path": "./plugins/plugin-manager"
+    }
+  ]
+}

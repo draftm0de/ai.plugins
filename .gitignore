@@ -1,0 +1,14 @@
+# Common ZYRIS local and generated files (all directory depths).
+.DS_Store
+.idea/
+.tmp/
+dist/
+__pycache__/
+*.py[cod]
+.venv/
+node_modules/
+
+# Machine-local credentials and environment settings.
+.env
+.env.*
+!.env.example

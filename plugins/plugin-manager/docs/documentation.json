@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "source_skill": "skills/plugin-manager",
+  "extra_sources": [],
+  "open_questions": [],
+  "documentation": {
+    "languages": [
+      "de",
+      "en"
+    ],
+    "default_language": "de"
+  },
+  "export": {
+    "schema_version": 1,
+    "pages": {
+      "overview": {
+        "de": "README.md",
+        "en": "README.en.md"
+      },
+      "index": {
+        "de": "docs/de/README.md",
+        "en": "docs/en/README.md"
+      },
+      "installation": {
+        "de": "docs/de/installation.md",
+        "en": "docs/en/installation.md"
+      },
+      "usage": {
+        "de": "docs/de/usage.md",
+        "en": "docs/en/usage.md"
+      },
+      "screens": {
+        "de": "docs/de/screens.md",
+        "en": "docs/en/screens.md"
+      },
+      "faq": {
+        "de": "docs/de/faq.md",
+        "en": "docs/en/faq.md"
+      },
+      "storage": {
+        "de": "docs/de/storage.md",
+        "en": "docs/en/storage.md"
+      },
+      "development": {
+        "de": "docs/de/development.md",
+        "en": "docs/en/development.md"
+      },
+      "release-operations": {
+        "de": "docs/de/release-operations.md",
+        "en": "docs/en/release-operations.md"
+      },
+      "release-evidence": {
+        "de": "docs/de/release-evidence.md",
+        "en": "docs/en/release-evidence.md"
+      },
+      "publish": {
+        "de": "docs/de/publish.md",
+        "en": "docs/en/publish.md"
+      }
+    },
+    "assets": [
+      "docs/assets/zyris-icon.png",
+      "docs/assets/de/claude-desktop-marketplace-source.png",
+      "docs/assets/de/claude-desktop-marketplace-repository.png"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+"name": "draftmode-ai-plugins",
+"owner": {
+"name": "Peter Fux",
+"url": "https://draftmode.io"
+},
+"metadata": {
+"description": "Draftmode AI Plugins"
+},
+"plugins": [
+{
+"name": "plugin-manager",
+"source": "./plugins/plugin-manager",
+"description": "Manage skill plugins: structure, documentation, validation and approval-gated publication."
+}
+]
+}

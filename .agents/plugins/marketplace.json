@@ -1,0 +1,20 @@
+{
+  "name": "draftmode-ai-plugins",
+  "interface": {
+    "displayName": "Draftmode AI Plugins"
+  },
+  "plugins": [
+    {
+      "name": "plugin-manager",
+      "source": {
+        "source": "local",
+        "path": "./plugins/plugin-manager"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
