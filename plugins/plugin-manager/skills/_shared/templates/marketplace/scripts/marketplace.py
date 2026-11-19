@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+"""Generate or validate host catalogs from marketplace.json and local plugin manifests."""
+import argparse
+import json
+from pathlib import Path
+import re
+ROOT = Path(__file__).resolve().parents[1]
+
+def strict_json(text):
+    """Reject ambiguous or non-round-trippable JSON before planning writes."""
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError('Duplicate JSON field: ' + key)
+            result[key] = value
+        return result
+    def invalid_constant(value):
+        raise ValueError('Invalid JSON numeric constant: ' + value)
+    def finite_number(value):
+        import math
+        from decimal import Decimal
+        number = float(value)
+        if not math.isfinite(number):
+            raise ValueError('Invalid JSON numeric constant: ' + value)
+        if Decimal(value) != Decimal(str(number)):
+            raise ValueError('Unsupported JSON numeric precision: ' + value)
+        return number
+    return json.loads(text, object_pairs_hook=unique, parse_constant=invalid_constant, parse_float=finite_number)
+
+
+def expected(root=ROOT, config=None):
+    config = config if config is not None else strict_json((root/'marketplace.json').read_text())
+    if 'version' in config:
+        raise ValueError('Marketplace manifests must not pin a version')
+    if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', config['name']):
+        raise ValueError('Marketplace name must be lowercase kebab-case')
+    claude = {'name':config['name'], 'owner':config['owner'], 'metadata':{'description':config['displayName']}, 'plugins':[]}
+    codex = {'name':config['name'], 'interface':{'displayName':config['displayName']}, 'plugins':[]}
+    seen = set()
+    for entry in config['plugins']:
+        if 'version' in entry:
+            raise ValueError('Marketplace entries must not pin a version')
+        allowed = {'path'} if 'path' in entry else {'name', 'displayName', 'description', 'repository'}
+        if set(entry) - allowed:
+            raise ValueError('Unsupported marketplace entry fields: ' + ', '.join(sorted(set(entry) - allowed)))
+        if ('path' in entry) == ('repository' in entry):
+            raise ValueError('Each plugin needs exactly one path or repository')
+        if 'repository' in entry:
+            if 'path' in entry:
+                raise ValueError('Choose either a local path or remote repository')
+            repository=entry['repository']
+            if not re.fullmatch(r'https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\.git', repository):
+                raise ValueError('Remote source must be a GitHub HTTPS clone URL')
+            name=entry['name']
+            description=entry['description']
+            display_name=entry['displayName']
+            claude_source={'source':'url','url':repository}
+            codex_source={'source':'url','url':repository}
+        else:
+            relative = entry['path']
+            if config['name'] != 'draftmode-ai-plugins' or relative != './plugins/plugin-manager':
+                raise ValueError('Only the existing draftmode-ai-plugins plugin-manager may be embedded')
+            path = root/relative
+            if any(part.is_symlink() for part in (path, *path.parents)) or not path.resolve().is_relative_to(root.resolve()):
+                raise ValueError('Plugin path must not escape the repository or use symlinks')
+            manifest = strict_json((path/'plugin.json').read_text())
+            name = manifest['name']
+            if name != 'plugin-manager':
+                raise ValueError('Embedded exception requires plugin-manager identity')
+            description=manifest['description']
+            display_name=manifest.get('extensions', {}).get('com.openai', {}).get('interface', {}).get('displayName', name)
+            claude_source=relative
+            codex_source={'source':'local','path':relative}
+        if name in seen or not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', name):
+            raise ValueError('Duplicate or invalid plugin name')
+        seen.add(name)
+        claude['plugins'].append({'name':name,'source':claude_source,'description':description,'displayName':display_name})
+        codex['plugins'].append({'name':name,'source':codex_source,'policy':{'installation':'AVAILABLE','authentication':'ON_INSTALL'},'category':'Productivity'})
+    return {'.claude-plugin/marketplace.json':claude,'.agents/plugins/marketplace.json':codex}
+
+def sync(check=False):
+    drift=[]
+    files=expected(ROOT)
+    for relative, data in files.items():
+        path=ROOT/relative
+        if any(part.is_symlink() for part in (path,*path.parents)):
+            raise ValueError('Catalog path must not use symlinks')
+        if not path.is_file() or strict_json(path.read_text()) != data:
+            drift.append(relative)
+    if check and drift:
+        raise ValueError('Stale marketplace metadata: '+', '.join(drift))
+    if not check:
+        for relative in drift:
+            path=ROOT/relative;path.parent.mkdir(parents=True,exist_ok=True)
+            path.write_text(json.dumps(files[relative],ensure_ascii=False,indent=2)+'\n')
+    return {'valid':True,'updated':drift}
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('action',choices=['check','sync'])
+    args=parser.parse_args()
+    print(json.dumps(sync(args.action=='check'),indent=2))

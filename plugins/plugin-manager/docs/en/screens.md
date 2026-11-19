@@ -6,11 +6,11 @@
 
 ## Preview
 
-This page provides a text walkthrough. Actual host screenshots are not yet available; no simulated images are presented as product captures.
+This page provides a text walkthrough. The original captures below show Claude installation dialogs; feature and success captures are missing. No simulated images are presented as product captures.
 
 ## Example walkthrough
 
-**Fictional example, not a recorded model response:** A team supplies the `example-checklist` skill. The agent reads its instructions, asks about an unclear storage model, then creates `README.md`, `README.en.md`, `docs/de/` and `docs/en/` after clarification. `verify` reports missing tests as pending work.
+**Fictional example, not a recorded model response:** A team supplies the `example-checklist` skill. The agent reads its instructions, asks about an unclear storage model, then creates `README.md`, `README.en.md`, `docs/de/` and `docs/en/` after clarification. Documentation validation checks structure and local links; `verify` separates publishable structure from available local development configuration.
 
 ## Native screenshots
 

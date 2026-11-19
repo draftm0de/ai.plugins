@@ -12,6 +12,29 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 MARKER = '.draftmode-local-marketplace'
 
+def strict_json(text):
+    """Reject ambiguous or non-round-trippable JSON before planning writes."""
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError('Duplicate JSON field: ' + key)
+            result[key] = value
+        return result
+    def invalid_constant(value):
+        raise ValueError('Invalid JSON numeric constant: ' + value)
+    def finite_number(value):
+        import math
+        from decimal import Decimal
+        number = float(value)
+        if not math.isfinite(number):
+            raise ValueError('Invalid JSON numeric constant: ' + value)
+        if Decimal(value) != Decimal(str(number)):
+            raise ValueError('Unsupported JSON numeric precision: ' + value)
+        return number
+    return json.loads(text, object_pairs_hook=unique, parse_constant=invalid_constant, parse_float=finite_number)
+
+
 def module(path, name):
     spec = importlib.util.spec_from_file_location(name, path)
     loaded = importlib.util.module_from_spec(spec)
@@ -21,13 +44,13 @@ def module(path, name):
 def prepare(root, target):
     root = Path(root).resolve()
     catalogs = module(root/'scripts/marketplace.py', 'shared_catalog').expected(root)
-    config = json.loads((root/'marketplace.json').read_text())
+    config = strict_json((root/'marketplace.json').read_text())
     local_file = root/'.local/marketplace.json'
-    local = json.loads(local_file.read_text()) if local_file.exists() else {}
+    local = strict_json(local_file.read_text()) if local_file.exists() else {}
     sources = local.get('sources', {})
     if not isinstance(sources, dict):
         raise ValueError('Local sources must map plugin names to checkout paths')
-    engine = module(root/'plugins/plugin-manager/scripts/plugin.py', 'snapshot_payload')
+    engine = module(Path(__file__).with_name('plugin_payload.py'), 'snapshot_payload')
     snapshots = {}
     for entry, catalog_entry in zip(config['plugins'], catalogs['.claude-plugin/marketplace.json']['plugins']):
         name = catalog_entry['name']
@@ -121,7 +144,7 @@ def install_local(target, update=False, dry_run=False, root=ROOT):
             'next': 'Open a new local session. Enable only the intended remote or development copy.'}
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, epilog='Snapshots use current checkouts, including uncommitted edits, on any branch. After edits/branch switches run update-local and open a new host session. No commit/push/PR or per-branch marketplace. Host CLI is only needed without --dry-run. Use configure; only .local/marketplace.json is runtime configuration.')
     parser.add_argument('action', choices=['install-local', 'update-local'])
     parser.add_argument('--target', choices=['claude', 'codex'], default='claude')
     parser.add_argument('--dry-run', action='store_true')

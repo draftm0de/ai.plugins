@@ -1,9 +1,5 @@
-# Repository publication
+# Publication through separate repositories
 
-The product repository is also its marketplace. `make sync-plugin` derives host files from `plugin.json`; `make check-plugin` validates them. Commit derived files together with the source. Versions, tags, plugin ZIPs, GitHub Releases and a separate catalog repository are unnecessary.
+Plugin repositories have no catalogs. The marketplace references them. Only the existing Manager remains embedded. sync-plugin/check-plugin handle plugin metadata; sync-marketplace/check-marketplace handle catalogs. Publish and verify new plugin sources first, then marketplace entries.
 
-Publish prepares a checked diff and commit message. Approval covers commit, push, PR, required checks/reviews and merge. Corrections use new reviewed commits. No force-push or bypassing branch protections.
-
-User updates are a separate step: sync the marketplace and open a new chat. A successful merge does not prove automatic refresh of every installation. Local development uses snapshots without ZIPs. Website export ZIPs remain a separate tool.
-
-[Publish](publish.md) · [Installation](installation.md)
+[Publish](publish.md) · [Evidence](release-evidence.md)

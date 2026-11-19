@@ -16,6 +16,29 @@ MARKER = '.zyris-generated'
 CONFIG_KEY = 'io.zyris.distribution'
 
 
+def strict_json(text):
+    """Reject ambiguous or non-round-trippable JSON before planning writes."""
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError('Duplicate JSON field: ' + key)
+            result[key] = value
+        return result
+    def invalid_constant(value):
+        raise ValueError('Invalid JSON numeric constant: ' + value)
+    def finite_number(value):
+        import math
+        from decimal import Decimal
+        number = float(value)
+        if not math.isfinite(number):
+            raise ValueError('Invalid JSON numeric constant: ' + value)
+        if Decimal(value) != Decimal(str(number)):
+            raise ValueError('Unsupported JSON numeric precision: ' + value)
+        return number
+    return json.loads(text, object_pairs_hook=unique, parse_constant=invalid_constant, parse_float=finite_number)
+
+
 def read_file(path):
     if path.is_symlink() or not path.is_file():
         raise ValueError(f'Expected a regular source file: {path}')
@@ -35,31 +58,37 @@ def source_path(root, relative):
 
 def configuration(root=None):
     root = Path(root) if root is not None else ROOT
-    manifest = json.loads(read_file(root / 'plugin.json'))
+    manifest = strict_json(read_file(root / 'plugin.json'))
     if not isinstance(manifest, dict):
         raise ValueError('plugin.json must be an object')
     name = manifest.get('name')
     if not isinstance(name, str) or not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', name):
         raise ValueError('Plugin name must be lowercase kebab-case')
-    version = manifest.get('version')
-    if version is not None and (not isinstance(version, str) or not re.fullmatch(r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)', version)):
-        raise ValueError('plugin.json version must be a numeric major.minor.patch base version')
-    if not isinstance(manifest.get('description'), str) or not manifest['description']:
+    if 'version' in manifest:
+        raise ValueError('Repository distribution follows commits; remove version from plugin.json')
+    if not isinstance(manifest.get('description'), str) or not manifest['description'].strip():
         raise ValueError('Plugin description is required')
     if not isinstance(manifest.get('extensions', {}), dict):
         raise ValueError('extensions must be an object')
     config = manifest.get('extensions', {}).get(CONFIG_KEY, {})
-    if not isinstance(config, dict) or set(config) - {'skillRoot', 'marketplace', 'files', 'catalogs'}:
+    if not isinstance(config, dict) or set(config) - {'skillRoot', 'files', 'catalogs'}:
         raise ValueError('Unsupported distribution configuration')
     if not isinstance(config.get('catalogs', True), bool):
         raise ValueError('catalogs must be a boolean')
     skill_root = config.get('skillRoot', 'skills')
+    if skill_root != 'skills':
+        raise ValueError('Current plugin layout requires skillRoot=skills')
+    if config.get('catalogs', False):
+        raise ValueError('Plugin repositories must not own marketplace catalogs')
+    for obsolete in ('.claude/skills', '.agents/skills', 'marketplace.json', '.claude-plugin/marketplace.json', '.agents/plugins/marketplace.json', '.codex-plugin/marketplace.json'):
+        if (root/obsolete).exists() or (root/obsolete).is_symlink():
+            raise ValueError('Unsupported host-local skill layout: ' + obsolete)
     source = source_path(root, skill_root)
     if not source.is_dir() or not list(source.glob('*/SKILL.md')):
         raise ValueError('skillRoot must contain canonical skill folders')
     market = name
-    if config.get('marketplace', name) != name:
-        raise ValueError('Marketplace name must equal plugin name')
+    if 'marketplace' in config:
+        raise ValueError('Unsupported distribution configuration: marketplace')
     if not isinstance(market, str) or not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', market):
         raise ValueError('Invalid marketplace name')
     extra = config.get('files', {})
@@ -73,7 +102,7 @@ def configuration(root=None):
         if isinstance(origin, str) and (any(part.startswith('.env') for part in Path(origin).parts) or Path(origin).suffix in ('.pem', '.key')):
             raise ValueError('Private distribution source forbidden')
         for mapped in (destination, origin):
-            if isinstance(mapped, str) and (set(Path(mapped).parts) & {'.tmp', 'dist', '.idea', '.venv', 'node_modules', '__pycache__', '.DS_Store'} or Path(mapped).suffix in ('.pyc', '.pyo', '.pyd')):
+            if isinstance(mapped, str) and (set(Path(mapped).parts) & {'.git', '.local', '.tmp', 'dist', '.idea', '.venv', 'node_modules', '__pycache__', '.DS_Store'} or Path(mapped).suffix in ('.pyc', '.pyo', '.pyd')):
                 raise ValueError('Generated/local files cannot be distributed: ' + mapped)
         if not source_path(root, origin).is_file():
             raise ValueError('Distribution source file missing: ' + str(origin))
@@ -88,36 +117,28 @@ def repository_files(manifest=None):
     name = manifest['name']
     config = manifest.get('extensions', {}).get(CONFIG_KEY, {})
     market = name
-    if config.get('marketplace', name) != name:
-        raise ValueError('Marketplace name must equal plugin name')
+    if 'marketplace' in config:
+        raise ValueError('Unsupported distribution configuration: marketplace')
     interface = manifest.get('extensions', {}).get('com.openai', {}).get('interface', {})
     claude = {key: manifest[key] for key in ('name', 'description', 'author', 'homepage', 'repository', 'license', 'keywords') if key in manifest}
     display_name = manifest.get('extensions', {}).get('com.openai', {}).get('interface', {}).get('displayName')
     if display_name:
         claude['displayName'] = display_name
-    if config.get('catalogs', True) is False:
-        return {'.claude-plugin/plugin.json': claude}
-    owner = manifest.get('author', {'name': name})
-    return {
-        '.claude-plugin/plugin.json': claude,
-        '.claude-plugin/marketplace.json': {
-            'name': market, 'owner': owner,
-            'metadata': {'description': manifest['description']},
-            'plugins': [{'name': name, 'source': './', 'description': manifest['description']}]},
-        '.agents/plugins/marketplace.json': {
-            'name': market, 'interface': {'displayName': interface.get('displayName', name)},
-            'plugins': [{'name': name, 'source': {'source': 'local', 'path': './'},
-                         'policy': {'installation': 'AVAILABLE', 'authentication': 'ON_INSTALL'},
-                         'category': interface.get('category', 'Productivity')}]}}
+    if config.get('catalogs', False):
+        raise ValueError('Plugin repositories must not own marketplace catalogs')
+    return {'.claude-plugin/plugin.json': claude}
 
 
 def repository_metadata(check=False):
     expected = repository_files()
+    for relative in ('.claude-plugin/marketplace.json', '.agents/plugins/marketplace.json'):
+        if (ROOT / relative).exists():
+            raise ValueError('Plugin repository must not own marketplace catalogs: ' + relative)
     targets = {relative: source_path(ROOT, relative) for relative in expected}
     drift = []
     for relative, data in expected.items():
         path = targets[relative]
-        if not path.is_file() or json.loads(read_file(path)) != data:
+        if not path.is_file() or strict_json(read_file(path)) != data:
             drift.append(relative)
     if check and drift:
         raise ValueError('Repository metadata missing or stale: ' + ', '.join(drift) + '; run make sync-plugin')
@@ -183,7 +204,7 @@ def payload():
     fingerprint = hashlib.sha256(json.dumps(manifest, sort_keys=True).encode())
     for name, content in sorted({**files, **commands}.items()):
         fingerprint.update(name.encode() + b'\0' + content + b'\0')
-    # Optional legacy ZIP builds retain a content-derived cache identifier.
+    # Local snapshots use a content-derived cache identifier.
     # Direct repository imports use the unversioned manifests checked into Git.
     version = '0.0.0-dev.h' + fingerprint.hexdigest()[:12]
     manifest['version'] = claude['version'] = version
@@ -195,7 +216,7 @@ def payload():
 
 
 def codex_payload(portable):
-    manifest = json.loads(portable['plugin.json'])
+    manifest = strict_json(portable['plugin.json'])
     codex = {key: manifest[key] for key in ('name', 'version', 'description', 'author', 'homepage', 'repository', 'license', 'keywords') if key in manifest}
     codex['skills'] = './skills/'
     interface = manifest.get('extensions', {}).get('com.openai', {}).get('interface')
@@ -206,106 +227,53 @@ def codex_payload(portable):
     return files
 
 
-def marketplace(path, files, version, platform="claude", market_name=None):
-    manifest, _, market, _ = configuration()
-    name = manifest['name']
-    market = market_name or market
-    if path.is_symlink() or (path.exists() and not owned_marketplace(path)):
-        raise ValueError(f'Refusing to replace an unowned marketplace: {path}')
-    staged = Path(tempfile.mkdtemp(prefix='.marketplace-', dir=path.parent))
-    backup = None
-    try:
-        (staged / MARKER).write_text(name + '\n')
-        plugin_root = staged / 'plugins' / name
-        for relative, content in files.items():
-            target = plugin_root / relative
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(content)
-        catalog = {'name': market, 'metadata': {'description': manifest['description']},
-                   'owner': {'name': manifest.get('author', {}).get('name', manifest['name'])},
-                   'plugins': [{'name': name, 'source': './plugins/' + name, 'version': version,
-                                'description': manifest['description']}]}
-        if platform == 'codex':
-            catalog = {'name': market, 'plugins': [
-                {'name': name, 'source': {'source': 'local', 'path': './plugins/' + name},
-                 'policy': {'installation': 'AVAILABLE', 'authentication': 'ON_INSTALL'}, 'category': 'Productivity'}]}
-        catalog_path = staged / ('.agents/plugins/marketplace.json' if platform == 'codex' else '.claude-plugin/marketplace.json')
-        catalog_path.parent.mkdir(parents=True)
-        catalog_path.write_text(json.dumps(catalog, indent=2) + '\n')
+def install_local(target, update=False, dry_run=False, marketplace_root=None):
+    """Resolve the selected development marketplace; never fall back to a private catalog."""
+    if target not in ('claude', 'codex'):
+        raise ValueError('Local development supports claude or codex')
+    selected = marketplace_root
+    if not selected:
+        path = source_path(ROOT, '.local/marketplace.json')
         if path.exists():
-            backup = Path(tempfile.mkdtemp(prefix='.marketplace-backup-', dir=path.parent))
-            backup.rmdir()
-            path.rename(backup)
-        try:
-            staged.rename(path)
-        except OSError:
-            if backup:
-                backup.rename(path)
-                backup = None
-            raise
-    finally:
-        if staged.exists():
-            shutil.rmtree(staged)
-        if backup and backup.exists():
-            shutil.rmtree(backup)
-
-
-def owned_marketplace(path):
-    marker = path / MARKER
-    return marker.is_file() and not marker.is_symlink() and marker.read_text().strip() == configuration()[0]['name']
-
-
-def install_local(target, update=False, dry_run=False):
-    """Materialize only distributable files and register a separate local marketplace."""
-    if target not in ('claude', 'codex', 'chatgpt'):
-        raise ValueError('Unsupported plugin host')
-    if target == 'chatgpt':
-        raise ValueError('Local installation is supported here for Claude Code and Codex, not the ChatGPT web/account importer')
-    manifest, _, market, _ = configuration()
-    if manifest.get('extensions', {}).get(CONFIG_KEY, {}).get('catalogs') is False:
-        for parent in ROOT.parents:
-            helper = parent / 'scripts/local_plugins.py'
-            if (parent / 'marketplace.json').is_file() and helper.is_file():
-                catalog = json.loads((parent / 'marketplace.json').read_text())
-                if any('path' in entry and (parent / entry['path']).resolve() == ROOT.resolve() for entry in catalog['plugins']):
-                    spec = importlib.util.spec_from_file_location('shared_local_marketplace', helper)
-                    shared = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(shared)
-                    return shared.install_local(target, update, dry_run, root=parent)
-        raise ValueError('Plugin has no own catalog; use its shared marketplace checkout for local development')
-    version, portable, claude = payload()
-    market = manifest['name'] + '-dev'
-    # The checkout path and generated snapshot must remain available while installed.
-    output = source_path(ROOT, 'dist/local-development')
-    destination = source_path(ROOT, 'dist/local-development/' + target + '-marketplace')
-    if destination.exists() and not owned_marketplace(destination):
-        raise ValueError('Local development destination contains an unowned marketplace')
-    output.mkdir(parents=True, exist_ok=True)
-    files = claude if target == 'claude' else codex_payload(portable)
-    marketplace(destination, files, version, platform=target, market_name=market)
-    selector = manifest['name'] + '@' + market
-    commands = [[target, 'plugin', 'marketplace', 'add', str(destination.resolve())]]
-    if target == 'codex':
-        commands.append(['codex', 'plugin', 'add', selector, '--json'])
-    else:
-        commands.append(['claude', 'plugin', 'update' if update else 'install', selector, '--scope', 'user'])
-    if not dry_run:
-        if not shutil.which(target):
-            raise ValueError(f'{target} CLI not found. The local development snapshot was prepared; no installation occurred.')
-        for command in commands:
-            subprocess.run(command, check=True)
-    return {'marketplace': market, 'path': str(destination.resolve()), 'version': version,
-            'commands': commands, 'executed': not dry_run, 'published': False,
-            'next': 'Open a new local host session. Enable only the intended remote or development copy. After edits run update-local again; no commit or push is needed.'}
+            selected = strict_json(read_file(path)).get('marketplace')
+    if selected:
+        selected = Path(selected).expanduser()
+        if not selected.is_absolute():
+            selected = ROOT / selected
+    if not selected:
+        raise ValueError('Local marketplace unavailable; run configure or pass --marketplace PATH')
+    selected = Path(selected).resolve()
+    helper = selected / 'scripts/local_plugins.py'
+    if not helper.is_file() or helper.is_symlink():
+        raise ValueError('Selected marketplace is unavailable or lacks local development tooling')
+    catalog = strict_json(read_file(selected / 'marketplace.json'))
+    name = configuration()[0]['name']
+    local_file = selected / '.local/marketplace.json'
+    sources = strict_json(read_file(local_file)).get('sources', {}) if local_file.exists() else {}
+    linked = False
+    for entry in catalog['plugins']:
+        path = entry.get('path') if 'path' in entry else sources.get(entry.get('name'))
+        if path:
+            candidate = Path(path).expanduser()
+            candidate = candidate if candidate.is_absolute() else selected / candidate
+            if candidate.resolve() == ROOT.resolve() and (entry.get('name', name) == name):
+                linked = True
+    if not linked:
+        raise ValueError('Plugin is not locally associated with the selected marketplace; run configure')
+    spec = importlib.util.spec_from_file_location('selected_local_marketplace', helper)
+    shared = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(shared)
+    return shared.install_local(target, update, dry_run, root=selected)
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, epilog='Git + Python 3.10+ management tools; Make optional. Local snapshots use the current checkout on any branch. After edits/branch switches run update-local and start a new host session. No commit/push/PR; host CLI only for automatic installation.')
     sub = parser.add_subparsers(dest='command', required=True)
     for command in ('install-local', 'update-local'):
         action = sub.add_parser(command)
         action.add_argument('--target', choices=('claude', 'codex'), default='claude')
         action.add_argument('--dry-run', action='store_true')
+        action.add_argument('--marketplace', type=Path)
     check = sub.add_parser('check')
     sub.add_parser('sync')
     args = parser.parse_args(argv)
@@ -313,7 +281,7 @@ def main(argv=None):
         if args.command in ('check', 'sync'):
             result = repository_metadata(check=args.command == 'check')
         else:
-            result = install_local(args.target, args.command == 'update-local', args.dry_run)
+            result = install_local(args.target, args.command == 'update-local', args.dry_run, args.marketplace)
         print(json.dumps(result, indent=2))
         return 0
     except (OSError, ValueError, KeyError, subprocess.CalledProcessError) as exc:

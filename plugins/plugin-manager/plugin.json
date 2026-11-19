@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "plugin-manager",
-  "description": "Manage skill plugins: structure, documentation, validation and approval-gated publication.",
+  "description": "Manage marketplaces and separate skill plugins: creation, association, documentation, validation and approval-gated publication.",
   "author": {
     "name": "Peter Fux",
     "url": "https://draftmode.io"
@@ -16,10 +16,10 @@
   ],
   "extensions": {
     "com.openai": {
-      "onboardingSkill": "./skills/plugin-manager/SKILL.md",
+      "onboardingSkill": "./skills/verify/SKILL.md",
       "interface": {
         "displayName": "Plugin Manager",
-        "shortDescription": "Manage and publish skill plugins",
+        "shortDescription": "Manage plugins and marketplaces",
         "developerName": "draftmode",
         "category": "Productivity",
         "composerIcon": "./assets/icon.png",
@@ -35,9 +35,9 @@
     "io.zyris.distribution": {
       "skillRoot": "skills",
       "files": {
-        "README.md": "skills/plugin-manager/templates/package/README.md",
-        "README.en.md": "skills/plugin-manager/templates/package/README.en.md",
-        "skills/plugin-manager/assets/icon.png": "assets/icon.png"
+        "README.md": "skills/_shared/templates/package/README.md",
+        "README.en.md": "skills/_shared/templates/package/README.en.md",
+        "skills/_shared/assets/icon.png": "assets/icon.png"
       },
       "catalogs": false
     }

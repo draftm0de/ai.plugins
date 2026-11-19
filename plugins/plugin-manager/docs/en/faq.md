@@ -8,11 +8,11 @@
 
 ## Product and access
 
-The Manager bundles init, update, verify, export and publish. The user confirmed imports from its GitHub repository in Claude and GPT.
+The Manager bundles marketplace-create, plugin-create, configure, update, verify and publish. The user confirmed imports from its GitHub repository in Claude and GPT.
 
 ## Requirements
 
-Import and use require host account and repository access. Local Python helpers need Python 3.10+. Publish needs GitHub write access and suitable host Git/GitHub tools.
+Management tools require Git and Python 3.10+; Make is only a convenience wrapper. Management needs the selected host CLI only for automatic local installation/updates; explicitly requested model tests also need an authenticated CLI. Publish uses a sufficiently capable GitHub connector or alternatively authenticated gh; no GitLab MRs. First verify remote read, push, PR create/read, checks, rules and controlled merge capabilities and permissions. Report missing capabilities specifically; never install tools automatically. No additional Python packages, release Actions or version/tag requirements.
 
 ## Privacy and persistence
 

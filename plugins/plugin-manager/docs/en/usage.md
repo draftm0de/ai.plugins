@@ -8,19 +8,29 @@
 
 ## Set up
 
-Provide an accessible source folder. Language and output are resolved per repository; `docs/documentation.json` stores only source pointers, languages and export configuration. A hosted session without local access needs a sanitized source copy.
+Targets come from your open project or explicit input, never automatically from the Manager installation. Existing project facts and Git origin are reused; only missing or conflicting inputs need clarification. Display name and technical identifier are distinct. Publisher, license and skill behavior are never invented.
 
 ## Choose a workflow
 
-Choose init, update, plugin-verify, marketplace-verify, verify, export or publish. For example, in Claude Code use `/plugin-manager:init SOURCE OUTPUT`. In Codex/GPT select the relevant capability or describe the action. Claude slash-command UI is not assumed for every host.
+In Claude Code use `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-create` or `/plugin-manager:configure`. In Codex/GPT select the capability or describe the action. `init` is unsupported.
+
+| Action | Inputs | Result |
+| --- | --- | --- |
+| marketplace-create | Cloned repository, display name, identifier, publisher | Shared catalog, both host catalogs and standalone tools |
+| plugin-create | Separate checkout/path, existing GitHub URL, marketplace, display name, identifier, description, publisher, source skill, languages | Plugin structure without catalogs, association and documentation templates |
+| configure | Existing plugin and chosen marketplace | Catalog entry and local mapping; other associations remain |
+
+### Update documentation
+
+Use `update`, or `/plugin-manager:update PATH` in Claude Code. The action rereads current product sources and saved language settings, updates README and guides, then validates them. It installs and publishes nothing. `update-local` is the separate command for refreshing local plugin snapshots.
 
 ## Understand the output
 
-Init creates a separate copy under `skills/`, a versionless manifest, both marketplace files, the Claude manifest and development/documentation starters. Missing repository URL and publisher metadata must be resolved. Templates alone are not finished product documentation. Verify distinguishes failures, warnings and outstanding manual checks; `production_ready: null` is not approval.
+New plugins own manifests, skills and documentation, but no marketplace catalogs. The agent completes generated documentation templates from source evidence. `valid` and `structure_valid` describe publishable structure. `local_development.complete` separately describes local development configuration. Missing checkouts or `.local` files are expected on fresh clones and do not invalidate the published catalog. Verification executes no target code.
 
 ## Control the session
 
-Limit the request to the intended files or actions. Init never overwrites an existing project. Existing projects receive targeted edits; review their diff. Stopping does not automatically undo completed changes.
+Existing files are inspected first. Conflicting tooling or mappings stop for targeted review; personal data and installations are preserved. Only plugin-create clones missing checkouts from the supplied existing GitHub source. Configure does not automatically migrate old plugin catalogs.
 
 ## Return later
 
@@ -28,10 +38,43 @@ Update reads current sources again. Publish can resume from a private journal af
 
 ## Specialized workflows
 
-[Publish](publish.md) proposes a commit message and performs commit → push → PR → checks → merge only after approval. No version approval, tags or releases. Export creates a website ZIP from existing Markdown; that ZIP is not an installation package.
+`make install-local TARGET=claude|codex` and `make update-local` use all associated plugins in a shared `<marketplace-id>-dev`. In a plugin, `MARKETPLACE=/path/to/catalog` overrides the local default only for that invocation. Missing required checkouts stop before host changes. `DRY_RUN=1` creates snapshots only.
 
-### Verify an existing project
+[Publish](publish.md) treats plugin and marketplace separately: for new entries, plugin first, marketplace second. Branch → commit → push → PR → checks → merge require concrete approval. No tags, releases or plugin ZIPs.
 
-`/plugin-manager:plugin-verify PATH` checks a plugin; `/plugin-manager:marketplace-verify PATH` checks a marketplace. `/plugin-manager:verify PATH` detects the type. Select the target from the current user project or an explicit path, never automatically from the manager installation. Wrong or ambiguous roots cause an error without changes. In Codex select the capability or request verification in natural language. Results report structural validity, type, path and limits, not host acceptance.
+[Technical commands and inputs](../../skills/_shared/references/workflows.md)
 
-Configure would write mappings or metadata; verify only reads. Configure and separate create actions are not implemented yet.
+Local mappings are written only after Git confirms the proposed ignore rules are effective. Negations exposing `.local/marketplace.json` stop before changes; existing content and associations remain intact. [First publication without HEAD](publish.md#first-publication-without-head) needs separate explicit approval.
+
+Local snapshots read the current checkout including uncommitted changes, regardless of branch. After edits or branch switches run `update-local` and open a new host session. Local tests require no commit, push or PR. Keep one shared `<marketplace-id>-dev`, with no additional marketplaces per branch.
+
+`configure` is the normal setup path. `local-marketplace.example.json` is an optional manual copy template. Only `.local/marketplace.json` is read for local runtime mappings; never commit those mappings.
+
+### Skeleton before domain implementation
+
+`plugin-create --skeleton` creates an explicitly unfinished plugin without an existing domain skill source. Reuse known marketplace, technical identifier, display name, existing GitHub repository, publisher and documentation language settings; clarify only missing/conflicting facts. Description is optional; absent a confirmed description, the manifest explicitly says unimplemented. No domain capabilities or license are invented.
+
+```sh
+# From ai.plugins; target checkout already exists with Git origin:
+make plugin-create ARGS='--root /path/to/plugin --marketplace /path/to/catalog --skeleton --name example-plugin --display-name "Example Plugin" --author "Confirmed publisher" --languages de en --default-language de'
+```
+
+The existing `--source /path/to/skill` mode remains available; the modes are mutually exclusive. The skeleton contains a visibly marked nonfunctional skill, manifests, association, documentation scaffold, test tools, `SCOPE.md`, `AGENTS.md`, `CLAUDE.md` and `docs/architecture.md`. Differing existing instruction/scope files are not overwritten. Structural validity does not certify domain behavior.
+
+### Compare scope against source
+
+1. Confirm purpose, non-goals and observable acceptance criteria in `SCOPE.md` with the user. Unknown requirements remain draft.
+2. Claude/Codex implements within the development rules. Domain runtime belongs under `skills/`, developer tools under `scripts/`; tests follow the shared layout.
+3. Explicitly request a scope/source review through `verify`. The skill reads confirmed requirements and actual source/test logic, reporting evidence, deviations, reasons and proposed changes for each requirement.
+
+```sh
+make verify SOURCE=/path/to/plugin REVIEW=1
+# Without Make, using the trusted Manager helper:
+python3 plugins/plugin-manager/skills/_shared/scripts/verify.py --source /path/to/plugin --review
+```
+
+These commands collect static evidence; they do not replace the subsequent semantic agent review. `ready_for_source_review` means evidence available, not requirement fulfilled. `needs_attention` reports findings with exit code 1 without changing the meaning of `structure_valid`. All requirements remain semantically `unverified` in the automated report; tests are never executed. The agent then distinguishes `supported_by_source`, `contradicted`, `missing_evidence` and `not_assessed`, citing real file/line evidence. Source support is still not runtime or host acceptance.
+
+SCOPE uses stable headings such as `## R1: Consent before persistence`, with `Status: confirmed`, one `Acceptance:` criterion and individual `Source:` and `Test:` file pointers per requirement. Overall status precedes the requirements. Pointers can reference public source/test files only; private data, fixtures and symlinks are not read as evidence. [Review rules](../../skills/_shared/references/scope-review.md).
+
+Verify never repairs, starts tests or modifies the target scope. Reports appear in conversation by default; saving needs an explicit output path. Agent instructions guide structure but cannot guarantee LLM behavior. Tests and semantic review complement them.

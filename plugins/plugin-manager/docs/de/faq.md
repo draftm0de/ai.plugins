@@ -8,11 +8,11 @@
 
 ## Produkt und Zugang
 
-Der Manager bündelt init, update, verify, export und publish. Der Import aus seinem GitHub-Repository wurde vom Nutzer für Claude und GPT bestätigt.
+Der Manager bündelt marketplace-create, plugin-create, configure, update, verify und publish. Der Import aus seinem GitHub-Repository wurde vom Nutzer für Claude und GPT bestätigt.
 
 ## Voraussetzungen
 
-Für Import und Nutzung gelten Host-Konto und Repository-Zugriff. Für lokale Python-Helfer ist Python 3.10+ nötig. Publish benötigt GitHub-Schreibzugriff und geeignete Git-/GitHub-Werkzeuge des Hosts.
+Git und Python 3.10+ sind für die Verwaltungswerkzeuge erforderlich; Make ist nur ein Komfortzugang. Für die Verwaltung wird die Host-CLI nur bei automatischer lokaler Installation/Aktualisierung benötigt; ausdrücklich gestartete Modelltests benötigen ebenfalls eine authentifizierte CLI. Publish verwendet einen ausreichend leistungsfähigen GitHub-Connector oder alternativ authentifiziertes gh; keine GitLab-MRs. Vorher Remote-Lesen, Push, PR-Erstellung/-Lesen, Checks, Regeln und kontrolliertes Mergen samt Rechten prüfen. Fehlende Fähigkeiten konkret melden, keine Werkzeuge automatisch installieren. Keine zusätzlichen Python-Pakete, Release-Actions oder Versions-/Tag-Pflichten.
 
 ## Datenschutz und Speicherung
 

@@ -8,7 +8,7 @@
 
 ## Choose your platform
 
-Claude Desktop and Codex/GPT support repository imports. The user confirmed both imports on 2026-11-18. Account access, repository permissions and organizational policies still apply. Menu paths below come from supplied screenshots or user reports; ChatGPT workspace administration is a separate path.
+Claude Desktop and Codex/GPT support repository imports. The user confirmed both imports on 2026-11-18 for that repository state; this does not certify current local changes. Account access, repository permissions and organizational policies still apply. Menu paths below come from supplied screenshots or user reports; ChatGPT workspace administration is a separate path.
 
 ## Install
 
@@ -52,7 +52,7 @@ The following slash commands apply inside a terminal session started with `claud
 1. Open the **user icon** and select **Settings**.
 2. Select **Integration → Plugins**.
 3. Select **+ Add → A Marketplace**.
-4. Enter `https://github.com/draftm0de/ai.plugins as the repository URL and confirm adding it.
+4. Enter `https://github.com/draftm0de/ai.plugins` as the repository URL and confirm adding it.
 5. Select **Plugin Manager** and install it.
 
 ### Codex in a terminal – optional alternative
@@ -77,7 +77,7 @@ Run the following commands directly in the terminal shell.
 
 1. Open **Admin → Plugins**.
 2. Select **Add → Import marketplace**.
-3. Enter `https://github.com/draftm0de/ai.plugins as the repository URL.
+3. Enter `https://github.com/draftm0de/ai.plugins` as the repository URL.
 4. Leave **Path** and **Branch/Tag/Commit** empty to use the repository root on the default branch.
 5. Start the import and review the result.
 

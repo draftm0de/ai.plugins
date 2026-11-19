@@ -12,4 +12,4 @@
 
 ## Quellen und Referenzen
 
-[Skill](../../skills/plugin-manager/SKILL.md) · [Manifest](../../plugin.json) · [GitHub](https://github.com/draftm0de/ai.plugins)
+[Skill](../../skills/_shared/WORKFLOWS.md) · [Manifest](../../plugin.json) · [GitHub](https://github.com/draftm0de/ai.plugins)

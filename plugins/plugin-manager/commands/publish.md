@@ -1,8 +1,6 @@
 ---
-description: Prepare a reviewed diff and commit message; execute commit, push, PR and merge only after approval of the concrete scope.
+description: Prepare a reviewed diff and commit message; use PR mode or separately approved first commit/direct push for an empty repository. Never auto-commit.
 argument-hint: source-path
 ---
 
-Arguments: $ARGUMENTS
-
-Read `${CLAUDE_PLUGIN_ROOT}/skills/plugin-manager/SKILL.md` and `${CLAUDE_PLUGIN_ROOT}/skills/plugin-manager/references/publish.md`. Follow the publish workflow, including reviewable preparation and explicit user approval before any commit or external mutation. Do not treat invocation as approval of a proposed diff/message. Use the bundled publish_plan.py; never invent consent or a successful publication.
+Follow `${CLAUDE_PLUGIN_ROOT}/skills/publish/SKILL.md` and its shared rules. Target the user project or explicit path, never the installed plugin directory. Do not invent verification results. Arguments: $ARGUMENTS

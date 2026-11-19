@@ -1,0 +1,25 @@
+# Plugin Manager
+
+**Deutsch** | [English](README.en.md)
+
+Dieses Plugin dokumentiert zugängliche lokale Skills und Plugins anhand ihrer Quellen. Die Dokumentationssprachen werden pro Repository festgelegt: nur Deutsch, nur Englisch oder beide. Nutze `marketplace-create` für einen Marketplace, `plugin-create` für ein separates Plugin, `configure` für dessen Zuordnung, `update` zur Erneuerung der Dokumentation oder `verify` zur lesenden Strukturprüfung. Der Agent fragt bei wesentlichen Unklarheiten nach. Eine erfolgreiche Strukturprüfung bestätigt noch keine Produktionsreife. Das Plugin veröffentlicht und installiert nichts ohne Auftrag.
+
+In Claude: `/plugin-manager:verify QUELLPFAD`, entsprechend `:plugin-create` oder `:update`. In ChatGPT fordere die Aktion in natürlicher Sprache an. Die Quelle muss dem Host zugänglich sein; die Helfer benötigen Python 3.10 oder neuer.
+
+[Workflow und Grenzen](skills/_shared/WORKFLOWS.md)
+
+## Veröffentlichen mit Freigabe
+
+`/plugin-manager:publish QUELLPFAD` bereitet Diff, Commit-Nachricht und PR vor. Nach Freigabe folgen Feature-Branch, Commit, Push, PR, Prüfungen und Merge. Keine Versionen, Tags oder Releases. Neue Plugin-Repositories vor ihren Marketplace-Einträgen veröffentlichen. Der Journalhelfer veröffentlicht selbst nichts. [Workflow](skills/_shared/references/publish.md).
+
+PRs benötigen einen belegten bestehenden Basisbranch. Für ein leeres Remote ohne lokalen HEAD ist ein eigener Plan mit ausdrücklicher Freigabe für ersten Commit und direkten Push ohne PR erforderlich. Es gibt keine automatischen Initial-Commits. Schema-4-Journale binden auch Änderungen, Hinzufügen und Entfernen des Codex-Manifests außerhalb der Dateiauswahl.
+
+Git und Python 3.10+ sind für die Verwaltungswerkzeuge erforderlich; Make ist nur ein Komfortzugang. Für die Verwaltung wird die Host-CLI nur bei automatischer lokaler Installation/Aktualisierung benötigt; ausdrücklich gestartete Modelltests benötigen ebenfalls eine authentifizierte CLI. Publish verwendet einen ausreichend leistungsfähigen GitHub-Connector oder alternativ authentifiziertes gh; keine GitLab-MRs. Vorher Remote-Lesen, Push, PR-Erstellung/-Lesen, Checks, Regeln und kontrolliertes Mergen samt Rechten prüfen. Fehlende Fähigkeiten konkret melden, keine Werkzeuge automatisch installieren. Keine zusätzlichen Python-Pakete, Release-Actions oder Versions-/Tag-Pflichten.
+
+Lokale Snapshots lesen den aktuellen Checkout einschließlich uncommitteter Änderungen, unabhängig vom Branch. Nach Änderungen oder Branchwechsel `update-local` ausführen und eine neue Host-Sitzung öffnen. Kein Commit, Push oder PR ist für lokale Tests erforderlich. Es bleibt bei einem gemeinsamen `<marketplace-id>-dev`, ohne zusätzliche Marketplaces pro Branch.
+
+`configure` ist der reguläre Einrichtungsweg. `local-marketplace.example.json` ist eine optionale manuelle Kopiervorlage. Nur `.local/marketplace.json` wird zur Laufzeit für lokale Zuordnungen gelesen; diese Zuordnungen werden nicht committed.
+
+## Skills
+
+`marketplace-create`, `plugin-create`, `configure`, `verify`, `update` und `publish`. Gemeinsame Regeln: `skills/_shared/WORKFLOWS.md`; kein zusätzlicher Manager-Skill.

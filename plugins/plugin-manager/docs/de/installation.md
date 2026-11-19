@@ -8,7 +8,7 @@
 
 ## Plattform auswählen
 
-Claude Desktop und Codex/GPT unterstützen den Repository-Import. Der Nutzer hat beide Importe am 18.11.2026 bestätigt. Zugang, Repository-Berechtigungen und Organisationsrichtlinien gelten weiterhin. Die folgenden Menüpunkte beruhen auf den bereitgestellten Screenshots beziehungsweise Nutzerangaben; ChatGPT-Web-Administration ist ein eigener Weg.
+Claude Desktop und Codex/GPT unterstützen den Repository-Import. Der Nutzer hat beide Importe am 18.11.2026 für den damaligen Repository-Stand bestätigt; dies ist keine Abnahme der aktuellen lokalen Änderungen. Zugang, Repository-Berechtigungen und Organisationsrichtlinien gelten weiterhin. Die folgenden Menüpunkte beruhen auf den bereitgestellten Screenshots beziehungsweise Nutzerangaben; ChatGPT-Web-Administration ist ein eigener Weg.
 
 ## Installieren
 

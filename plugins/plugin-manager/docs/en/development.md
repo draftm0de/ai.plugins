@@ -8,67 +8,60 @@
 
 ## Source of truth
 
-`skills/plugin-manager/` contains rules, runtime and canonical templates. Root `plugin.json` owns identity and host metadata. `make sync-plugin` derives the three committed host files; `make check-plugin` detects drift without writing. Capabilities stay under `skills/`, assets under `assets/`.
+The six public entry points live at `skills/<action-name>/SKILL.md`. Shared rules live in `skills/_shared/WORKFLOWS.md`, helpers in `skills/_shared/scripts/` and templates in `skills/_shared/templates/`. `_shared` has no SKILL.md and is not exposed as an additional skill. `docs/documentation.json` points to `skills/update` and lists shared sources and the other skills under `extra_sources`.
+
+`skills/` is the host-neutral source. `plugin.json` owns plugin metadata; `marketplace.json` in a separate marketplace owns catalogs. Only the existing Manager in `ai.plugins/plugins/plugin-manager` remains embedded. New marketplaces need no Manager checkout. Canonical templates live under `skills/_shared/templates/plugin/` and `templates/marketplace/`.
+
+Management tools require Git and Python 3.10+; Make is only a convenience wrapper. Management needs the selected host CLI only for automatic local installation/updates; explicitly requested model tests also need an authenticated CLI. Publish uses a sufficiently capable GitHub connector or alternatively authenticated gh; no GitLab MRs. First verify remote read, push, PR create/read, checks, rules and controlled merge capabilities and permissions. Report missing capabilities specifically; never install tools automatically. No additional Python packages, release Actions or version/tag requirements.
+
+[Canonical prerequisites](../../skills/_shared/references/prerequisites.md)
 
 ## Checks
 
-```sh
-make check-plugin
-make test
-make verify SOURCE=.
-make validate-docs OUTPUT=.
-```
+The shared [test layout](../../tests/README.md) groups by test type first: `unit/`, `integration/`, `contracts/`, and optional `behavior/` and `native/`. Skills or components sit underneath; data and helpers live in `fixtures/` and `support/`.
 
-Verify never executes target code. It checks neutral skill paths, versionless import metadata, template copies, ignore rules, static Python imports and documentation pointers. Product behavior tests and host acceptance remain necessary.
+`make test` runs only unit, integration and contract tests. Individual layers: `make test-unit`, `make test-integration`, `make test-contracts`. `make test-native` and `make test-behavior` are requested separately. Absent suites explicitly report `NOT RUN`; native tests require explicit layer selection.
+
+`make test` checks tooling and temporary repository workflows. `make verify`, `make plugin-verify SOURCE=...` and `make marketplace-verify SOURCE=...` only read structure and available local mappings. They run no target scripts or repairs. `make validate-docs OUTPUT=.` separately validates documentation.
+
+Native acceptance: `make test-native` in the Manager directory. The workflow test uses fictional temporary repositories and isolated Claude/Codex profiles. It installs two separate plugins and checks loaded content after uncommitted edits. This does not replace GitHub/GUI acceptance.
 
 ## Packaging
 
-### Develop locally
+Repository installation requires no plugin ZIPs or manifest versions. `make sync-plugin`/`check-plugin` handle plugin manifests; `make sync-marketplace`/`check-marketplace` handle host catalogs. Root `sync-plugin`/`check-plugin` aggregate targets in ai.plugins additionally handle the embedded Manager.
 
-Run these commands from the repository. Python 3, Make and the selected host CLI (`claude` or `codex`) must be available.
+`make install-local TARGET=claude` or `TARGET=codex` creates filtered snapshots under `dist/local-development/` and installs all associated plugins as `<marketplace-id>-dev`. `make update-local` refreshes them without commit or push. `DRY_RUN=1` writes snapshots without calling a host. Host caches are not directly edited; the CLI manages its installations.
 
-1. Install the current working tree locally once:
+Local paths stay Git-ignored in `.local/marketplace.json`: `sources` in the marketplace; `marketplace` and `marketplaces` in a plugin. Explicit `MARKETPLACE=...` overrides the default for one invocation. All required checkouts must be available before installation.
 
-   ```sh
-   make install-local TARGET=claude
-   # Alternatively for Codex:
-   make install-local TARGET=codex
-   ```
+Local snapshots read the current checkout including uncommitted changes, regardless of branch. After edits or branch switches run `update-local` and open a new host session. Local tests require no commit, push or PR. Keep one shared `<marketplace-id>-dev`, with no additional marketplaces per branch.
 
-2. Apply your working-tree edits:
+`configure` is the normal setup path. `local-marketplace.example.json` is an optional manual copy template. Only `.local/marketplace.json` is read for local runtime mappings; never commit those mappings.
 
-   ```sh
-   make update-local TARGET=claude
-   # Alternatively for Codex:
-   make update-local TARGET=codex
-   ```
+Without Make in the marketplace:
 
-3. Open a new local session and verify the change. Enable only the intended remote or development copy to avoid duplicate skill names.
-
-These commands create a filtered snapshot under `ai.plugins/dist/local-development/` and register it through the host CLI as a separate `draftmode-ai-plugins-dev` marketplace. Uncommitted edits are included; no commit, push or ZIP is needed. The generated content hash is only a local cache identifier and is never written to the source manifest. Keep the checkout and snapshot available while using the installation.
-
-With `DRY_RUN=1`, the snapshot is created and commands are displayed without invoking the host CLI. Example: `make install-local TARGET=codex DRY_RUN=1`. This does not change installed plugins.
-
-This workflow covers local Claude Code and Codex installations. Import through a desktop or web account interface remains separate; synchronization to that interface is not established by these commands. Do not manually copy files into `~/.claude/plugins/cache`: the host CLI manages registration and caching. Our tests do not modify personal installations; native integration tests use temporary profiles.
-
-### Metadata and export
-
-`make sync-plugin` updates host manifests from `plugin.json`; `make check-plugin` validates them without changes. Local Make commands delegate to the shared marketplace. `install.sh` is an optional forwarding wrapper, for example `bash install.sh install-local --target claude`; it has no default action.
-
-Regular repository imports use [plugin settings](installation.md). Plugin ZIP building and the old `package`, `install` and `update` Make targets are removed. The **update** skill action for documentation remains available. The separate website export remains available through `make check-docs-export` and `make export-docs`.
+```sh
+python3 -B scripts/local_plugins.py update-local --target claude
+```
 
 ## CI and releases
 
-The [CI](../../.github/workflows/validate.yml) checks tests, repository metadata and documentation. It publishes nothing. Publish ends at the checked GitHub merge; there are no release Actions, tags or catalog promotion. [Workflow](publish.md) · [Evidence](release-evidence.md).
+CI validates tests, metadata and documentation and publishes nothing. [Publish](publish.md) uses separate plans per repository. New plugin sources must be published and observed before the marketplace entry is published. No release Actions, tags or plugin ZIPs. [Evidence](release-evidence.md).
 
 ## Maintain documentation
 
-Update maintains configured languages from current sources. Example: `make init-plugin SOURCE=... OUTPUT=... LANGUAGES="de en" DEFAULT_LANGUAGE=de`. Optional: `PLUGIN_NAME=my-plugin REPOSITORY=https://github.com/OWNER/REPO AUTHOR="Confirmed publisher"`. Init creates a separate empty project; the agent then completes its documentation. Website export retains its [contract](../../skills/plugin-manager/references/export-contract.md).
+The update action rereads current sources and preserves the configured languages. plugin-create generates templates; the agent completes them from evidenced product behavior. No invented publisher, license or skill instructions. init is unsupported.
 
-Init uses a confirmed plugin name for `plugin.json` and both marketplace catalogs; local development appends `-dev`. If the name is missing or unclear, the agent asks before initialization. `PLUGIN_NAME` may differ from the bundled skill name; its folder and frontmatter remain unchanged. Without the parameter, the helper defaults to the source skill name.
+[Create/configure commands](../../skills/_shared/references/workflows.md)
 
-This plugin lives under `plugins/plugin-manager/` in `ai.plugins`. The shared marketplace is `draftmode-ai-plugins`; its catalogs live at the repository root. This plugin has no separate committed marketplace. Commands above run from the plugin folder; the root Makefile forwards the main checks and local installation commands.
+For an update, ask: “Run update for this repository and validate afterward.” The agent rereads `docs/documentation.json`, skill, references, manifests and tools, then maintains `README.md`, `README.en.md`, `docs/de/` and `docs/en/`. Scaffold only creates missing files; existing content is deliberately revised. `make validate-docs OUTPUT=.` checks structure and local links. These checks do not replace content review or host testing.
 
-Shared local installation includes Manager and Interview Coach. The marketplace `.local/marketplace.json` maps the coach to its local checkout; the coach file points back to the marketplace. Both files are Git-ignored; `local-marketplace.example.json` provides examples. `make install-local` and `make update-local` work from either repository and from the bundled manager folder. The shared development catalog contains filtered local copies, not GitHub sources.
+New plugin and marketplace templates include SCOPE.md and shared development rules in AGENTS.md and docs/architecture.md; CLAUDE.md points to them. These are versioned target/structure rules. Existing content is preserved; domain requirements are never inferred from code. Review regressions in `tests/integration/verify/test_scope_review.py` test evidence boundaries, missing requirements, skeletons and incorrect runtime dependencies without executing target code. They do not establish LLM review reliability.
 
-At the marketplace root use `make marketplace-verify`; for the coach use `make plugin-verify SOURCE=../ai.plugin.interview-coach`. `make verify SOURCE=…` detects the type. Verification changes no files and executes no target code. The internal `plugin_audit.py` template audit remains for scaffold tests; it is no longer the general verify action.
+### Scope/source review model evaluations
+
+From the Manager directory explicitly run `make test-behavior CLI=claude` or `CLI=codex`; `CASE=correct_consent` selects one case. [Scenarios, grading and limitations](../../tests/behavior/README.md). Both models receive complete fictional files and the same review rules, without expected answers. Tests cover correct implementations, real defects, test gaps, missing source and injected success claims. Automated grading is complemented by human review. No model calls in the normal suite; no installation or publication.
+
+Format checks precede changes: no parallel host skill directories or marketplace key in distribution metadata. Unknown catalog entry fields are rejected before configure, never discarded. Documentation schema versions must be integers. Conflicting existing docs/architecture.md or docs/prerequisites.md block plugin-create without overwriting content.
+
+plugin-create also rejects old host directories before changes. Valid frontmatter in an explicit skill source never bypasses layout or documentation manifest checks.

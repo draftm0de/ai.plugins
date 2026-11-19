@@ -14,4 +14,3 @@ jobs:
       - run: make check-plugin
       - run: make verify
       - run: make validate-docs
-      - run: make check-docs-export

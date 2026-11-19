@@ -1,27 +1,27 @@
 {
-"name": "draftmode-ai-plugins",
-"owner": {
-"name": "Peter Fux",
-"url": "https://draftmode.io"
-},
-"metadata": {
-"description": "Draftmode AI Plugins"
-},
-"plugins": [
-{
-"name": "plugin-manager",
-"source": "./plugins/plugin-manager",
-"description": "Manage skill plugins: structure, documentation, validation and approval-gated publication.",
-"displayName": "Plugin Manager"
-},
-{
-"name": "interview-coach",
-"source": {
-"source": "url",
-"url": "https://github.com/draftm0de/ai.plugin.interview-coach.git"
-},
-"description": "Adaptive job interview coaching with role-specific practice, feedback, interviewer research and private training progress.",
-"displayName": "Interview Coach"
-}
-]
+  "name": "draftmode-ai-plugins",
+  "owner": {
+    "name": "Peter Fux",
+    "url": "https://draftmode.io"
+  },
+  "metadata": {
+    "description": "Draftmode AI Plugins"
+  },
+  "plugins": [
+    {
+      "name": "plugin-manager",
+      "source": "./plugins/plugin-manager",
+      "description": "Manage marketplaces and separate skill plugins: creation, association, documentation, validation and approval-gated publication.",
+      "displayName": "Plugin Manager"
+    },
+    {
+      "name": "interview-coach",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/draftm0de/ai.plugin.interview-coach.git"
+      },
+      "description": "Adaptive job interview coaching with role-specific practice, feedback, interviewer research and private training progress.",
+      "displayName": "Interview Coach"
+    }
+  ]
 }

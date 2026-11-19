@@ -6,11 +6,11 @@
 
 ## Vorschau
 
-Diese Seite zeigt einen textlichen Ablauf. Es liegen noch keine echten Host-Screenshots vor; es werden keine simulierten Bilder als Produktaufnahmen ausgegeben.
+Diese Seite zeigt einen textlichen Ablauf. Die Originalaufnahmen unten zeigen Claude-Installationsdialoge; Funktions- und Erfolgsaufnahmen fehlen. Es werden keine simulierten Bilder als Produktaufnahmen ausgegeben.
 
 ## Beispielablauf
 
-**Fiktives Beispiel, keine aufgezeichnete Modellantwort:** Ein Team stellt den Skill `beispiel-checkliste` bereit. Der Agent liest dessen Anweisungen, fragt nach einem unklaren Speichermodell und erstellt nach Klärung `README.md`, `README.en.md` sowie `docs/de/` und `docs/en/`. `verify` nennt fehlende Tests als offene Aufgabe.
+**Fiktives Beispiel, keine aufgezeichnete Modellantwort:** Ein Team stellt den Skill `beispiel-checkliste` bereit. Der Agent liest dessen Anweisungen, fragt nach einem unklaren Speichermodell und erstellt nach Klärung `README.md`, `README.en.md` sowie `docs/de/` und `docs/en/`. Die Dokumentationsvalidierung prüft Struktur und lokale Links; `verify` trennt veröffentlichbare Struktur von verfügbarer lokaler Entwicklungskonfiguration.
 
 ## Echte Screenshots
 

@@ -1,9 +1,5 @@
-# Repository-Veröffentlichung
+# Veröffentlichung über getrennte Repositories
 
-Das Produktrepository ist zugleich Marketplace. `make sync-plugin` erzeugt Host-Dateien aus `plugin.json`; `make check-plugin` prüft sie. Committe die abgeleiteten Dateien zusammen mit den Quellen. Versionen, Tags, Plugin-ZIPs, GitHub Releases und ein separates Katalogrepository sind nicht erforderlich.
+Plugin-Repositories enthalten keine Kataloge. Der Marketplace verweist auf sie. Nur der bestehende Manager bleibt eingebettet. sync-plugin/check-plugin prüfen Plugin-Metadaten; sync-marketplace/check-marketplace betreffen Kataloge. Neue Plugin-Quellen zuerst veröffentlichen und prüfen, danach Marketplace-Einträge.
 
-Publish bereitet einen geprüften Diff und eine Commit-Nachricht vor. Nach Freigabe folgen Commit, Push, PR, erforderliche Prüfungen/Reviews und Merge. Eine Korrektur erfolgt über einen neuen geprüften Commit. Kein Force-Push und kein Umgehen von Branch-Schutzregeln.
-
-Die Aktualisierung beim Nutzer ist ein eigener Vorgang: Marketplace synchronisieren und neuen Chat öffnen. Ein erfolgreicher Merge beweist keine automatische Aktualisierung aller Installationen. Lokale Entwicklung nutzt Snapshots ohne ZIP. Website-Export-ZIPs bleiben ein separates Werkzeug.
-
-[Publish](publish.md) · [Installation](installation.md)
+[Publish](publish.md) · [Evidence](release-evidence.md)
