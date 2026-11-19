@@ -27,7 +27,7 @@ Before creation, the agent resolves the licensing decision. It reuses an unambig
 | Action | Inputs | Result |
 | --- | --- | --- |
 | marketplace-create | Cloned repository, display name, identifier, publisher | Shared catalog, both host catalogs and standalone tools |
-| plugin-create | Separate checkout/path, existing GitHub URL, marketplace, display name, identifier, description, publisher, source skill, languages | Plugin structure without catalogs, association and documentation templates |
+| plugin-create | Separate checkout/path, existing GitHub URL, marketplace, display name, identifier, description, publisher, skeleton mode, languages | Plugin structure without catalogs, association and documentation templates |
 | configure | Existing plugin and chosen marketplace | Catalog entry and local mapping; other associations remain |
 
 ### Update documentation
@@ -69,7 +69,7 @@ Local snapshots read the current checkout including uncommitted changes, regardl
 make plugin-create ARGS='--root /path/to/plugin --marketplace /path/to/catalog --skeleton --name example-plugin --display-name "Example Plugin" --author "Confirmed publisher" --languages de en --default-language de --license deferred'
 ```
 
-The existing `--source /path/to/skill` mode remains available; the modes are mutually exclusive. The skeleton contains a visibly marked nonfunctional skill, manifests, association, documentation scaffold, test tools, `SCOPE.md`, `AGENTS.md`, `CLAUDE.md` and `docs/architecture.md`. Differing existing instruction/scope files are not overwritten. Structural validity does not certify domain behavior.
+Creation supports only `--skeleton`; `--source` and `--import` are rejected before writes. The skeleton contains a visibly marked nonfunctional skill, manifests, association, documentation scaffold, test tools, `SCOPE.md`, `AGENTS.md`, `CLAUDE.md` and `docs/architecture.md`. Differing existing instruction/scope files are not overwritten. Structural validity does not certify domain behavior.
 
 ### Compare scope against source
 

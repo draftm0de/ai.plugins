@@ -344,31 +344,17 @@ def creation_checks(root, market, license_decision=None):
     return checks
 
 
-def plugin_create(root, marketplace, source=None, name=None, display_name=None, description=None, repository=None, author=None, languages=None, default_language=None, skeleton=False, _skeleton_documentation=False, license=None, license_file=None, copyright_year=None, copyright_holder=None):
+def plugin_create(root, marketplace, *, name=None, display_name=None, description=None, repository=None, author=None, languages=None, default_language=None, skeleton=False, license=None, license_file=None, copyright_year=None, copyright_holder=None):
     root = safe_path(root)
     if any((root/item).exists() or (root/item).is_symlink() for item in ('plugin.json', 'marketplace.json')):
         raise ValueError('Product already exists; use configure for an existing plugin')
-    if skeleton:
-        if source is not None:
-            raise ValueError("Choose either --skeleton or --source, not both")
-        identity(name, display_name)
-        with tempfile.TemporaryDirectory() as directory:
-            stub = Path(directory).resolve()/name
-            stub.mkdir()
-            (stub/"SKILL.md").write_text("---\nname: " + name + "\ndescription: Unimplemented plugin skeleton; no domain behavior is available.\n---\n\n# Plugin skeleton\n\n<!-- plugin-skeleton: unimplemented -->\n\nThis is a nonfunctional development skeleton. Do not perform domain actions or claim capabilities. Read SCOPE.md in the source repository and clarify requirements before implementing. Remove the skeleton marker only after implementing and reviewing the agreed behavior.\n")
-            result = plugin_create(root, marketplace, stub, name, display_name, description or "Unimplemented plugin skeleton; domain requirements are pending.", repository, author, languages, default_language, _skeleton_documentation=True,
-                                   license=license, license_file=license_file, copyright_year=copyright_year, copyright_holder=copyright_holder)
-            result.update(implementation_status="skeleton", next="Confirm SCOPE.md, implement agreed behavior under skills/, add tests, then run verify --review. No functional acceptance is claimed.")
-            if result['checks']['status'] != 'passed':
-                result['next'] = 'Resolve the reported creation checks before claiming completion. ' + result['next']
-            return result
-    if source is None:
-        raise ValueError("Choose --skeleton for an empty product or --source for an existing skill")
-    root = safe_path(root); market = safe_path(marketplace); source = safe_path(source)
+    if not skeleton:
+        raise ValueError('plugin-create supports only --skeleton; skill import is unsupported')
+    market = safe_path(marketplace)
     if root == market or root.is_relative_to(market) or market.is_relative_to(root):
         raise ValueError('Use separate plugin and marketplace repositories')
-    if root == source or source.is_relative_to(root) or root.is_relative_to(source):
-        raise ValueError('Source skill and output must be separate')
+    identity(name, display_name)
+    description = description or "Unimplemented plugin skeleton; domain requirements are pending."
     from licensing import plan, document
     license_decision = plan(root, license, license_file, copyright_year, copyright_holder)
     if not root.exists():
@@ -381,10 +367,6 @@ def plugin_create(root, marketplace, source=None, name=None, display_name=None, 
     for obsolete in ('.claude/skills', '.agents/skills', '.claude-plugin/marketplace.json', '.agents/plugins/marketplace.json', '.codex-plugin/marketplace.json'):
         if (root/obsolete).exists() or (root/obsolete).is_symlink():
             raise ValueError('Unsupported host-local skill layout: ' + obsolete)
-    from documentation import inspect
-    info = inspect(source)
-    name = name or info['name']
-    identity(name, display_name)
     if not description or not author:
         raise ValueError('Confirmed description and publisher required; do not invent product facts')
     from documentation import language_policy
@@ -395,7 +377,10 @@ def plugin_create(root, marketplace, source=None, name=None, display_name=None, 
     from plugin_audit import scaffold_plugin
     with tempfile.TemporaryDirectory() as directory:
         stage = Path(directory).resolve()/'plugin'
-        scaffold_plugin(source, stage, languages, default_language, origin, author, name)
+        stub = Path(directory).resolve()/'source'/name
+        stub.mkdir(parents=True)
+        (stub/"SKILL.md").write_text("---\nname: " + name + "\ndescription: Unimplemented plugin skeleton; no domain behavior is available.\n---\n\n# Plugin skeleton\n\n<!-- plugin-skeleton: unimplemented -->\n\nThis is a nonfunctional development skeleton. Do not perform domain actions or claim capabilities. Read SCOPE.md in the source repository and clarify requirements before implementing. Remove the skeleton marker only after implementing and reviewing the agreed behavior.\n")
+        scaffold_plugin(stub, stage, languages, default_language, origin, author, name)
         manifest = read(stage/'plugin.json')
         manifest['description'] = description
         manifest['extensions']['com.openai'] = {'interface': {'displayName': display_name}}
@@ -406,8 +391,7 @@ def plugin_create(root, marketplace, source=None, name=None, display_name=None, 
         engine = module(SKILL/'templates/plugin/scripts/plugin.py', 'trusted_payload')
         for path, data in engine.repository_files(manifest).items():
             (stage/path).write_bytes(encode(data))
-        if _skeleton_documentation:
-            complete_skeleton_documentation(stage, display_name)
+        complete_skeleton_documentation(stage, display_name)
         document(stage, license_decision)
         files = {root/p.relative_to(stage): p.read_bytes() for p in stage.rglob('*') if p.is_file()}
         # Existing prose and licenses remain canonical; docs action can later merge them.
@@ -418,9 +402,12 @@ def plugin_create(root, marketplace, source=None, name=None, display_name=None, 
         association = association_files(root, market, manifest)
         files.update(association)
         changes = apply(files, association.keys())
+    checks = creation_checks(root, market, license_decision)
+    next_step = 'Confirm SCOPE.md, implement agreed behavior under skills/, add tests, then run verify --review. No functional acceptance is claimed.'
+    if checks['status'] != 'passed':
+        next_step = 'Resolve the reported creation checks before claiming completion. ' + next_step
     return {'action': 'plugin-create', 'changed': changes, 'repository': origin, 'published': False,
-            'checks': creation_checks(root, market, license_decision),
-            'next': 'Complete documentation templates from the actual skill source; verify structure, test behavior and perform separate host acceptance.'}
+            'implementation_status': 'skeleton', 'checks': checks, 'next': next_step}
 
 
 def main():
@@ -437,9 +424,7 @@ def main():
         else:
             command.add_argument('--marketplace', type=Path, required=True)
         if action == 'plugin-create':
-            mode = command.add_mutually_exclusive_group(required=True)
-            mode.add_argument('--source', type=Path, help='Existing or explicitly authored skill')
-            mode.add_argument('--skeleton', action='store_true', help='Nonfunctional skeleton with pending SCOPE.md; no invented domain content')
+            command.add_argument('--skeleton', action='store_true', help='Nonfunctional skeleton with pending SCOPE.md; no invented domain content')
             command.add_argument('--description'); command.add_argument('--author')
             command.add_argument('--languages', nargs='+', choices=['de','en'])
             command.add_argument('--default-language', choices=['de','en'])

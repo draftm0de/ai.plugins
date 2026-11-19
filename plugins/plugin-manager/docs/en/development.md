@@ -64,4 +64,4 @@ From the Manager directory explicitly run `make test-behavior CLI=claude` or `CL
 
 Format checks precede changes: no parallel host skill directories or marketplace key in distribution metadata. Unknown catalog entry fields are rejected before configure, never discarded. Documentation schema versions must be integers. Conflicting existing docs/architecture.md or docs/prerequisites.md block plugin-create without overwriting content.
 
-plugin-create also rejects old host directories before changes. Valid frontmatter in an explicit skill source never bypasses layout or documentation manifest checks.
+plugin-create also rejects old host directories before changes. Skill import through plugin-create is unsupported; layout and documentation manifest checks remain in place.

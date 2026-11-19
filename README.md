@@ -16,7 +16,7 @@ Marketplace für Claude und Codex. Repository: https://github.com/draftm0de/ai.p
 | Skill | Aufgabe |
 | --- | --- |
 | [marketplace-create](plugins/plugin-manager/skills/marketplace-create/SKILL.md) | Marketplace in einem bestehenden lokalen GitHub-Checkout einrichten: Manifest, Host-Kataloge, Werkzeuge und Dokumentationsgerüst. |
-| [plugin-create](plugins/plugin-manager/skills/plugin-create/SKILL.md) | Separates Plugin aus einer bestätigten Skill-Quelle erstellen und dem Marketplace zuordnen. Fehlenden Checkout klonen; vorhandene Inhalte zuerst prüfen. |
+| [plugin-create](plugins/plugin-manager/skills/plugin-create/SKILL.md) | Separates Plugin als Skeleton erstellen und dem Marketplace zuordnen. Fehlenden Checkout klonen; vorhandene Inhalte zuerst prüfen. |
 | [configure](plugins/plugin-manager/skills/configure/SKILL.md) | Bestehendes Plugin einem Marketplace zuordnen und lokale Entwicklung einrichten. Andere Zuordnungen erhalten. Bereits Teil von plugin-create. |
 | [verify](plugins/plugin-manager/skills/verify/SKILL.md) | Repository-Typ erkennen und nur lesend prüfen. Veröffentlichbare Struktur und verfügbare lokale Entwicklungskonfiguration getrennt bewerten. |
 | [update](plugins/plugin-manager/skills/update/SKILL.md) | README und Dokumentation anhand aktueller Quellen und gespeicherter Sprachwahl pflegen. Keine Installation oder Veröffentlichung. |
@@ -162,18 +162,17 @@ Ein neues Plugin gehört in ein separates GitHub-Repository mit eigenen Manifest
 1. Ein separates GitHub-Repository für das Plugin anlegen. Für die direkte Projektauswahl lokal klonen und den Checkout als neues Projekt in Claude/Codex öffnen.
 2. Den Plugin-Ordner als Arbeitsordner auswählen. Den lokalen Marketplace-Pfad bereithalten; der installierte Katalog ersetzt keinen Marketplace-Checkout.
 3. Einen neuen Chat mit verfügbarem Plugin Manager starten.
-4. `plugin-create` wählen oder in Claude Code `/plugin-manager:plugin-create` starten. Angeben, ob ein bestehender Skill übernommen oder ein Skeleton erstellt werden soll.
+4. `plugin-create` wählen oder in Claude Code `/plugin-manager:plugin-create` starten. Die Erstellung legt ausschließlich ein Skeleton an.
 5. Namen, Herausgeber, Marketplace und Dokumentationssprachen nennen, soweit sie noch nicht aus dem Projekt bekannt sind.
 
 > Führe plugin-create für dieses Projekt als Skeleton aus. Verwende den Marketplace unter ../mein-marketplace, die Kennung mein-plugin, den Anzeigenamen „Mein Plugin“ und den Herausgeber „Bestätigter Herausgeber“. Dokumentiere auf Deutsch und Englisch mit Deutsch als Standard. Kläre anschließend mit mir das Zielbild in SCOPE.md.
 
-Für einen bestehenden Skill stattdessen dessen Ordner und bestätigte Funktionsbeschreibung nennen. Wenn der Plugin-Checkout noch fehlt, den Zielpfad und die bestehende GitHub-URL ausdrücklich angeben; `plugin-create` kann ihn klonen. Anschließend diesen Ordner als Projekt öffnen.
+Wenn der Plugin-Checkout noch fehlt, den Zielpfad und die bestehende GitHub-URL ausdrücklich angeben; `plugin-create` kann ihn klonen. Anschließend diesen Ordner als Projekt öffnen.
 
-**Im Terminal** – für ein neues Plugin eine der beiden Quellen wählen:
+**Im Terminal** – ein neues Plugin als Skeleton erstellen:
 
 | Ausgangslage | Option | Ergebnis |
 | --- | --- | --- |
-| Ein bestehender Skill soll übernommen werden | `--source ../mein-skill` | Der bestätigte Skill wird übernommen. |
 | Die fachliche Umsetzung beginnt erst | `--skeleton` | Ein noch nicht funktionsfähiges Gerüst mit zu bestätigender `SCOPE.md` entsteht. |
 
 Beispiel für ein Skeleton in einem bereits geklonten Repository:
@@ -185,7 +184,7 @@ make plugin-create ARGS='--root ../mein-plugin --marketplace . --skeleton --name
 
 `--license deferred` setzt eine ausdrücklich vertagte Lizenzentscheidung voraus. Für MIT stattdessen `--license MIT --copyright-year "BESTÄTIGTES_JAHR" --copyright-holder "BESTÄTIGTER_RECHTEINHABER"` verwenden; andere Lizenzen benötigen `--license KENNUNG --license-file /pfad/zum/bestätigten-lizenztext`.
 
-Für einen bestehenden Skill `--skeleton` durch `--source ../mein-skill --description "Bestätigte Funktionsbeschreibung"` ersetzen. `make plugin-create ARGS='--help'` zeigt alle Optionen.
+Ein Skill-Import ist nicht unterstützt. `make plugin-create ARGS='--help'` zeigt alle Optionen.
 
 `plugin-create` erzeugt Entwicklungswerkzeuge und Dokumentationsvorlagen, trägt das Plugin im Marketplace ein und richtet lokale Zuordnungen ein. Beim Skeleton anschließend das Zielbild in `SCOPE.md` bestätigen, die Skills implementieren und passende Tests ergänzen. Strukturprüfung allein bestätigt noch kein fertiges Produkt.
 

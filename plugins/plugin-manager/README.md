@@ -30,7 +30,7 @@ Wähle das Plugin und sage: „Prüfe dieses Repository mit verify.“ Für Doku
 
 ## Speicherung und Datenschutz
 
-Der Manager schreibt Dokumentationsdateien und bei plugin-create eine separate Quellkopie. Publish-Journals liegen außerhalb von Quelle und Plugin-Installation. Private Daten, Zugangsdaten und fremde Änderungen werden nicht übernommen. Der KI-Host verarbeitet die bereitgestellten Quellen nach seinen Bedingungen.
+Der Manager schreibt Dokumentationsdateien und bei plugin-create ein separates Plugin-Gerüst. Publish-Journals liegen außerhalb von Quelle und Plugin-Installation. Private Daten, Zugangsdaten und fremde Änderungen werden nicht übernommen. Der KI-Host verarbeitet die bereitgestellten Quellen nach seinen Bedingungen.
 
 ## Projektstatus
 
@@ -38,7 +38,7 @@ Laut Nutzer sind Manager und Coach im veröffentlichten Marketplace vorhanden. D
 
 ## Entwicklung
 
-`plugin-create --skeleton` startet ohne Fachinhalt; `--source` übernimmt einen bestehenden Skill. Das Skeleton enthält eine noch zu bestätigende `SCOPE.md` und Entwicklungsregeln. `verify` bietet einen ausdrücklich gewählten lesenden Zielbild-/Source-Review: statische Belegprüfung mit `REVIEW=1`, danach fachlicher Vergleich durch den Agenten. Keine automatische Reparatur oder Testausführung. [Ablauf und Grenzen](docs/de/usage.md).
+`plugin-create --skeleton` erstellt ausschließlich ein neues Gerüst ohne Fachinhalt. Ein Skill-Import wird nicht angeboten. Das Skeleton enthält eine noch zu bestätigende `SCOPE.md` und Entwicklungsregeln. `verify` bietet einen ausdrücklich gewählten lesenden Zielbild-/Source-Review: statische Belegprüfung mit `REVIEW=1`, danach fachlicher Vergleich durch den Agenten. Keine automatische Reparatur oder Testausführung. [Ablauf und Grenzen](docs/de/usage.md).
 
 Die [Testübersicht](tests/README.md) beschreibt die gemeinsame Struktur nach Testart. `make test` prüft Unit-, Integrations- und Vertragstests; native Host- und Modelltests werden separat gestartet.
 

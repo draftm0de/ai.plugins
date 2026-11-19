@@ -8,7 +8,7 @@
 
 ## Speichermodell
 
-Dokumentation liegt im Zielrepository; plugin-create erzeugt eine separate Quellkopie. Ein Publish-Journal liegt privat außerhalb von Quelle und Installation.
+Dokumentation liegt im Zielrepository; plugin-create erzeugt ein separates Plugin-Gerüst. Ein Publish-Journal liegt privat außerhalb von Quelle und Installation.
 
 ## Einrichtung und Konfiguration
 

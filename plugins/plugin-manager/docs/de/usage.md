@@ -25,7 +25,7 @@ Vor der Erstellung klärt der Agent die Lizenzentscheidung. Eine eindeutige vorh
 | Aktion | Eingaben | Ergebnis |
 | --- | --- | --- |
 | marketplace-create | Geklontes Repository, Anzeigename, Kennung, Herausgeber | Gemeinsamer Katalog, beide Host-Kataloge und eigenständige Werkzeuge |
-| plugin-create | Separater Checkout/Pfad, bestehende GitHub-URL, Marketplace, Name, Kennung, Beschreibung, Herausgeber, Skill-Quelle oder Skeleton-Modus, Sprachen | Plugin-Struktur ohne eigene Kataloge, Zuordnung und Dokumentationsvorlagen |
+| plugin-create | Separater Checkout/Pfad, bestehende GitHub-URL, Marketplace, Name, Kennung, Beschreibung, Herausgeber, Skeleton-Modus, Sprachen | Plugin-Struktur ohne eigene Kataloge, Zuordnung und Dokumentationsvorlagen |
 | configure | Bestehendes Plugin und gewählter Marketplace | Katalogeintrag und lokale Zuordnung; andere Zuordnungen bleiben |
 
 ### Dokumentation aktualisieren
@@ -69,7 +69,7 @@ Neue Skeleton-Seiten werden in den gewählten Sprachen mit dem tatsächlichen Ge
 make plugin-create ARGS='--root /pfad/zum/plugin --marketplace /pfad/zum/katalog --skeleton --name beispiel-plugin --display-name "Beispiel Plugin" --author "Bestätigter Herausgeber" --languages de en --default-language de --license deferred'
 ```
 
-Der Modus `--source /pfad/zum/skill` importiert ausdrücklich gewählte Skill-Quellen; beide Modi schließen sich aus. Das Skeleton besitzt einen nicht funktionalen Skill mit sichtbarer Markierung, Manifeste, Zuordnung, Dokumentationsgerüst, Testwerkzeuge, `SCOPE.md`, `AGENTS.md`, `CLAUDE.md` und `docs/architecture.md`. Abweichende vorhandene Anweisungen oder SCOPE-Dateien werden nicht überschrieben. Eine gültige Struktur ist keine fachliche Abnahme.
+Die Erstellung unterstützt ausschließlich `--skeleton`; `--source` und `--import` werden vor Änderungen abgelehnt. Das Skeleton besitzt einen nicht funktionalen Skill mit sichtbarer Markierung, Manifeste, Zuordnung, Dokumentationsgerüst, Testwerkzeuge, `SCOPE.md`, `AGENTS.md`, `CLAUDE.md` und `docs/architecture.md`. Abweichende vorhandene Anweisungen oder SCOPE-Dateien werden nicht überschrieben. Eine gültige Struktur ist keine fachliche Abnahme.
 
 ### Zielbild gegen Source prüfen
 

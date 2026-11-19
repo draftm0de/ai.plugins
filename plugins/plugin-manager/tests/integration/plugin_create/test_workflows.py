@@ -26,7 +26,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
             return {str(p): p.read_bytes() for root in (self.plugin, self.market)
                     for p in root.rglob('*') if p.is_file() and '.git' not in p.relative_to(root).parts}
         before = snapshot()
-        for mode in ({'skeleton': True}, {'source': self.source}):
+        for mode in ({'skeleton': True}, {}):
             for inputs in ({}, {'license': 'deferred'}, {'license': 'MIT'},
                            {'license': 'MIT', 'license_file': self.root/'missing-license'}):
                 with self.subTest(mode=mode, inputs=inputs), patch('licensing.plan') as license_plan:
@@ -110,7 +110,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
              'GIT_CONFIG_VALUE_0':'https://github.com/example/cloned.git',
              'GIT_CONFIG_KEY_1':'protocol.file.allow','GIT_CONFIG_VALUE_1':'always'}
         with patch.dict(os.environ,env):
-            flow.plugin_create(destination,self.market,self.source,name='cloned',display_name='Fictional',description='Fixture',repository='https://github.com/example/cloned',author='Fixture',languages=['en'], license='deferred')
+            flow.plugin_create(destination,self.market,skeleton=True,name='cloned',display_name='Fictional',description='Fixture',repository='https://github.com/example/cloned',author='Fixture',languages=['en'], license='deferred')
         self.assertTrue((destination/'.git').is_dir())
         self.assertTrue(verify.verify(destination)['valid'])
         self.assertEqual('https://github.com/example/cloned.git',subprocess.check_output(['git','-C',str(destination),'remote','get-url','origin'],text=True).strip())
@@ -123,7 +123,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         self.assertEqual(before,{p.name:p.read_bytes() for p in self.source.iterdir()})
         self.assertFalse((self.plugin/'plugin.json').exists())
         with self.assertRaisesRegex(ValueError,'Display name'):
-            flow.plugin_create(self.plugin,self.market,self.source,author='Fixture',description='Fixture',languages=['en'], license='deferred')
+            flow.plugin_create(self.plugin,self.market,skeleton=True,name='new-plugin',author='Fixture',description='Fixture',languages=['en'], license='deferred')
 
 
     def test_nested_ignore_conflict_blocks_plugin_creation_before_writes(self):
@@ -151,12 +151,13 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         source_bytes = (self.source/'SKILL.md').read_bytes()
         result = self.create()
         self.assertFalse(result['published'])
-        self.assertIn('Complete documentation', result['next'])
+        self.assertIn('Confirm SCOPE.md', result['next'])
         manifest = json.loads((self.plugin/'plugin.json').read_text())
         self.assertEqual('new-plugin', manifest['name'])
         self.assertEqual('Fictional Plugin', manifest['extensions']['com.openai']['interface']['displayName'])
         self.assertEqual('https://github.com/example/new-plugin', manifest['repository'])
-        self.assertEqual(source_bytes, (self.plugin/'skills/fictional-skill/SKILL.md').read_bytes())
+        self.assertEqual(source_bytes, (self.source/'SKILL.md').read_bytes())
+        self.assertIn('plugin-skeleton: unimplemented', (self.plugin/'skills/new-plugin/SKILL.md').read_text())
         for relative in ('README.md', 'README.en.md', 'docs/documentation.json',
                          '.claude-plugin/plugin.json',
                          'scripts/run_tests.py', 'tests/contracts/test_structure.py'):
@@ -173,10 +174,10 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         for relative in ('.claude-plugin/marketplace.json', '.agents/plugins/marketplace.json'):
             self.assertFalse((self.plugin/relative).exists())
 
-    def test_missing_skill_source_does_not_create_a_functional_placeholder(self):
+    def test_positional_source_is_rejected_without_writes(self):
         before = {str(p.relative_to(self.market)): p.read_bytes() for p in self.market.rglob('*')
                   if p.is_file() and '.git' not in p.relative_to(self.market).parts}
-        with self.assertRaisesRegex(ValueError, 'accessible local directory'):
+        with self.assertRaises(TypeError):
             flow.plugin_create(self.plugin, self.market, self.root/'missing-skill', name='new-plugin',
                                display_name='Fictional Plugin', description='Confirmed description',
                                author='Fictional Publisher', languages=['en'], license='deferred')
@@ -230,9 +231,32 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertEqual('skeleton', json.loads(result.stdout)['implementation_status'])
 
-    def test_skeleton_and_source_are_mutually_exclusive_before_writes(self):
-        with self.assertRaisesRegex(ValueError, 'either'):
-            flow.plugin_create(self.plugin, self.market, self.source, skeleton=True, license='deferred')
+    def test_source_argument_is_unsupported_before_writes(self):
+        with self.assertRaises(TypeError):
+            flow.plugin_create(self.plugin, self.market, source=self.source, skeleton=True, license='deferred')
+        self.assertFalse((self.plugin/'plugin.json').exists())
+
+    def test_import_cli_flags_are_rejected_without_changes(self):
+        def snapshot():
+            return {str(p): p.read_bytes() for root in (self.plugin, self.market, self.source)
+                    for p in root.rglob('*') if p.is_file() and '.git' not in p.relative_to(root).parts}
+        before = snapshot()
+        for option in ('--source', '--import'):
+            for mode in ([], ['--skeleton']):
+                with self.subTest(option=option, mode=mode):
+                    result = subprocess.run([sys.executable, '-B', str(flow.SKILL/'scripts/workflows.py'),
+                        'plugin-create', '--root', str(self.plugin), '--marketplace', str(self.market),
+                        '--name', 'new-plugin', '--display-name', 'Fixture', '--author', 'Fixture',
+                        '--license', 'deferred', '--languages', 'en', option, str(self.source), *mode],
+                        capture_output=True, text=True)
+                    self.assertEqual(2, result.returncode)
+                    self.assertIn('unrecognized arguments: ' + option, result.stderr)
+                    self.assertEqual(before, snapshot())
+
+    def test_no_mode_does_not_silently_choose_creation(self):
+        with self.assertRaisesRegex(ValueError, 'only --skeleton'):
+            flow.plugin_create(self.plugin, self.market, name='new-plugin', display_name='Fixture',
+                               author='Fixture', license='deferred')
         self.assertFalse((self.plugin/'plugin.json').exists())
 
     def test_skeleton_documentation_all_language_policies(self):

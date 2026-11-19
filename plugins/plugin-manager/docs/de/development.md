@@ -64,4 +64,4 @@ Im Manager-Verzeichnis ausdrücklich `make test-behavior CLI=claude` oder `CLI=c
 
 Formatprüfung vor Änderungen: Keine parallelen Host-Skill-Verzeichnisse und kein marketplace-Schlüssel in der Distribution. Unbekannte Katalogeintragsfelder werden vor configure abgelehnt, nicht verworfen. Dokumentations-Schema-Versionen müssen ganzzahlig sein. Abweichende vorhandene docs/architecture.md oder docs/prerequisites.md blockieren plugin-create, ohne Inhalte zu überschreiben.
 
-Auch plugin-create prüft alte Host-Verzeichnisse vor Änderungen. Gültige Frontmatter einer expliziten Skill-Quelle umgeht weder Layout- noch Dokumentationsmanifest-Prüfungen.
+Auch plugin-create prüft alte Host-Verzeichnisse vor Änderungen. Skill-Import über plugin-create ist nicht unterstützt; Layout- und Dokumentationsmanifest-Prüfungen bleiben bestehen.

@@ -68,3 +68,13 @@ Source: skills/plugin-create/SKILL.md
 Source: skills/_shared/references/workflows.md
 Test: tests/integration/plugin_create/test_workflows.py
 Test: tests/behavior/plugin_create_acceptance.md
+
+## R8: Skeleton-only plugin creation
+
+Status: confirmed
+Acceptance: plugin-create creates only a new nonfunctional skeleton. Its dialogue offers no skill import or mode choice and requests no source skill path. The public helper rejects --source and --import before writes, including when combined with --skeleton. Other actions retain their own source-reading options. Existing source directories and target/marketplace data remain unchanged on rejected import calls.
+Source: skills/_shared/scripts/workflows.py
+Source: skills/plugin-create/SKILL.md
+Source: skills/_shared/references/workflows.md
+Test: tests/integration/plugin_create/test_workflows.py
+Test: tests/behavior/plugin_create_acceptance.md

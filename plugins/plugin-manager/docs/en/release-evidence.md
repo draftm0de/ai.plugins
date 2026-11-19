@@ -16,7 +16,7 @@ All responses from the complete repeat run were read manually and regraded with 
 
 ## Skeleton and scope/source review (2026-11-19)
 
-plugin-create explicitly supports --skeleton without domain source and retains --source. New scaffolds include draft SCOPE.md, AGENTS.md, CLAUDE.md and architecture rules. Verify reports skeleton status separately from structural validity and offers --review for static read-only evidence checks. Subsequent semantic agent comparison has its own report contract; available file pointers do not establish domain or test acceptance.
+The evaluated version supported --skeleton and --source. Current plugin-create supports only --skeleton; the import mode has been removed. New scaffolds include draft SCOPE.md, AGENTS.md, CLAUDE.md and architecture rules. Verify reports skeleton status separately from structural validity and offers --review for static read-only evidence checks. Subsequent semantic agent comparison has its own report contract; available file pointers do not establish domain or test acceptance.
 
 The complete deterministic run passed 146 tests (25 marketplace, 121 Manager); separately four native tests passed without skips in isolated Claude/Codex profiles. Targeted create and review tests also passed after final adjustments. Scenarios cover missing scope, draft requirements, safe evidence paths, skeletons, runtime dependencies on developer tools and unchanged source files. Deliberately contradictory source is never falsely certified by evidence collection. Model-based review evaluations were not run; clarification dialogs and semantic LLM reliability remain separate acceptance work. No personal installations changed; no commits or pushes.
 

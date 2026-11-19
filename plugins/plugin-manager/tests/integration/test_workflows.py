@@ -24,7 +24,7 @@ class IntegrationWorkflowTests(IntegrationWorkflowTestsFixture, unittest.TestCas
         for host in ('claude','codex'):
             result=self.make(self.plugin,'install-local',host)
             self.assertEqual({'new-plugin','existing-plugin'},set(result['plugins']))
-            skill=existing/'skills/fictional-skill/SKILL.md';skill.write_text(skill.read_text()+'\nFictional change\n')
+            skill=existing/'skills/existing-plugin/SKILL.md';skill.write_text(skill.read_text()+'\nFictional change\n')
             update=self.make(existing,'update-local',host)
             self.assertNotEqual(result['plugins']['existing-plugin']['version'],update['plugins']['existing-plugin']['version'])
         shutil.rmtree(self.market/'.local')
@@ -43,7 +43,7 @@ class IntegrationWorkflowTests(IntegrationWorkflowTestsFixture, unittest.TestCas
         helper=installed/'skills/_shared/scripts/workflows.py'
         subprocess.run([sys.executable,'-B',str(helper),'marketplace-create','--root',str(market),'--name','installed-market','--display-name','Fictional Installed Market','--owner','Fictional Publisher'],cwd=self.root,check=True,capture_output=True)
         plugin=self.repo('installed-plugin')
-        subprocess.run([sys.executable,'-B',str(helper),'plugin-create', '--license', 'deferred','--root',str(plugin),'--marketplace',str(market),'--source',str(self.source),'--display-name','Fictional Plugin','--description','Fictional fixture','--author','Fictional Publisher','--languages','en'],cwd=self.root,check=True,capture_output=True)
+        subprocess.run([sys.executable,'-B',str(helper),'plugin-create', '--license', 'deferred','--root',str(plugin),'--marketplace',str(market),'--skeleton','--name','installed-plugin','--display-name','Fictional Plugin','--description','Fictional fixture','--author','Fictional Publisher','--languages','en'],cwd=self.root,check=True,capture_output=True)
         self.assertTrue(verify.verify(plugin)['valid'])
         self.assertFalse((market/'plugins/plugin-manager').exists())
         self.assertEqual('installed-market-dev',self.make(plugin,'install-local','codex')['marketplace'])

@@ -8,7 +8,7 @@
 
 ## Storage model
 
-Documentation lives in the target repository; plugin-create creates a separate source copy. A publication journal stays private outside source and installation.
+Documentation lives in the target repository; plugin-create creates a separate plugin skeleton. A publication journal stays private outside source and installation.
 
 ## Setup and configuration
 

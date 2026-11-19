@@ -30,7 +30,7 @@ Select the plugin and ask: “Verify this repository.” For documentation: “U
 
 ## Storage and privacy
 
-The Manager writes documentation and, for plugin-create, a separate source copy. Publication journals stay outside the source and plugin installation. Private data, credentials and unrelated changes are excluded. Your AI host processes supplied sources under its own terms.
+The Manager writes documentation and, for plugin-create, a separate plugin skeleton. Publication journals stay outside the source and plugin installation. Private data, credentials and unrelated changes are excluded. Your AI host processes supplied sources under its own terms.
 
 ## Project status
 
@@ -38,7 +38,7 @@ The user confirms Manager and Coach are present in the published marketplace. Ea
 
 ## Development
 
-`plugin-create --skeleton` starts without domain content; `--source` imports an existing skill. The skeleton includes a pending `SCOPE.md` and development rules. `verify` offers an explicit read-only scope/source review: static evidence checks with `REVIEW=1`, followed by semantic comparison by the agent. No automatic repairs or test execution. [Workflow and limits](docs/en/usage.md).
+`plugin-create --skeleton` creates only a new scaffold without domain content. Skill import is not offered. The skeleton includes a pending `SCOPE.md` and development rules. `verify` offers an explicit read-only scope/source review: static evidence checks with `REVIEW=1`, followed by semantic comparison by the agent. No automatic repairs or test execution. [Workflow and limits](docs/en/usage.md).
 
 The [test guide](tests/README.md) describes the shared layout by test type. `make test` runs unit, integration and contract tests; native host and model tests are started separately.
 
