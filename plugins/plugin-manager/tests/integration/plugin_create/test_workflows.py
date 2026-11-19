@@ -19,6 +19,44 @@ import verify
 from tests.support.workflow_fixture import WorkflowFixture
 
 class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
+    def test_repeated_creation_precedes_license_validation_and_preserves_repositories(self):
+        self.create()
+        (self.plugin/'LICENSE').write_text('Existing fictional license; do not overwrite.\n')
+        def snapshot():
+            return {str(p): p.read_bytes() for root in (self.plugin, self.market)
+                    for p in root.rglob('*') if p.is_file() and '.git' not in p.relative_to(root).parts}
+        before = snapshot()
+        for mode in ({'skeleton': True}, {'source': self.source}):
+            for inputs in ({}, {'license': 'deferred'}, {'license': 'MIT'},
+                           {'license': 'MIT', 'license_file': self.root/'missing-license'}):
+                with self.subTest(mode=mode, inputs=inputs), patch('licensing.plan') as license_plan:
+                    with self.assertRaisesRegex(ValueError, 'Product already exists'):
+                        flow.plugin_create(self.plugin, self.market, **mode, **inputs)
+                    license_plan.assert_not_called()
+                    self.assertEqual(before, snapshot())
+
+    def test_cli_existing_target_is_detected_without_license_arguments(self):
+        self.create()
+        before = (self.plugin/'plugin.json').read_bytes(), (self.market/'marketplace.json').read_bytes()
+        result = subprocess.run([sys.executable, '-B', str(flow.SKILL/'scripts/workflows.py'),
+            'plugin-create', '--root', str(self.plugin), '--marketplace', str(self.market), '--skeleton'],
+            capture_output=True, text=True)
+        self.assertEqual(1, result.returncode)
+        self.assertIn('Product already exists', result.stderr)
+        self.assertNotIn('required', result.stderr)
+        self.assertEqual(before, ((self.plugin/'plugin.json').read_bytes(), (self.market/'marketplace.json').read_bytes()))
+
+    def test_cli_new_target_still_requires_explicit_license(self):
+        before = (self.market/'marketplace.json').read_bytes()
+        result = subprocess.run([sys.executable, '-B', str(flow.SKILL/'scripts/workflows.py'),
+            'plugin-create', '--root', str(self.plugin), '--marketplace', str(self.market), '--skeleton',
+            '--name', 'new-plugin', '--display-name', 'Fictional Plugin', '--author', 'Fixture', '--languages', 'en'],
+            capture_output=True, text=True)
+        self.assertEqual(1, result.returncode)
+        self.assertIn('Explicit --license', result.stderr)
+        self.assertFalse((self.plugin/'plugin.json').exists())
+        self.assertEqual(before, (self.market/'marketplace.json').read_bytes())
+
     def test_old_host_layout_rejected_before_creating_plugin(self):
         for relative in ('.claude/skills','.agents/skills','.claude-plugin/marketplace.json','.agents/plugins/marketplace.json','.codex-plugin/marketplace.json'):
             path = self.plugin/relative; path.mkdir(parents=True)

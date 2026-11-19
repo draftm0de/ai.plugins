@@ -20,6 +20,8 @@ For `plugin-create`, questions and replies follow the language of your current m
 
 Missing inputs are collected in small steps using the host's structured question tool when available. Without language context, only the language choice is asked first; setup then continues in that language. Confirmed inputs are not asked again. If no question tool is available, the agent briefly explains that and asks one question at a time in chat.
 
+For an existing plugin, an unknown conversation language is still resolved alone first. The English action choices are then “Verify”, “Create another plugin” and “Configure”, with English-only descriptions. “Create another plugin” requires a different explicitly selected target path. Repeated creation detects an existing product before license validation and leaves it unchanged.
+
 Before creation, the agent resolves the licensing decision. It reuses an unambiguous existing license or established decision; otherwise it asks for a license or explicit deferral. Creation does not begin without an answer. Conflicts are clarified before changes and existing license files are preserved. A deferred decision is reported as unresolved. A selected license is implemented: MIT with a confirmed copyright year and rights holder, other licenses from an explicitly confirmed complete text file. The license file, manifest and documentation are created and checked together. The decision persists in docs/license.md, including explicit deferral.
 
 | Action | Inputs | Result |

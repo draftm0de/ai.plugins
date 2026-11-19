@@ -345,6 +345,9 @@ def creation_checks(root, market, license_decision=None):
 
 
 def plugin_create(root, marketplace, source=None, name=None, display_name=None, description=None, repository=None, author=None, languages=None, default_language=None, skeleton=False, _skeleton_documentation=False, license=None, license_file=None, copyright_year=None, copyright_holder=None):
+    root = safe_path(root)
+    if any((root/item).exists() or (root/item).is_symlink() for item in ('plugin.json', 'marketplace.json')):
+        raise ValueError('Product already exists; use configure for an existing plugin')
     if skeleton:
         if source is not None:
             raise ValueError("Choose either --skeleton or --source, not both")
@@ -440,7 +443,7 @@ def main():
             command.add_argument('--description'); command.add_argument('--author')
             command.add_argument('--languages', nargs='+', choices=['de','en'])
             command.add_argument('--default-language', choices=['de','en'])
-            command.add_argument('--license', required=True, help='Confirmed identifier, or deferred after explicit user choice')
+            command.add_argument('--license', help='Required for new plugins: confirmed identifier, or deferred after explicit user choice')
             command.add_argument('--license-file', type=Path, help='Confirmed complete license text; copied unchanged')
             command.add_argument('--copyright-year', help='Confirmed MIT copyright year or year range')
             command.add_argument('--copyright-holder', help='Confirmed MIT rights holder, never inferred from author')

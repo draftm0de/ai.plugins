@@ -18,6 +18,8 @@ Bei `plugin-create` folgen Rückfragen und Antworten der Sprache deiner aktuelle
 
 Fehlende Angaben werden über den strukturierten Fragedialog des Hosts in kleinen Schritten abgefragt, sofern dieses Werkzeug verfügbar ist. Ohne Sprachkontext kommt zuerst nur die Sprachwahl; danach geht es in der gewählten Sprache weiter. Bereits bestätigte Angaben werden nicht erneut abgefragt. Ist kein Dialogwerkzeug verfügbar, erklärt der Agent das kurz und stellt jeweils eine Frage im Chat.
 
+Auch bei einem bestehenden Plugin wird zuerst nur eine fehlende Gesprächssprache geklärt. Danach lautet die Auswahl auf Deutsch „Verifizieren“, „Anderes Plugin erstellen“ oder „Konfigurieren“, mit ausschließlich deutschen Beschreibungen. „Anderes Plugin erstellen“ benötigt einen anderen ausdrücklich gewählten Zielpfad. Ein erneuter Erstellungsaufruf erkennt ein vorhandenes Produkt vor der Lizenzprüfung und verändert es nicht.
+
 Vor der Erstellung klärt der Agent die Lizenzentscheidung. Eine eindeutige vorhandene Lizenz oder bereits getroffene Entscheidung wird übernommen; andernfalls fragt er nach einer Lizenz oder einer ausdrücklichen Vertagung. Ohne Antwort beginnt die Erstellung nicht. Widersprüche werden vor Änderungen geklärt und vorhandene Lizenzdateien bleiben erhalten. Eine vertagte Entscheidung erscheint im Abschlussbericht als offen. Eine gewählte Lizenz wird umgesetzt: MIT mit bestätigtem Copyright-Jahr und Rechteinhaber, andere Lizenzen anhand einer ausdrücklich bestätigten vollständigen Textdatei. Lizenzdatei, Manifest und Dokumentation werden gemeinsam erstellt und geprüft. Die Entscheidung bleibt in docs/license.md erhalten, auch bei ausdrücklicher Vertagung.
 
 | Aktion | Eingaben | Ergebnis |
