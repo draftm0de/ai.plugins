@@ -14,6 +14,12 @@ Zielpfade stammen aus deinem geöffneten Projekt oder einer ausdrücklichen Anga
 
 In Claude Code: `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-create` oder `/plugin-manager:configure`. In Codex/GPT die entsprechende Fähigkeit wählen oder die Aktion beschreiben. `init` wird nicht unterstützt.
 
+Bei `plugin-create` folgen Rückfragen und Antworten der Sprache deiner aktuellen Nachricht. Bei einem reinen Slash-Befehl bleibt die bisherige Gesprächssprache erhalten; ohne Sprachkontext fragt der Agent kurz nach. Die Dokumentationssprachen werden unabhängig davon festgelegt.
+
+Fehlende Angaben werden über den strukturierten Fragedialog des Hosts in kleinen Schritten abgefragt, sofern dieses Werkzeug verfügbar ist. Ohne Sprachkontext kommt zuerst nur die Sprachwahl; danach geht es in der gewählten Sprache weiter. Bereits bestätigte Angaben werden nicht erneut abgefragt. Ist kein Dialogwerkzeug verfügbar, erklärt der Agent das kurz und stellt jeweils eine Frage im Chat.
+
+Vor der Erstellung klärt der Agent die Lizenzentscheidung. Eine eindeutige vorhandene Lizenz oder bereits getroffene Entscheidung wird übernommen; andernfalls fragt er nach einer Lizenz oder einer ausdrücklichen Vertagung. Ohne Antwort beginnt die Erstellung nicht. Widersprüche werden vor Änderungen geklärt und vorhandene Lizenzdateien bleiben erhalten. Eine vertagte Entscheidung erscheint im Abschlussbericht als offen. Eine gewählte Lizenz und tatsächlich angelegte Lizenzdateien werden getrennt ausgewiesen; das Erstellungswerkzeug erzeugt keine Lizenzbedingungen.
+
 | Aktion | Eingaben | Ergebnis |
 | --- | --- | --- |
 | marketplace-create | Geklontes Repository, Anzeigename, Kennung, Herausgeber | Gemeinsamer Katalog, beide Host-Kataloge und eigenständige Werkzeuge |
@@ -51,6 +57,8 @@ Lokale Snapshots lesen den aktuellen Checkout einschließlich uncommitteter Änd
 `configure` ist der reguläre Einrichtungsweg. `local-marketplace.example.json` ist eine optionale manuelle Kopiervorlage. Nur `.local/marketplace.json` wird zur Laufzeit für lokale Zuordnungen gelesen; diese Zuordnungen werden nicht committed.
 
 ### Skeleton vor der fachlichen Implementierung
+
+Neue Skeleton-Seiten werden in den gewählten Sprachen mit dem tatsächlichen Gerüststatus ausgefüllt und vor dem Schreiben validiert. Vorhandene Texte bleiben erhalten. Die Abschlussprüfung bewertet anschließend die tatsächliche Plugin-Struktur, den Marketplace und die Dokumentation getrennt. Fehler in erhaltenen Seiten bleiben sichtbar; `checks.status=needs_attention` bedeutet, dass die Erstellung noch offene Prüfbefunde hat. `passed` bestätigt nur diese Prüfungen, keine Lizenzfreigabe oder fachliche Abnahme. Der Abschlussbericht nennt außerdem die Lizenzentscheidung, tatsächliche Lizenzdateien und noch ausstehende Tests beziehungsweise Host-Prüfungen.
 
 `plugin-create --skeleton` erstellt ein ausdrücklich unfertiges Plugin, auch wenn es noch keine fachliche Skill-Quelle gibt. Marketplace, technische Kennung, Anzeigename, vorhandenes GitHub-Repository, Herausgeber und Dokumentationssprachen werden aus bekannten Angaben übernommen oder gezielt geklärt. Die Beschreibung ist optional; ohne bestätigte Beschreibung steht ausdrücklich „unimplemented“ im Manifest. Keine fachlichen Funktionen oder Lizenz werden erfunden.
 

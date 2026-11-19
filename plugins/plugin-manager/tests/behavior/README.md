@@ -1,5 +1,9 @@
 # Scope/source model review evaluations
 
+The separate [plugin-create acceptance cases](plugin_create_acceptance.md) specify
+manual checks for licensing questions and conversation language. They are not run by
+the review harness below and have not been executed merely by adding the specification.
+
 Run explicitly from the Manager checkout (model calls may consume credits):
 
 ```sh

@@ -293,7 +293,53 @@ def configure(root, marketplace, repository=None):
     return {'action': 'configure', 'changed': apply(files, replace), 'published': False}
 
 
-def plugin_create(root, marketplace, source=None, name=None, display_name=None, description=None, repository=None, author=None, languages=None, default_language=None, skeleton=False):
+def complete_skeleton_documentation(stage, title):
+    """Fill only newly staged pages; never rewrite existing user documentation."""
+    from documentation import language_policy, page_layout, validate
+    content = read(SKILL/'templates/skeleton-content.json')
+    for relative, (_, _, language) in page_layout(language_policy(stage)).items():
+        path = stage/relative
+        text = path.read_text()
+        page = content[language]
+        if relative.startswith('README'):
+            text = re.sub(r'^# .*', lambda _: '# ' + title, text, count=1)
+            text = text.replace('{{SUMMARY}}', page['summary'])
+            sections = page['root']
+        else:
+            sections = page[path.name]
+        for index, paragraph in enumerate(sections, 1):
+            text = text.replace('{{CONTENT_' + f'{index:02d}' + '}}', paragraph)
+        path.write_text(text)
+    errors = validate(stage)
+    if errors:
+        raise ValueError('Skeleton documentation validation failed: ' + '; '.join(errors))
+
+
+def creation_checks(root, market):
+    """Read actual output using trusted helpers, without executing target code."""
+    from documentation import validate
+    from verify import verify
+    checks = {}
+    for label, target in (('plugin', root), ('marketplace', market)):
+        try:
+            checks[label] = verify(target, kind=label)
+        except (ValueError, OSError, KeyError, TypeError) as exc:
+            checks[label] = {'structure_valid': False, 'error': str(exc)}
+    try:
+        errors = validate(root)
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        errors = [str(exc)]
+    checks['documentation'] = {'valid': not errors, 'errors': errors}
+    checks['status'] = ('passed' if not errors and all(checks[k]['structure_valid']
+                        for k in ('plugin', 'marketplace')) else 'needs_attention')
+    checks['licensing'] = 'not_assessed; report the separately confirmed decision and actual license files'
+    checks['functional_acceptance'] = 'pending'
+    checks['tests'] = 'not_run'
+    checks['host_acceptance'] = 'not_run'
+    return checks
+
+
+def plugin_create(root, marketplace, source=None, name=None, display_name=None, description=None, repository=None, author=None, languages=None, default_language=None, skeleton=False, _skeleton_documentation=False):
     if skeleton:
         if source is not None:
             raise ValueError("Choose either --skeleton or --source, not both")
@@ -302,8 +348,10 @@ def plugin_create(root, marketplace, source=None, name=None, display_name=None, 
             stub = Path(directory).resolve()/name
             stub.mkdir()
             (stub/"SKILL.md").write_text("---\nname: " + name + "\ndescription: Unimplemented plugin skeleton; no domain behavior is available.\n---\n\n# Plugin skeleton\n\n<!-- plugin-skeleton: unimplemented -->\n\nThis is a nonfunctional development skeleton. Do not perform domain actions or claim capabilities. Read SCOPE.md in the source repository and clarify requirements before implementing. Remove the skeleton marker only after implementing and reviewing the agreed behavior.\n")
-            result = plugin_create(root, marketplace, stub, name, display_name, description or "Unimplemented plugin skeleton; domain requirements are pending.", repository, author, languages, default_language)
+            result = plugin_create(root, marketplace, stub, name, display_name, description or "Unimplemented plugin skeleton; domain requirements are pending.", repository, author, languages, default_language, _skeleton_documentation=True)
             result.update(implementation_status="skeleton", next="Confirm SCOPE.md, implement agreed behavior under skills/, add tests, then run verify --review. No functional acceptance is claimed.")
+            if result['checks']['status'] != 'passed':
+                result['next'] = 'Resolve the reported creation checks before claiming completion. ' + result['next']
             return result
     if source is None:
         raise ValueError("Choose --skeleton for an empty product or --source for an existing skill")
@@ -344,6 +392,8 @@ def plugin_create(root, marketplace, source=None, name=None, display_name=None, 
         engine = module(SKILL/'templates/plugin/scripts/plugin.py', 'trusted_payload')
         for path, data in engine.repository_files(manifest).items():
             (stage/path).write_bytes(encode(data))
+        if _skeleton_documentation:
+            complete_skeleton_documentation(stage, display_name)
         files = {root/p.relative_to(stage): p.read_bytes() for p in stage.rglob('*') if p.is_file()}
         # Existing prose and licenses remain canonical; docs action can later merge them.
         for path in list(files):
@@ -354,6 +404,7 @@ def plugin_create(root, marketplace, source=None, name=None, display_name=None, 
         files.update(association)
         changes = apply(files, association.keys())
     return {'action': 'plugin-create', 'changed': changes, 'repository': origin, 'published': False,
+            'checks': creation_checks(root, market),
             'next': 'Complete documentation templates from the actual skill source; verify structure, test behavior and perform separate host acceptance.'}
 
 

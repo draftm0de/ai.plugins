@@ -1,5 +1,7 @@
 # Usage
 
+New skeleton pages are filled with the actual scaffold status in the selected languages and validated before writes. Existing prose is preserved. Final checks separately assess the actual plugin structure, marketplace and documentation. Errors in preserved pages remain visible; `checks.status=needs_attention` means creation still has outstanding findings. `passed` confirms only these checks, not licensing or functional acceptance. The completion report also states the licensing decision, actual license files and tests or host checks still pending.
+
 [Deutsch](../de/usage.md) | **English**
 
 <img src="../assets/zyris-icon.png" alt="ZYRIS" width="48">
@@ -13,6 +15,12 @@ Targets come from your open project or explicit input, never automatically from 
 ## Choose a workflow
 
 In Claude Code use `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-create` or `/plugin-manager:configure`. In Codex/GPT select the capability or describe the action. `init` is unsupported.
+
+For `plugin-create`, questions and replies follow the language of your current message. A bare slash command retains the established conversation language; without language context, the agent briefly asks. Documentation languages are selected independently.
+
+Missing inputs are collected in small steps using the host's structured question tool when available. Without language context, only the language choice is asked first; setup then continues in that language. Confirmed inputs are not asked again. If no question tool is available, the agent briefly explains that and asks one question at a time in chat.
+
+Before creation, the agent resolves the licensing decision. It reuses an unambiguous existing license or established decision; otherwise it asks for a license or explicit deferral. Creation does not begin without an answer. Conflicts are clarified before changes and existing license files are preserved. A deferred decision is reported as unresolved. The chosen license and license files actually created are reported separately; the creation helper does not generate license terms.
 
 | Action | Inputs | Result |
 | --- | --- | --- |

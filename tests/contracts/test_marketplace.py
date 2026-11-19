@@ -37,11 +37,26 @@ class MarketplaceTests(MarketplaceTestsFixture, unittest.TestCase):
 
     def test_external_coach_entry_has_remote_source_and_no_version_pin(self):
         for catalog in engine.expected().values():
-            self.assertEqual(['plugin-manager','interview-coach'], [entry['name'] for entry in catalog['plugins']])
-            source=catalog['plugins'][1]['source']
+            entries = {entry['name']: entry for entry in catalog['plugins']}
+            self.assertIn('plugin-manager', entries)
+            self.assertIn('interview-coach', entries)
+            source=entries['interview-coach']['source']
             self.assertEqual({'source':'url','url':'https://github.com/draftm0de/ai.plugin.interview-coach.git'},source)
-            self.assertNotIn('version',catalog['plugins'][1])
-        self.assertEqual('Interview Coach',engine.expected()['.claude-plugin/marketplace.json']['plugins'][1]['displayName'])
+            self.assertNotIn('version', entries['interview-coach'])
+        coach = next(entry for entry in engine.expected()['.claude-plugin/marketplace.json']['plugins'] if entry['name'] == 'interview-coach')
+        self.assertEqual('Interview Coach', coach['displayName'])
+
+    def test_additional_external_plugin_is_in_both_catalogs(self):
+        config = json.loads((ROOT/'marketplace.json').read_text())
+        extra = {'name': 'fictional-extra', 'displayName': 'Fictional Extra',
+                 'description': 'Fictional test plugin', 'repository': 'https://github.com/example/fictional-extra.git'}
+        config['plugins'].insert(0, extra)
+        for catalog in engine.expected(config=config).values():
+            names = [entry['name'] for entry in catalog['plugins']]
+            self.assertEqual(1, names.count('fictional-extra'))
+            self.assertIn('interview-coach', names)
+            entry = next(entry for entry in catalog['plugins'] if entry['name'] == 'fictional-extra')
+            self.assertEqual({'source': 'url', 'url': extra['repository']}, entry['source'])
 
 
     def test_ambiguous_or_credentialed_remote_is_rejected(self):

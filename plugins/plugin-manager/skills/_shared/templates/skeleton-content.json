@@ -1,0 +1,120 @@
+{
+  "en": {
+    "summary": "Nonfunctional development skeleton. Domain requirements and implementation are pending.",
+    "root": [
+      "For contributors defining the product scope; no end-user functionality is available yet.",
+      "The repository contains a marked skill stub and development documentation. No native screenshots or host acceptance evidence are available.",
+      "Only a nonfunctional skeleton exists. Confirm requirements in SCOPE.md before implementing any domain actions.",
+      "Read SCOPE.md, agree on purpose, non-goals and acceptance criteria, then implement under skills/.",
+      "The skill stub does not perform domain actions. Continue with requirements clarification in the source repository.",
+      "No domain storage behavior is implemented. Local marketplace associations belong to ignored .local/marketplace.json files.",
+      "Implementation and acceptance are pending. Licensing must be resolved separately; generated documentation does not establish a license. No publication or test success is claimed.",
+      "Use the development guide for checks. Structural validation is separate from behavioral tests and host acceptance."
+    ],
+    "README.md": [
+      "Start with [usage](usage.md), [development](development.md) and [storage](storage.md). Installation details are in [installation](installation.md).",
+      "The authoritative product scope is [SCOPE.md](../../SCOPE.md). The skill lives under skills/; [architecture](../architecture.md) defines the development layout."
+    ],
+    "installation.md": [
+      "Host acceptance is pending. This skeleton is not a functioning product for Claude or Codex.",
+      "A local Git checkout already exists. Review the scope and implement the product before treating it as ready for use. Creation does not install the plugin.",
+      "Repository development commands include make update-local TARGET=claude or TARGET=codex. Run only when installation changes are intended and required local checkouts are available.",
+      "Creation does not change host installations. Removal instructions require verification in the selected host; none is claimed here.",
+      "Confirm that the skill reports its skeleton status and does not claim domain capabilities. Structural validity alone does not establish host acceptance."
+    ],
+    "usage.md": [
+      "Read [SCOPE.md](../../SCOPE.md) and confirm the intended behavior before implementation.",
+      "Define requirements, implement under skills/, then validate against the agreed acceptance criteria.",
+      "Generated manifests and documentation describe a scaffold, not a functioning product.",
+      "Preserve unrelated files. Clarify missing or contradictory requirements rather than inventing behavior.",
+      "Resume from the confirmed scope and actual source; do not treat previous completion messages as test evidence.",
+      "No specialized domain workflows are implemented."
+    ],
+    "screens.md": [
+      "No native screenshots or functional preview are available.",
+      "Development walkthrough: confirm SCOPE.md, implement the skill, add acceptance tests, then review the actual results. This is a planned workflow, not an executed demonstration.",
+      "No real host screenshots were supplied for this skeleton.",
+      "After implementation, capture the host, input, observed output and date using fictional data. Label examples and actual screenshots separately."
+    ],
+    "faq.md": [
+      "This is an unfinished development skeleton with no domain functionality.",
+      "See [prerequisites](../prerequisites.md) for the bundled development tooling requirements.",
+      "No domain persistence or privacy behavior has been implemented. See [storage](storage.md).",
+      "Check the scope, manifests and local associations. Resolve conflicting files explicitly; do not overwrite them automatically.",
+      "Structural and documentation checks do not prove functional behavior, legal licensing status or host acceptance."
+    ],
+    "storage.md": [
+      "No domain storage model is implemented.",
+      "Public manifests describe the plugin. Ignored .local/marketplace.json files hold machine-local marketplace associations and are not committed.",
+      "There is no implemented user-session persistence. Development resumes from source and SCOPE.md.",
+      "Preserve existing files and review conflicts. No automatic migration or recovery behavior is implemented.",
+      "Do not put private data in distributable skills or documentation. Future storage requirements must be confirmed before implementation."
+    ],
+    "development.md": [
+      "Read [SCOPE.md](../../SCOPE.md), [AGENTS.md](../../AGENTS.md) and [architecture](../architecture.md). Runtime belongs under skills/; root scripts/ contains development tools.",
+      "make verify checks structure; make verify REVIEW=1 collects source-review evidence. make test runs the configured deterministic tests as a separate development step. These commands have not been run merely by creating this skeleton.",
+      "make sync-plugin derives host metadata; make check-plugin checks drift. The plugin owns no marketplace catalogs.",
+      "The starter CI runs make test and make check-plugin. Its existence is not evidence of a successful run. Creation does not commit, push or publish.",
+      "Update the configured documentation languages from confirmed scope and actual source as implementation progresses. Replace skeleton claims only when supported by evidence."
+    ]
+  },
+  "de": {
+    "summary": "Nicht funktionsfähiges Entwicklungsgerüst. Fachliche Anforderungen und Implementierung stehen noch aus.",
+    "root": [
+      "Für Mitwirkende, die das Produktzielbild klären; für Endnutzer gibt es noch keine fachlichen Funktionen.",
+      "Das Repository enthält einen markierten Skill-Platzhalter und Entwicklungsdokumentation. Echte Screenshots und Belege einer Host-Abnahme liegen nicht vor.",
+      "Es existiert ausschließlich ein nicht funktionsfähiges Skeleton. Vor fachlichen Aktionen die Anforderungen in SCOPE.md bestätigen.",
+      "SCOPE.md lesen, Zweck, Nicht-Ziele und Abnahmekriterien vereinbaren und anschließend unter skills/ implementieren.",
+      "Der Skill-Platzhalter führt keine fachlichen Aktionen aus. Die Anforderungsklärung erfolgt im Quellrepository.",
+      "Fachliche Speicherung ist nicht implementiert. Lokale Marketplace-Zuordnungen stehen in ignorierten .local/marketplace.json-Dateien.",
+      "Implementierung und Abnahme stehen aus. Die Lizenz ist separat zu klären; erzeugte Dokumentation legt keine Lizenz fest. Veröffentlichung oder bestandene Tests werden nicht behauptet.",
+      "Die Entwicklungsanleitung beschreibt die Prüfungen. Strukturprüfung, Verhaltenstests und Host-Abnahme sind getrennte Schritte."
+    ],
+    "README.md": [
+      "Beginne mit [Nutzung](usage.md), [Entwicklung](development.md) und [Speicherung](storage.md). Hinweise zur Installation stehen unter [Installation](installation.md).",
+      "Das maßgebliche Produktzielbild steht in [SCOPE.md](../../SCOPE.md). Der Skill liegt unter skills/; die [Architektur](../architecture.md) beschreibt die Entwicklungsstruktur."
+    ],
+    "installation.md": [
+      "Die Host-Abnahme steht aus. Dieses Skeleton ist noch kein funktionsfähiges Produkt für Claude oder Codex.",
+      "Ein lokaler Git-Checkout besteht bereits. Vor der produktiven Nutzung das Zielbild klären und das Produkt implementieren. Die Erstellung installiert das Plugin nicht.",
+      "Für die lokale Entwicklung stehen make update-local TARGET=claude oder TARGET=codex bereit. Nur bei beabsichtigter Installationsänderung und vorhandenen benötigten Checkouts ausführen.",
+      "Die Erstellung verändert keine Host-Installation. Entfernungsschritte müssen im gewählten Host geprüft werden; sie werden hier nicht als bestätigt ausgegeben.",
+      "Prüfe, dass der Skill seinen Skeleton-Status nennt und keine fachlichen Funktionen behauptet. Eine gültige Struktur belegt keine Host-Abnahme."
+    ],
+    "usage.md": [
+      "Lies [SCOPE.md](../../SCOPE.md) und bestätige das gewünschte Verhalten vor der Implementierung.",
+      "Anforderungen festlegen, unter skills/ implementieren und anschließend gegen die vereinbarten Abnahmekriterien prüfen.",
+      "Erzeugte Manifeste und Dokumentation beschreiben ein Gerüst, kein funktionsfähiges Produkt.",
+      "Unabhängige Änderungen erhalten. Fehlende oder widersprüchliche Anforderungen klären, statt Verhalten zu erfinden.",
+      "Mit bestätigtem Zielbild und tatsächlicher Source fortsetzen; frühere Abschlussmeldungen sind keine Testbelege.",
+      "Spezialisierte fachliche Abläufe sind nicht implementiert."
+    ],
+    "screens.md": [
+      "Echte Screenshots oder eine funktionale Vorschau liegen nicht vor.",
+      "Entwicklungsablauf: SCOPE.md bestätigen, Skill implementieren, Akzeptanztests ergänzen und tatsächliche Ergebnisse prüfen. Das ist ein geplanter Ablauf, keine ausgeführte Demonstration.",
+      "Für dieses Skeleton wurden keine echten Host-Screenshots bereitgestellt.",
+      "Nach der Implementierung Host, Eingabe, beobachtete Ausgabe und Datum mit fiktiven Daten festhalten. Beispiele und echte Screenshots getrennt kennzeichnen."
+    ],
+    "faq.md": [
+      "Dies ist ein unfertiges Entwicklungsgerüst ohne fachliche Funktionen.",
+      "Die [Voraussetzungen](../prerequisites.md) beschreiben die Anforderungen der mitgelieferten Entwicklungswerkzeuge.",
+      "Fachliche Speicherung und Datenschutzverhalten sind nicht implementiert. Siehe [Speicherung](storage.md).",
+      "Zielbild, Manifeste und lokale Zuordnungen prüfen. Widersprüchliche Dateien gezielt klären, nicht automatisch überschreiben.",
+      "Struktur- und Dokumentationsprüfungen belegen weder fachliches Verhalten noch Lizenzstatus oder Host-Abnahme."
+    ],
+    "storage.md": [
+      "Ein fachliches Speichermodell ist nicht implementiert.",
+      "Öffentliche Manifeste beschreiben das Plugin. Ignorierte .local/marketplace.json-Dateien enthalten lokale Marketplace-Zuordnungen und werden nicht committed.",
+      "Es gibt keine implementierte Speicherung von Nutzersitzungen. Die Entwicklung wird anhand von Source und SCOPE.md fortgesetzt.",
+      "Vorhandene Dateien erhalten und Konflikte prüfen. Automatische Migration oder Wiederherstellung ist nicht implementiert.",
+      "Keine privaten Daten in auslieferbare Skills oder Dokumentation aufnehmen. Zukünftige Speicheranforderungen vor der Implementierung bestätigen."
+    ],
+    "development.md": [
+      "Lies [SCOPE.md](../../SCOPE.md), [AGENTS.md](../../AGENTS.md) und [Architektur](../architecture.md). Laufzeit gehört unter skills/; scripts/ im Stamm enthält Entwicklungswerkzeuge.",
+      "make verify prüft die Struktur; make verify REVIEW=1 sammelt Belege für den Source-Review. make test führt die konfigurierten deterministischen Tests als separaten Entwicklungsschritt aus. Durch die Skeleton-Erstellung allein wurden diese Befehle nicht ausgeführt.",
+      "make sync-plugin leitet Host-Metadaten ab; make check-plugin prüft Abweichungen. Das Plugin besitzt keine Marketplace-Kataloge.",
+      "Die vorbereitete CI führt make test und make check-plugin aus. Ihre Existenz belegt keinen erfolgreichen Lauf. Die Erstellung führt weder Commit noch Push oder Veröffentlichung aus.",
+      "Die gewählten Dokumentationssprachen anhand bestätigter Anforderungen und tatsächlicher Source pflegen. Skeleton-Aussagen erst mit passenden Belegen ersetzen."
+    ]
+  }
+}

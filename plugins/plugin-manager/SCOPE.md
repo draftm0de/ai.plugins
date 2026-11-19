@@ -2,7 +2,7 @@
 
 Status: confirmed
 
-This scope records the approved compatibility boundary, not a complete product acceptance.
+This scope records the approved compatibility boundary and creation interaction requirements, not a complete product acceptance.
 
 ## R1: No backwards compatibility
 
@@ -15,3 +15,36 @@ Source: skills/_shared/scripts/documentation.py
 Test: tests/integration/update/test_documentation.py
 Test: tests/integration/plugin_create/test_workflows.py
 Test: tests/integration/test_shared_installer.py
+
+## R2: Resolve the licensing decision before plugin creation
+
+Status: confirmed
+Acceptance: Before creation writes, the agent reuses an unambiguous existing target license or explicit session decision; otherwise it asks for a license or explicit deferral and waits for the answer. Conflicts require clarification and existing license content is preserved. Silence is not deferral. The completion report identifies a deferred decision as unresolved and distinguishes a selected license from files actually created.
+Source: skills/plugin-create/SKILL.md
+Source: skills/_shared/references/workflows.md
+Test: tests/behavior/plugin_create_acceptance.md
+
+## R4: Complete skeleton documentation and report creation checks
+
+Status: confirmed
+Acceptance: New skeleton documentation contains localized, evidence-based scaffold content without unresolved placeholders for every selected language. No domain capabilities or test success are invented. Existing user prose is preserved and its validation failures remain visible. Creation checks actual plugin and marketplace structure and documentation, reports their results separately from licensing, pending functional acceptance and unexecuted tests/host checks, and does not claim completion on failed checks.
+Source: skills/_shared/scripts/workflows.py
+Source: skills/_shared/templates/skeleton-content.json
+Source: skills/plugin-create/SKILL.md
+Test: tests/integration/plugin_create/test_workflows.py
+
+## R3: Separate conversation language from documentation language
+
+Status: confirmed
+Acceptance: plugin-create uses the language of the current user message for its interaction. With a bare slash command it uses the established conversation language; without either signal it asks briefly. Documentation languages are resolved independently and never determine the conversation language implicitly.
+Source: skills/plugin-create/SKILL.md
+Source: skills/_shared/references/workflows.md
+Test: tests/behavior/plugin_create_acceptance.md
+
+## R5: Guided plugin-create dialogue
+
+Status: confirmed
+Acceptance: Missing setup inputs are collected using the host's available structured question tool in small coherent groups. Unknown conversation language is asked alone first and the agent waits before continuing in that language. Confirmed inputs are not asked again. When no structured tool is available, the agent explains this limitation and asks one concise question at a time in chat instead of dumping a questionnaire. No target writes occur while required answers are missing.
+Source: skills/plugin-create/SKILL.md
+Source: skills/_shared/references/workflows.md
+Test: tests/behavior/plugin_create_acceptance.md

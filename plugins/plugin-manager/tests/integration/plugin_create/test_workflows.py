@@ -196,3 +196,47 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'either'):
             flow.plugin_create(self.plugin, self.market, self.source, skeleton=True)
         self.assertFalse((self.plugin/'plugin.json').exists())
+
+    def test_skeleton_documentation_all_language_policies(self):
+        from documentation import validate, page_layout, language_policy
+        for index, (languages, default) in enumerate(((['en'], 'en'), (['de'], 'de'),
+                                                    (['de', 'en'], 'de'), (['de', 'en'], 'en'))):
+            with self.subTest(languages=languages, default=default):
+                root = self.repo('skeleton-' + str(index))
+                result = flow.plugin_create(root, self.market, skeleton=True, name=root.name,
+                    display_name='Fictional Skeleton', author='Fixture', languages=languages, default_language=default)
+                self.assertEqual([], validate(root))
+                self.assertEqual('passed', result['checks']['status'])
+                self.assertEqual('pending', result['checks']['functional_acceptance'])
+                self.assertEqual('not_run', result['checks']['tests'])
+                self.assertEqual('not_run', result['checks']['host_acceptance'])
+                self.assertIn('not_assessed', result['checks']['licensing'])
+                self.assertTrue((root/'README.md').read_text().startswith('# Fictional Skeleton\n'))
+                for path, (_, _, language) in page_layout(language_policy(root)).items():
+                    text = (root/path).read_text()
+                    self.assertNotIn('{{', text)
+                readme = (root/'README.md').read_text()
+                self.assertIn('Nicht funktionsfähiges' if default == 'de' else 'Nonfunctional', readme)
+                self.assertFalse((root/('README.en.md' if default == 'en' else 'README.de.md')).exists())
+
+    def test_preserved_invalid_docs_are_reported_without_overwrite(self):
+        original = '# User-owned draft\n\n{{UNRESOLVED}}\n'
+        (self.plugin/'README.md').write_text(original)
+        result = flow.plugin_create(self.plugin, self.market, skeleton=True, name='new-plugin',
+            display_name='Fictional Plugin', author='Fixture', languages=['en'])
+        self.assertEqual(original, (self.plugin/'README.md').read_text())
+        self.assertTrue(result['checks']['plugin']['structure_valid'])
+        self.assertEqual('needs_attention', result['checks']['status'])
+        self.assertFalse(result['checks']['documentation']['valid'])
+        self.assertIn('Resolve', result['next'])
+
+    def test_final_checks_detect_host_manifest_drift_without_execution(self):
+        flow.plugin_create(self.plugin, self.market, skeleton=True, name='new-plugin',
+            display_name='Fictional Plugin', author='Fixture', languages=['en'])
+        manifest = self.plugin/'.claude-plugin/plugin.json'
+        manifest.write_text('{}')
+        report = flow.creation_checks(self.plugin, self.market)
+        self.assertEqual('needs_attention', report['status'])
+        self.assertFalse(report['plugin']['structure_valid'])
+        self.assertTrue(report['documentation']['valid'])
+        self.assertEqual('not_run', report['tests'])
