@@ -28,7 +28,7 @@ class MarketplaceCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
 
     def test_no_embedded_new_plugins_or_automatic_init(self):
         with self.assertRaisesRegex(ValueError,'separate'):
-            flow.plugin_create(self.market/'plugins/new',self.market,self.source)
+            flow.plugin_create(self.market/'plugins/new',self.market,self.source, license='deferred')
         result=subprocess.run([sys.executable,'-B',str(flow.SKILL/'scripts/workflows.py'),'init'],cwd=self.root,capture_output=True,text=True,check=False)
         self.assertNotEqual(result.returncode, 0)
         self.assertFalse((self.root/'plugin.json').exists())

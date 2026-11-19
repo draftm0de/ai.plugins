@@ -34,9 +34,9 @@ class WorkflowFixture:
         return path
 
 
-    def create(self, root=None):
+    def create(self, root=None, **licensing):
         return flow.plugin_create(root or self.plugin, self.market, self.source, name=(root or self.plugin).name,
-            display_name='Fictional Plugin', description='Fictional acceptance capability', author='Fictional Publisher', languages=['de','en'], default_language='de')
+            display_name='Fictional Plugin', description='Fictional acceptance capability', author='Fictional Publisher', languages=['de','en'], default_language='de', **({'license':'deferred'} | licensing))
 
 
     def make(self,root,action,host,market=None):

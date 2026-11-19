@@ -6,7 +6,7 @@ class IntegrationWorkflowTests(IntegrationWorkflowTestsFixture, unittest.TestCas
     def test_complete_workflow_fresh_clone_and_existing_association(self):
         (self.plugin/'README.md').write_text('Existing project introduction\n')
         (self.plugin/'LICENSE').write_text('Fictional licensing decision preserved\n')
-        self.create()
+        self.create(license='LicenseRef-Fictional', license_file=self.plugin/'LICENSE')
         existing = self.repo('existing-plugin'); self.create(existing)
         # Remove its association to exercise configure against a pre-existing plugin.
         config = json.loads((self.market/'marketplace.json').read_text())
@@ -43,7 +43,7 @@ class IntegrationWorkflowTests(IntegrationWorkflowTestsFixture, unittest.TestCas
         helper=installed/'skills/_shared/scripts/workflows.py'
         subprocess.run([sys.executable,'-B',str(helper),'marketplace-create','--root',str(market),'--name','installed-market','--display-name','Fictional Installed Market','--owner','Fictional Publisher'],cwd=self.root,check=True,capture_output=True)
         plugin=self.repo('installed-plugin')
-        subprocess.run([sys.executable,'-B',str(helper),'plugin-create','--root',str(plugin),'--marketplace',str(market),'--source',str(self.source),'--display-name','Fictional Plugin','--description','Fictional fixture','--author','Fictional Publisher','--languages','en'],cwd=self.root,check=True,capture_output=True)
+        subprocess.run([sys.executable,'-B',str(helper),'plugin-create', '--license', 'deferred','--root',str(plugin),'--marketplace',str(market),'--source',str(self.source),'--display-name','Fictional Plugin','--description','Fictional fixture','--author','Fictional Publisher','--languages','en'],cwd=self.root,check=True,capture_output=True)
         self.assertTrue(verify.verify(plugin)['valid'])
         self.assertFalse((market/'plugins/plugin-manager').exists())
         self.assertEqual('installed-market-dev',self.make(plugin,'install-local','codex')['marketplace'])

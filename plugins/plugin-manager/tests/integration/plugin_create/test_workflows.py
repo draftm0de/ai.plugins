@@ -72,7 +72,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
              'GIT_CONFIG_VALUE_0':'https://github.com/example/cloned.git',
              'GIT_CONFIG_KEY_1':'protocol.file.allow','GIT_CONFIG_VALUE_1':'always'}
         with patch.dict(os.environ,env):
-            flow.plugin_create(destination,self.market,self.source,name='cloned',display_name='Fictional',description='Fixture',repository='https://github.com/example/cloned',author='Fixture',languages=['en'])
+            flow.plugin_create(destination,self.market,self.source,name='cloned',display_name='Fictional',description='Fixture',repository='https://github.com/example/cloned',author='Fixture',languages=['en'], license='deferred')
         self.assertTrue((destination/'.git').is_dir())
         self.assertTrue(verify.verify(destination)['valid'])
         self.assertEqual('https://github.com/example/cloned.git',subprocess.check_output(['git','-C',str(destination),'remote','get-url','origin'],text=True).strip())
@@ -85,7 +85,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         self.assertEqual(before,{p.name:p.read_bytes() for p in self.source.iterdir()})
         self.assertFalse((self.plugin/'plugin.json').exists())
         with self.assertRaisesRegex(ValueError,'Display name'):
-            flow.plugin_create(self.plugin,self.market,self.source,author='Fixture',description='Fixture',languages=['en'])
+            flow.plugin_create(self.plugin,self.market,self.source,author='Fixture',description='Fixture',languages=['en'], license='deferred')
 
 
     def test_nested_ignore_conflict_blocks_plugin_creation_before_writes(self):
@@ -141,7 +141,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'accessible local directory'):
             flow.plugin_create(self.plugin, self.market, self.root/'missing-skill', name='new-plugin',
                                display_name='Fictional Plugin', description='Confirmed description',
-                               author='Fictional Publisher', languages=['en'])
+                               author='Fictional Publisher', languages=['en'], license='deferred')
         self.assertEqual([], [p for p in self.plugin.iterdir() if p.name != '.git'])
         after = {str(p.relative_to(self.market)): p.read_bytes() for p in self.market.rglob('*')
                  if p.is_file() and '.git' not in p.relative_to(self.market).parts}
@@ -149,7 +149,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
 
     def test_skeleton_without_domain_source_has_scope_rules_and_local_association(self):
         result = flow.plugin_create(self.plugin, self.market, skeleton=True, name='new-plugin',
-                                   display_name='Fictional Plugin', author='Fictional Publisher', languages=['en'])
+                                   display_name='Fictional Plugin', author='Fictional Publisher', languages=['en'], license='deferred')
         self.assertEqual('skeleton', result['implementation_status'])
         self.assertFalse(result['published'])
         for relative in ('SCOPE.md', 'AGENTS.md', 'CLAUDE.md', 'docs/architecture.md'):
@@ -179,7 +179,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         original = 'User-owned instructions must be preserved\n'
         (self.plugin/'AGENTS.md').write_text(original)
         before = (self.market/'marketplace.json').read_bytes()
-        args = [sys.executable, '-B', str(flow.SKILL/'scripts/workflows.py'), 'plugin-create',
+        args = [sys.executable, '-B', str(flow.SKILL/'scripts/workflows.py'), 'plugin-create', '--license', 'deferred',
                 '--root', str(self.plugin), '--marketplace', str(self.market), '--skeleton',
                 '--name', 'new-plugin', '--display-name', 'Fictional Plugin', '--author', 'Fixture', '--languages', 'en']
         result = subprocess.run(args, capture_output=True, text=True)
@@ -194,7 +194,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
 
     def test_skeleton_and_source_are_mutually_exclusive_before_writes(self):
         with self.assertRaisesRegex(ValueError, 'either'):
-            flow.plugin_create(self.plugin, self.market, self.source, skeleton=True)
+            flow.plugin_create(self.plugin, self.market, self.source, skeleton=True, license='deferred')
         self.assertFalse((self.plugin/'plugin.json').exists())
 
     def test_skeleton_documentation_all_language_policies(self):
@@ -204,13 +204,13 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
             with self.subTest(languages=languages, default=default):
                 root = self.repo('skeleton-' + str(index))
                 result = flow.plugin_create(root, self.market, skeleton=True, name=root.name,
-                    display_name='Fictional Skeleton', author='Fixture', languages=languages, default_language=default)
+                    display_name='Fictional Skeleton', author='Fixture', languages=languages, default_language=default, license='deferred')
                 self.assertEqual([], validate(root))
                 self.assertEqual('passed', result['checks']['status'])
                 self.assertEqual('pending', result['checks']['functional_acceptance'])
                 self.assertEqual('not_run', result['checks']['tests'])
                 self.assertEqual('not_run', result['checks']['host_acceptance'])
-                self.assertIn('not_assessed', result['checks']['licensing'])
+                self.assertEqual('deferred', result['checks']['licensing']['status'])
                 self.assertTrue((root/'README.md').read_text().startswith('# Fictional Skeleton\n'))
                 for path, (_, _, language) in page_layout(language_policy(root)).items():
                     text = (root/path).read_text()
@@ -223,7 +223,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         original = '# User-owned draft\n\n{{UNRESOLVED}}\n'
         (self.plugin/'README.md').write_text(original)
         result = flow.plugin_create(self.plugin, self.market, skeleton=True, name='new-plugin',
-            display_name='Fictional Plugin', author='Fixture', languages=['en'])
+            display_name='Fictional Plugin', author='Fixture', languages=['en'], license='deferred')
         self.assertEqual(original, (self.plugin/'README.md').read_text())
         self.assertTrue(result['checks']['plugin']['structure_valid'])
         self.assertEqual('needs_attention', result['checks']['status'])
@@ -232,7 +232,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
 
     def test_final_checks_detect_host_manifest_drift_without_execution(self):
         flow.plugin_create(self.plugin, self.market, skeleton=True, name='new-plugin',
-            display_name='Fictional Plugin', author='Fixture', languages=['en'])
+            display_name='Fictional Plugin', author='Fixture', languages=['en'], license='deferred')
         manifest = self.plugin/'.claude-plugin/plugin.json'
         manifest.write_text('{}')
         report = flow.creation_checks(self.plugin, self.market)

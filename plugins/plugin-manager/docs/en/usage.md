@@ -1,6 +1,6 @@
 # Usage
 
-New skeleton pages are filled with the actual scaffold status in the selected languages and validated before writes. Existing prose is preserved. Final checks separately assess the actual plugin structure, marketplace and documentation. Errors in preserved pages remain visible; `checks.status=needs_attention` means creation still has outstanding findings. `passed` confirms only these checks, not licensing or functional acceptance. The completion report also states the licensing decision, actual license files and tests or host checks still pending.
+New skeleton pages are filled with the actual scaffold status in the selected languages and validated before writes. Existing prose is preserved. Final checks separately assess the actual plugin structure, marketplace and documentation. Errors in preserved pages remain visible; `checks.status=needs_attention` means creation still has outstanding findings. `passed` also checks technical consistency of licensing files and documentation; it does not establish legal suitability or functional acceptance. The completion report also states the licensing decision, actual license files and tests or host checks still pending.
 
 [Deutsch](../de/usage.md) | **English**
 
@@ -20,7 +20,7 @@ For `plugin-create`, questions and replies follow the language of your current m
 
 Missing inputs are collected in small steps using the host's structured question tool when available. Without language context, only the language choice is asked first; setup then continues in that language. Confirmed inputs are not asked again. If no question tool is available, the agent briefly explains that and asks one question at a time in chat.
 
-Before creation, the agent resolves the licensing decision. It reuses an unambiguous existing license or established decision; otherwise it asks for a license or explicit deferral. Creation does not begin without an answer. Conflicts are clarified before changes and existing license files are preserved. A deferred decision is reported as unresolved. The chosen license and license files actually created are reported separately; the creation helper does not generate license terms.
+Before creation, the agent resolves the licensing decision. It reuses an unambiguous existing license or established decision; otherwise it asks for a license or explicit deferral. Creation does not begin without an answer. Conflicts are clarified before changes and existing license files are preserved. A deferred decision is reported as unresolved. A selected license is implemented: MIT with a confirmed copyright year and rights holder, other licenses from an explicitly confirmed complete text file. The license file, manifest and documentation are created and checked together. The decision persists in docs/license.md, including explicit deferral.
 
 | Action | Inputs | Result |
 | --- | --- | --- |
@@ -64,7 +64,7 @@ Local snapshots read the current checkout including uncommitted changes, regardl
 
 ```sh
 # From ai.plugins; target checkout already exists with Git origin:
-make plugin-create ARGS='--root /path/to/plugin --marketplace /path/to/catalog --skeleton --name example-plugin --display-name "Example Plugin" --author "Confirmed publisher" --languages de en --default-language de'
+make plugin-create ARGS='--root /path/to/plugin --marketplace /path/to/catalog --skeleton --name example-plugin --display-name "Example Plugin" --author "Confirmed publisher" --languages de en --default-language de --license deferred'
 ```
 
 The existing `--source /path/to/skill` mode remains available; the modes are mutually exclusive. The skeleton contains a visibly marked nonfunctional skill, manifests, association, documentation scaffold, test tools, `SCOPE.md`, `AGENTS.md`, `CLAUDE.md` and `docs/architecture.md`. Differing existing instruction/scope files are not overwritten. Structural validity does not certify domain behavior.

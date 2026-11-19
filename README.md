@@ -180,8 +180,10 @@ Beispiel für ein Skeleton in einem bereits geklonten Repository:
 
 ```sh
 # Im Stamm von ai.plugins:
-make plugin-create ARGS='--root ../mein-plugin --marketplace . --skeleton --name mein-plugin --display-name "Mein Plugin" --author "Bestätigter Herausgeber" --languages de en --default-language de'
+make plugin-create ARGS='--root ../mein-plugin --marketplace . --skeleton --name mein-plugin --display-name "Mein Plugin" --author "Bestätigter Herausgeber" --languages de en --default-language de --license deferred'
 ```
+
+`--license deferred` setzt eine ausdrücklich vertagte Lizenzentscheidung voraus. Für MIT stattdessen `--license MIT --copyright-year "BESTÄTIGTES_JAHR" --copyright-holder "BESTÄTIGTER_RECHTEINHABER"` verwenden; andere Lizenzen benötigen `--license KENNUNG --license-file /pfad/zum/bestätigten-lizenztext`.
 
 Für einen bestehenden Skill `--skeleton` durch `--source ../mein-skill --description "Bestätigte Funktionsbeschreibung"` ersetzen. `make plugin-create ARGS='--help'` zeigt alle Optionen.
 

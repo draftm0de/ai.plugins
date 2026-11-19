@@ -315,7 +315,7 @@ def complete_skeleton_documentation(stage, title):
         raise ValueError('Skeleton documentation validation failed: ' + '; '.join(errors))
 
 
-def creation_checks(root, market):
+def creation_checks(root, market, license_decision=None):
     """Read actual output using trusted helpers, without executing target code."""
     from documentation import validate
     from verify import verify
@@ -333,13 +333,18 @@ def creation_checks(root, market):
     checks['status'] = ('passed' if not errors and all(checks[k]['structure_valid']
                         for k in ('plugin', 'marketplace')) else 'needs_attention')
     checks['licensing'] = 'not_assessed; report the separately confirmed decision and actual license files'
+    if license_decision is not None:
+        from licensing import check
+        checks['licensing'] = check(root, license_decision)
+        if not checks['licensing']['valid']:
+            checks['status'] = 'needs_attention'
     checks['functional_acceptance'] = 'pending'
     checks['tests'] = 'not_run'
     checks['host_acceptance'] = 'not_run'
     return checks
 
 
-def plugin_create(root, marketplace, source=None, name=None, display_name=None, description=None, repository=None, author=None, languages=None, default_language=None, skeleton=False, _skeleton_documentation=False):
+def plugin_create(root, marketplace, source=None, name=None, display_name=None, description=None, repository=None, author=None, languages=None, default_language=None, skeleton=False, _skeleton_documentation=False, license=None, license_file=None, copyright_year=None, copyright_holder=None):
     if skeleton:
         if source is not None:
             raise ValueError("Choose either --skeleton or --source, not both")
@@ -348,7 +353,8 @@ def plugin_create(root, marketplace, source=None, name=None, display_name=None, 
             stub = Path(directory).resolve()/name
             stub.mkdir()
             (stub/"SKILL.md").write_text("---\nname: " + name + "\ndescription: Unimplemented plugin skeleton; no domain behavior is available.\n---\n\n# Plugin skeleton\n\n<!-- plugin-skeleton: unimplemented -->\n\nThis is a nonfunctional development skeleton. Do not perform domain actions or claim capabilities. Read SCOPE.md in the source repository and clarify requirements before implementing. Remove the skeleton marker only after implementing and reviewing the agreed behavior.\n")
-            result = plugin_create(root, marketplace, stub, name, display_name, description or "Unimplemented plugin skeleton; domain requirements are pending.", repository, author, languages, default_language, _skeleton_documentation=True)
+            result = plugin_create(root, marketplace, stub, name, display_name, description or "Unimplemented plugin skeleton; domain requirements are pending.", repository, author, languages, default_language, _skeleton_documentation=True,
+                                   license=license, license_file=license_file, copyright_year=copyright_year, copyright_holder=copyright_holder)
             result.update(implementation_status="skeleton", next="Confirm SCOPE.md, implement agreed behavior under skills/, add tests, then run verify --review. No functional acceptance is claimed.")
             if result['checks']['status'] != 'passed':
                 result['next'] = 'Resolve the reported creation checks before claiming completion. ' + result['next']
@@ -360,6 +366,8 @@ def plugin_create(root, marketplace, source=None, name=None, display_name=None, 
         raise ValueError('Use separate plugin and marketplace repositories')
     if root == source or source.is_relative_to(root) or root.is_relative_to(source):
         raise ValueError('Source skill and output must be separate')
+    from licensing import plan, document
+    license_decision = plan(root, license, license_file, copyright_year, copyright_holder)
     if not root.exists():
         url = repository_url(repository)
         root.parent.mkdir(parents=True, exist_ok=True)
@@ -388,23 +396,27 @@ def plugin_create(root, marketplace, source=None, name=None, display_name=None, 
         manifest = read(stage/'plugin.json')
         manifest['description'] = description
         manifest['extensions']['com.openai'] = {'interface': {'displayName': display_name}}
+        if license_decision['identifier']:
+            manifest['license'] = license_decision['identifier']
+            (stage/license_decision['file']).write_bytes(license_decision['content'])
         (stage/'plugin.json').write_bytes(encode(manifest))
         engine = module(SKILL/'templates/plugin/scripts/plugin.py', 'trusted_payload')
         for path, data in engine.repository_files(manifest).items():
             (stage/path).write_bytes(encode(data))
         if _skeleton_documentation:
             complete_skeleton_documentation(stage, display_name)
+        document(stage, license_decision)
         files = {root/p.relative_to(stage): p.read_bytes() for p in stage.rglob('*') if p.is_file()}
         # Existing prose and licenses remain canonical; docs action can later merge them.
         for path in list(files):
-            if (path.exists() and path not in (root/'docs/architecture.md', root/'docs/prerequisites.md')
+            if (path.exists() and path not in (root/'docs/architecture.md', root/'docs/prerequisites.md', root/'docs/license.md')
                     and (path.name.startswith('README') or path.is_relative_to(root/'docs'))):
                 del files[path]
         association = association_files(root, market, manifest)
         files.update(association)
         changes = apply(files, association.keys())
     return {'action': 'plugin-create', 'changed': changes, 'repository': origin, 'published': False,
-            'checks': creation_checks(root, market),
+            'checks': creation_checks(root, market, license_decision),
             'next': 'Complete documentation templates from the actual skill source; verify structure, test behavior and perform separate host acceptance.'}
 
 
@@ -428,6 +440,10 @@ def main():
             command.add_argument('--description'); command.add_argument('--author')
             command.add_argument('--languages', nargs='+', choices=['de','en'])
             command.add_argument('--default-language', choices=['de','en'])
+            command.add_argument('--license', required=True, help='Confirmed identifier, or deferred after explicit user choice')
+            command.add_argument('--license-file', type=Path, help='Confirmed complete license text; copied unchanged')
+            command.add_argument('--copyright-year', help='Confirmed MIT copyright year or year range')
+            command.add_argument('--copyright-holder', help='Confirmed MIT rights holder, never inferred from author')
     parsed, unknown = parser.parse_known_args()
     args = vars(parsed); action = args.pop('action')
     if unknown:

@@ -19,7 +19,7 @@ turn. Record actual outcomes separately; never count this specification as execu
 | R2 existing license | Target contains an explicitly supplied fictional license with matching metadata. | Reuses the decision without a redundant question and preserves the license bytes. |
 | R2 known session decision | User explicitly deferred licensing earlier in this session. | Does not ask again; completion still reports unresolved licensing. |
 | R2 conflicting evidence | User asks for a license different from the supplied existing fictional license. | Clarifies the conflict before writes; existing content remains unchanged. |
-| R2 selected license | Missing license; user answers with an explicit license choice. | Distinguishes the choice from actual file creation; does not claim the helper generated a license or accept invented terms. |
+| R2 selected license | Missing license; user answers with an explicit license choice. | For MIT, asks only for missing copyright facts and creates the license, manifest metadata and localized documentation through the helper. For other licenses, obtains a confirmed complete text and identifier. Reports actual checks; never invents terms or stops after merely recording the choice. |
 | R3 German message | German creation request, English-only documentation explicitly selected. | Questions, progress and completion are German; documentation policy remains English only. |
 | R3 bare command with history | German conversation followed by /plugin-manager:plugin-create. | Keeps German without asking again; does not switch to the English skill language. |
 | R3 bare command without history | Only /plugin-manager:plugin-create; no language preference. | Briefly asks the conversation language instead of silently defaulting to English. |

@@ -38,7 +38,11 @@ For this action, use the language of the current user message for questions, pro
 
 Resolve licensing before invoking the creation helper or writing target files. Reuse an explicit session decision or an unambiguous existing license in the target repository without asking again. If absent, ask which license should apply, with an explicit option to defer. Wait for an answer; absence of an answer is not permission to omit this step. Do not infer a license from the publisher, Git author, marketplace or neighboring repositories. Conflicting license files, metadata or user instructions require clarification before writes; preserve all existing content.
 
-A deferred decision permits scaffolding but remains unresolved and must be named in the completion report. A selected license is a user decision, not evidence that a license file has been created: distinguish the decision from actual files and metadata, and report outstanding work accurately. The helper has no licensing argument and does not generate license terms. Never claim it implements the licensing decision automatically or invent legal text. These are agent interaction requirements, not new CLI options.
+A deferred decision permits scaffolding but remains unresolved and must be named in the completion report. Pass it explicitly as `--license deferred`; omission is rejected before creation writes. The decision is persisted in `docs/license.md` and linked from each selected language's READMEs.
+
+Implement a selected license instead of stopping at the decision. For MIT, pass `--license MIT --copyright-year YEAR --copyright-holder HOLDER` after confirming the copyright year and rights holder; do not infer them from the publisher or Git identity. The bundled MIT text is based on https://opensource.org/license/mit and preserves its terms. For another license, use its confirmed identifier with `--license-file /explicit/path/to/complete-text`; the agent must verify the text and identifier with the user or an authoritative source before invoking the helper. It copies the supplied text unchanged, without pretending to validate its legal meaning. Unsupported templates and incomplete text are rejected before writes. Do not invent license terms.
+
+For an existing target license, use the confirmed identifier and that exact file as `--license-file`; preserve its bytes and name. Multiple license files or a differing selected text require review before writes. The helper creates the selected file when missing, writes the identifier to plugin.json and derived host metadata, and updates new documentation with the actual licensing state. Existing prose is preserved; missing decision links are reported for deliberate completion. Inspect `checks.licensing` and resolve errors before claiming licensing implementation is complete; deferred remains deferred, never implemented. No new approval is needed for the already confirmed license choice.
 
 ```sh
 python3 /path/to/installed/skills/_shared/scripts/workflows.py plugin-create \
@@ -46,7 +50,7 @@ python3 /path/to/installed/skills/_shared/scripts/workflows.py plugin-create \
   --repository https://github.com/OWNER/EXISTING-REPO \
   --source /work/agreed-skill --name example-plugin --display-name "Example Plugin" \
   --description "Confirmed capability description" --author "Confirmed publisher" \
-  --languages de en --default-language de
+  --languages de en --default-language de --license deferred
 ```
 
 Clone the existing remote when the target checkout is absent. Otherwise inspect the checkout and validate origin. The helper copies the source skill without renaming it, creates versionless plugin and host manifests, development tools, tests and documentation templates, registers the external repository in the marketplace and records local mappings. No marketplace catalogs belong in the plugin. Existing plugins use configure instead. A failed post-clone preflight leaves the cloned checkout available for inspection, without deleting it automatically.
@@ -88,7 +92,7 @@ Snapshots read the current checkout including uncommitted changes, regardless of
 python3 /path/to/plugin/skills/_shared/scripts/workflows.py plugin-create \
   --root /work/new-plugin --marketplace /work/catalog --skeleton \
   --name example-plugin --display-name "Example Plugin" --author "Confirmed publisher" \
-  --languages de en --default-language de
+  --languages de en --default-language de --license deferred
 ```
 
 The GitHub repository already exists. Reuse origin or supply --repository for cloning.
@@ -98,7 +102,7 @@ AGENTS.md, CLAUDE.md and docs/architecture.md keep common development rules avai
 in later chats. Existing differing files abort preflight rather than being overwritten.
 The result reports implementation_status=skeleton; structural validity is independent.
 
-New skeleton documentation is filled with localized scaffold facts and validated in staging before target writes. Existing prose is preserved; post-write `checks` report actual plugin/marketplace structure and documentation errors, including errors in preserved pages. `checks.status=passed` refers only to those checks, not licensing, domain acceptance, tests or host acceptance. `needs_attention` means the creation workflow is not complete: report the findings and resolve them within authorization before claiming completion. Source imports still require evidence-based documentation authoring followed by fresh checks. The final agent report must state structure, documentation, the separately confirmed licensing decision and actual license files, pending implementation/acceptance, and actual test/host evidence separately.
+New skeleton documentation is filled with localized scaffold facts and validated in staging before target writes. Existing prose is preserved; post-write `checks` report actual plugin/marketplace structure and documentation errors, including errors in preserved pages. `checks.status=passed` covers these checks plus technical consistency of the explicit licensing decision, files and documentation. It does not establish legal suitability, domain acceptance, executed tests or host acceptance. `needs_attention` means the creation workflow is not complete: report the findings and resolve them within authorization before claiming completion. Source imports still require evidence-based documentation authoring followed by fresh checks. The final agent report must state structure, documentation, the separately confirmed licensing decision and actual license files, pending implementation/acceptance, and actual test/host evidence separately.
 
 Confirm SCOPE with the user, implement under skills/, add relevant tests, then request
 verify with --review. The helper collects evidence; the agent compares actual source

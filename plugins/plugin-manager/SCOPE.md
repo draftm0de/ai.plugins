@@ -48,3 +48,13 @@ Acceptance: Missing setup inputs are collected using the host's available struct
 Source: skills/plugin-create/SKILL.md
 Source: skills/_shared/references/workflows.md
 Test: tests/behavior/plugin_create_acceptance.md
+
+## R6: Implement confirmed licensing and persist the decision
+
+Status: confirmed
+Acceptance: plugin-create requires an explicit license identifier or explicit deferral before writes. A selected MIT license creates the standard license with confirmed copyright year and holder; another selected license uses an explicitly confirmed complete file without alteration. Missing inputs, unsupported templates and conflicting existing license files fail before plugin/marketplace writes. Existing matching license bytes are preserved. Selected licensing appears in plugin and derived host manifests, and new documentation in every selected language links to the persisted decision and license file. Explicit deferral is persisted without claiming a license. Final checks distinguish implemented, deferred and inconsistent licensing; existing prose is preserved and missing licensing documentation is reported.
+Source: skills/_shared/scripts/licensing.py
+Source: skills/_shared/scripts/workflows.py
+Source: skills/_shared/templates/licenses/MIT.txt
+Source: skills/plugin-create/SKILL.md
+Test: tests/integration/plugin_create/test_licensing.py
