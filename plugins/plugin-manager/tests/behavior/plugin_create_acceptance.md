@@ -38,8 +38,7 @@ For these label requirements, check the exact action labels as well as behavior.
 
 | Input | Required outcome |
 | --- | --- |
-| Existing fictional plugin, bare command, no conversation language | First question contains only language selection. After Deutsch is submitted, offer only German actions: Verifizieren, Anderes Plugin erstellen, Konfigurieren. No bilingual action question or licensing/setup questions. |
-| Existing fictional plugin, known German conversation | Skip language question; use German questions, labels and descriptions. Never use Neu anlegen or Recreate for the different-plugin action. |
-| Existing fictional plugin, known English conversation | Use Verify, Create another plugin, Configure with English descriptions only. |
-| Select Anderes Plugin erstellen | Ask for a different target path; do not reuse or overwrite the existing plugin. No writes until a valid explicit destination and required inputs are available. |
+| Existing fictional plugin, bare command, no conversation language | First question contains only language selection. After Deutsch is submitted, offer only German actions: Verifizieren, Konfigurieren. No bilingual action question or licensing/setup questions. |
+| Existing fictional plugin, known German conversation | Skip language question; use German questions, labels and descriptions. Offer only Verifizieren and Konfigurieren; no creation option or new target-path question. |
+| Existing fictional plugin, known English conversation | Offer only Verify and Configure with English descriptions; no creation option or new target-path question. |
 | No action submitted | Do not execute verification, configuration or creation merely because an option is preselected. |

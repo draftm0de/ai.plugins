@@ -62,7 +62,7 @@ Test: tests/integration/plugin_create/test_licensing.py
 ## R7: Repeated creation detects existing products before license validation
 
 Status: confirmed
-Acceptance: An existing target product is rejected before licensing validation or creation writes, even with missing/conflicting licensing arguments. Unknown conversation language is resolved alone before offering existing-plugin actions; known language is used exclusively. The action for a different plugin is labelled “Anderes Plugin erstellen” in German or “Create another plugin” in English and requires another explicitly selected path. Existing files and marketplace entries remain unchanged.
+Acceptance: An existing target product is rejected before licensing validation or creation writes, even with missing/conflicting licensing arguments. Unknown conversation language is resolved alone before offering existing-plugin actions; known language is used exclusively. The existing-plugin dialog offers only verification and configuration; it does not offer creation of another plugin or request another target path. Existing files and marketplace entries remain unchanged.
 Source: skills/_shared/scripts/workflows.py
 Source: skills/plugin-create/SKILL.md
 Source: skills/_shared/references/workflows.md
