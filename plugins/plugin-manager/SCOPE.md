@@ -78,3 +78,13 @@ Source: skills/plugin-create/SKILL.md
 Source: skills/_shared/references/workflows.md
 Test: tests/integration/plugin_create/test_workflows.py
 Test: tests/behavior/plugin_create_acceptance.md
+
+## R9: Project-scoped operator language for generated plugins
+
+Status: confirmed
+Acceptance: Every newly generated plugin ships a shared operator-language helper and entry-point instructions. Before setup/domain interaction, a missing project preference is asked alone and persisted only after an explicit answer. Later calls reuse it, including bare slash commands and new sessions. An explicit change updates only that project's preference. Content/documentation languages remain independent; invalid state is rejected without mutation. Future skills preserve the same gate.
+Source: skills/_shared/templates/plugin/skills/_shared/scripts/operator_language.py
+Source: skills/_shared/templates/plugin/skills/_shared/references/operator-language.md
+Source: skills/_shared/scripts/workflows.py
+Test: tests/integration/plugin_create/test_workflows.py
+Test: tests/behavior/operator_language_acceptance.md

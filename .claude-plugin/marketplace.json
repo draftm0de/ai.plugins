@@ -22,6 +22,15 @@
       },
       "description": "Adaptive job interview coaching with role-specific practice, feedback, interviewer research and private training progress.",
       "displayName": "Interview Coach"
+    },
+    {
+      "name": "website-manager",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/draftm0de/ai.plugin.website.git"
+      },
+      "description": "Create, manage and maintain websites: guided setup of new or existing sites, brief and start page design, local preview, SEO and accessibility audits with reports and work list, editing of the start page. Publishing is not available yet.",
+      "displayName": "Website Manager"
     }
   ]
 }

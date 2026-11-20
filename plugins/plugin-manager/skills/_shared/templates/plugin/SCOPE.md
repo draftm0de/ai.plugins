@@ -40,3 +40,10 @@ Changes to rules may make an existing plugin fail verification. Update it only u
 an explicit implementation request; never weaken scope to accept outdated content.
 Keine Altformat-Unterstützung oder stillen Migrationen. Nicht unterstützte Daten
 mit konkretem Grund ablehnen, niemals löschen oder überschreiben.
+
+## R1: Project-scoped operator language for generated plugins
+
+Status: confirmed
+Acceptance: This plugin ships a shared operator-language helper and entry-point instructions. Before setup/domain interaction, a missing project preference is asked alone and persisted only after an explicit answer. Later calls reuse it, including bare slash commands and new sessions. An explicit change updates only that project's preference. Content/documentation languages remain independent; invalid state is rejected without mutation. Future skills preserve the same gate.
+Source: skills/_shared/scripts/operator_language.py
+Source: skills/_shared/references/operator-language.md

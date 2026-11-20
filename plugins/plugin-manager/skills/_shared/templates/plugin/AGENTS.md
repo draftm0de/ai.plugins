@@ -28,3 +28,9 @@ Changes to rules may make an existing plugin fail verification. Update it only u
 an explicit implementation request; never weaken scope to accept outdated content.
 Keine Altformat-Unterstützung oder stillen Migrationen. Nicht unterstützte Daten
 mit konkretem Grund ablehnen, niemals löschen oder überschreiben.
+
+## Operator language
+
+Every public skill must load `skills/_shared/references/operator-language.md` before
+setup/domain interaction. Preserve this gate when replacing the skeleton or adding
+skills. Persist the explicit preference per consuming project; never in the plugin.

@@ -19,6 +19,33 @@ import verify
 from tests.support.workflow_fixture import WorkflowFixture
 
 class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
+    def test_generated_operator_language_persists_per_project(self):
+        self.create()
+        helper = self.plugin/'skills/_shared/scripts/operator_language.py'
+        spec = importlib.util.spec_from_file_location('generated_operator_language', helper)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        first = self.root/'consumer-one'; first.mkdir()
+        second = self.root/'consumer-two'; second.mkdir()
+        self.assertTrue(module.preference(first)['needs_choice'])
+        self.assertFalse((first/'.project').exists())
+        module.preference(first, 'de')
+        self.assertEqual('de', module.preference(first)['operator_language'])
+        self.assertTrue(module.preference(second)['needs_choice'])
+        module.preference(first, 'en')
+        self.assertEqual('en', module.preference(first)['operator_language'])
+        path = first/'.project/operator.json'
+        for invalid in ('{', '{"schema_version": 2, "operator_language": "de"}',
+                        '{"schema_version": 1, "operator_language": ""}'):
+            path.write_text(invalid)
+            with self.assertRaises(ValueError): module.preference(first, 'de')
+            self.assertEqual(invalid, path.read_text())
+        path.unlink(); path.symlink_to(second/'untouched')
+        with self.assertRaises(ValueError): module.preference(first, 'de')
+        self.assertFalse((second/'untouched').exists())
+        self.assertIn('../_shared/references/operator-language.md',
+                      (self.plugin/'skills/new-plugin/SKILL.md').read_text())
+
     def test_repeated_creation_precedes_license_validation_and_preserves_repositories(self):
         self.create()
         (self.plugin/'LICENSE').write_text('Existing fictional license; do not overwrite.\n')

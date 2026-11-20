@@ -379,7 +379,7 @@ def plugin_create(root, marketplace, *, name=None, display_name=None, descriptio
         stage = Path(directory).resolve()/'plugin'
         stub = Path(directory).resolve()/'source'/name
         stub.mkdir(parents=True)
-        (stub/"SKILL.md").write_text("---\nname: " + name + "\ndescription: Unimplemented plugin skeleton; no domain behavior is available.\n---\n\n# Plugin skeleton\n\n<!-- plugin-skeleton: unimplemented -->\n\nThis is a nonfunctional development skeleton. Do not perform domain actions or claim capabilities. Read SCOPE.md in the source repository and clarify requirements before implementing. Remove the skeleton marker only after implementing and reviewing the agreed behavior.\n")
+        (stub/"SKILL.md").write_text("---\nname: " + name + "\ndescription: Unimplemented plugin skeleton; no domain behavior is available.\n---\n\n# Plugin skeleton\n\nBefore any interaction, read and follow `../_shared/references/operator-language.md`.\n\n<!-- plugin-skeleton: unimplemented -->\n\nThis is a nonfunctional development skeleton. Do not perform domain actions or claim capabilities. Read SCOPE.md in the source repository and clarify requirements before implementing. Remove the skeleton marker only after implementing and reviewing the agreed behavior.\n")
         scaffold_plugin(stub, stage, languages, default_language, origin, author, name)
         manifest = read(stage/'plugin.json')
         manifest['description'] = description
