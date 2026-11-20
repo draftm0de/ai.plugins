@@ -234,6 +234,16 @@ def local_configuration(root, kind):
             marketplace(market)
             config = read(market, 'marketplace.json')
             manifest = read(root, 'plugin.json')
+            repository = manifest['repository'].removesuffix('.git')
+            display = manifest.get('extensions', {}).get('com.openai', {}).get('interface', {}).get('displayName')
+            for entry in config['plugins']:
+                if 'path' in entry or entry.get('repository', '').removesuffix('.git') != repository:
+                    continue
+                if entry.get('name') != manifest['name'] or (display and entry.get('displayName') != display):
+                    raise ValueError(
+                        f"Marketplace catalog entry '{entry.get('name')}' ('{entry.get('displayName')}') does not match plugin.json "
+                        f"'{manifest['name']}' ('{display}'). A plugin repository does not own the catalog: update the entry "
+                        "(name, displayName, description) in the marketplace repository and run its sync-marketplace.")
             sources = read(market, '.local/marketplace.json').get('sources', {})
             selected_path = sources.get(manifest['name'])
             if not selected_path:
