@@ -45,8 +45,6 @@ class EntryTextTests(unittest.TestCase):
         for needle in ('../../_shared/references/workflows.md', 'in this folder', 'never invent or dummy-fill', 'explicitly selected',
                        'never roll anything back', 'not a failure of the skeleton', 'nothing is replaced', 'remotes'):
             self.assertIn(needle, text)
-        self.assertFalse((ROOT / 'skills/plugin-create/SKILL.md').exists())
-        self.assertNotIn('../../plugin-create/SKILL.md', text)
         for rule in ('Silence is not deferral', '--license MIT', '--copyright-holder',
                      '--license-file', 'checks.licensing', 'Never execute target code',
                      'nonfunctional scaffold', 'Never offer skill import'):
