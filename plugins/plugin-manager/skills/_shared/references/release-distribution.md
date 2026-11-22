@@ -8,7 +8,7 @@ The user confirmed successful Claude and GPT imports of the Manager repository o
 
 Use actual repository URLs in installation guides. Describe Claude Desktop's reported German path: Einstellungen → Anpassungen / Plugins → + Hinzufügen → Marketplace hinzufügen → Aus einem Repository hinzufügen → URL → Synchronisieren. Codex's reported path: user icon → Settings → Integration > Plugins → + Add > A Marketplace. Label host/account constraints; don't invent an identical UI for ChatGPT web. A private repository needs supported account access.
 
-Sources: https://code.claude.com/docs/en/plugins/loading ; https://support.claude.com/en/articles/13837440-use-plugins-in-claude ; https://developers.openai.com/plugins/build/plugins ; https://learn.chatgpt.com/docs/enterprise/plugin-management . Consult current official docs for changed host claims. Local developer snapshots use install-local/update-local without plugin archives.
+Sources: https://code.claude.com/docs/en/plugins/loading ; https://support.claude.com/en/articles/13837440-use-plugins-in-claude ; https://developers.openai.com/plugins/build/plugins ; https://learn.chatgpt.com/docs/enterprise/plugin-management . Consult current official docs for changed host claims. Local developer snapshots use install-local without plugin archives.
 
 ## Claude Desktop versus terminal commands
 

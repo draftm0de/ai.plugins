@@ -16,12 +16,11 @@ TITLE ?=
 help:
 	@echo 'Tests: test (unit + integration + contracts), test-unit, test-integration, test-contracts, test-native, test-behavior'
 	@echo 'Git + Python 3.10+; Make is optional. Use python3 -B scripts/verify.py or the relevant Python helper directly.'
-	@echo 'Host CLI only for automatic local install/update. After edits/branch switches: update-local, then a new host session.'
-	@echo 'configure is normal setup; local-marketplace.example.json is optional. Runtime reads ignored .local/marketplace.json only.'
-	@echo 'make install-local / update-local TARGET=claude|codex  Test checkout edits without GitHub'
+	@echo 'Host CLI only for automatic local install. After edits/branch switches: install-local, then a new host session.'
+	@echo 'local-marketplace.example.json is optional. Runtime reads ignored .local/marketplace.json only.'
+	@echo 'make install-local TARGET=claude|codex  Test checkout edits without GitHub'
 	@echo 'make sync-plugin / check-plugin     Generate / validate committed repository import metadata'
 	@echo 'make verify SOURCE=...             Read-only structure audit; host acceptance remains separate'
-	@echo 'make marketplace-create / plugin-create / configure ARGS=... (see --help)'
 	@echo 'make inspect SOURCE=/path/to/skill  Inspect source without executing it'
 	@echo 'make scaffold SOURCE=... OUTPUT=... Create missing doc templates and copy the icon'
 	@echo 'make validate-docs OUTPUT=...       Validate finished docs; scaffolds intentionally fail'
@@ -53,21 +52,13 @@ verify:
 	@test -n "$(SOURCE)" || (echo "SOURCE is required" >&2; exit 2)
 	$(PYTHON) skills/_shared/scripts/verify.py --source "$(SOURCE)" --kind auto $(if $(filter 1,$(REVIEW)),--review,)
 
-.PHONY: marketplace-create plugin-create configure plugin-verify marketplace-verify
-# ARGS contains reviewed CLI options; the installed skill invokes Python with argument arrays.
-marketplace-create plugin-create configure:
-	$(PYTHON) skills/_shared/scripts/workflows.py $@ $(ARGS)
-plugin-verify marketplace-verify:
-	$(PYTHON) skills/_shared/scripts/verify.py --source "$(SOURCE)" --kind $(if $(filter plugin-verify,$@),plugin,marketplace) $(if $(filter 1,$(REVIEW)),--review,)
 
 # Local development and repository metadata
 # Disable implicit shell-script rules (for example install.sh -> install).
 .SUFFIXES:
-.PHONY: install-local update-local check-plugin sync-plugin
+.PHONY: install-local check-plugin sync-plugin
 install-local:
 	$(PYTHON) scripts/plugin.py install-local --target "$(TARGET)" $(if $(MARKETPLACE),--marketplace "$(MARKETPLACE)",) $(if $(filter 1,$(DRY_RUN)),--dry-run,)
-update-local:
-	$(PYTHON) scripts/plugin.py update-local --target "$(TARGET)" $(if $(MARKETPLACE),--marketplace "$(MARKETPLACE)",) $(if $(filter 1,$(DRY_RUN)),--dry-run,)
 check-plugin:
 	$(PYTHON) scripts/plugin.py check
 sync-plugin:

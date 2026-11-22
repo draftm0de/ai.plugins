@@ -25,7 +25,7 @@ class IntegrationWorkflowTests(IntegrationWorkflowTestsFixture, unittest.TestCas
             result=self.make(self.plugin,'install-local',host)
             self.assertEqual({'new-plugin','existing-plugin'},set(result['plugins']))
             skill=existing/'skills/existing-plugin/SKILL.md';skill.write_text(skill.read_text()+'\nFictional change\n')
-            update=self.make(existing,'update-local',host)
+            update=self.make(existing,'install-local',host)
             self.assertNotEqual(result['plugins']['existing-plugin']['version'],update['plugins']['existing-plugin']['version'])
         shutil.rmtree(self.market/'.local')
         report=verify.verify(self.market)
@@ -52,7 +52,7 @@ class IntegrationWorkflowTests(IntegrationWorkflowTestsFixture, unittest.TestCas
     def test_python_snapshots_and_verify_need_neither_make_nor_host_cli(self):
         self.create()
         env=dict(os.environ,PATH='')
-        result=subprocess.run([sys.executable,'-B',str(self.plugin/'scripts/plugin.py'),'update-local','--target','codex','--dry-run'],
+        result=subprocess.run([sys.executable,'-B',str(self.plugin/'scripts/plugin.py'),'install-local','--target','codex','--dry-run'],
                               cwd=self.plugin,env=env,check=True,capture_output=True,text=True)
         report=json.loads(result.stdout)
         self.assertFalse(report['executed'])

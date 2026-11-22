@@ -20,9 +20,9 @@
 
 ## Paketierung
 
-<!-- Explain Makefile install-local/update-local TARGET=claude|codex, separate <marketplace-name>-dev snapshots under dist/local-development, uncommitted edits, DRY_RUN=1 creating snapshots without host calls, CLI prerequisites and local-vs-account scope. Keep matching numbered/code-block formatting across hosts and languages. Explain check-plugin/sync-plugin. No plugin ZIP builder or remote install/update targets. Never recommend copying into host caches. -->
+<!-- Explain Makefile install-local TARGET=claude|codex, separate <marketplace-name>-dev snapshots under dist/local-development, uncommitted edits, DRY_RUN=1 creating snapshots without host calls, CLI prerequisites and local-vs-account scope. Keep matching numbered/code-block formatting across hosts and languages. Explain check-plugin/sync-plugin. No plugin ZIP builder or remote install/update targets. Never recommend copying into host caches. -->
 
-<!-- Lokale Snapshots lesen den aktuellen Checkout einschließlich uncommitteter Änderungen, unabhängig vom Branch. Nach Änderungen oder Branchwechsel `update-local` ausführen und eine neue Host-Sitzung öffnen. Kein Commit, Push oder PR ist für lokale Tests erforderlich. Es bleibt bei einem gemeinsamen `<marketplace-id>-dev`, ohne zusätzliche Marketplaces pro Branch. `configure` ist der reguläre Einrichtungsweg. `local-marketplace.example.json` ist eine optionale manuelle Kopiervorlage. Nur `.local/marketplace.json` wird zur Laufzeit für lokale Zuordnungen gelesen; diese Zuordnungen werden nicht committed. -->
+<!-- Lokale Snapshots lesen den aktuellen Checkout einschließlich uncommitteter Änderungen, unabhängig vom Branch. Nach Änderungen oder Branchwechsel `install-local` ausführen und eine neue Host-Sitzung öffnen. Kein Commit, Push oder PR ist für lokale Tests erforderlich. Es bleibt bei einem gemeinsamen `<marketplace-id>-dev`, ohne zusätzliche Marketplaces pro Branch. `configure` ist der reguläre Einrichtungsweg. `local-marketplace.example.json` ist eine optionale manuelle Kopiervorlage. Nur `.local/marketplace.json` wird zur Laufzeit für lokale Zuordnungen gelesen; diese Zuordnungen werden nicht committed. -->
 
 {{CONTENT_03}}
 

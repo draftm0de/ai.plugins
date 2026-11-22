@@ -20,7 +20,7 @@ class SharedLocalTests(SharedLocalTestsFixture, unittest.TestCase):
     def test_uncommitted_edits_change_only_affected_plugin_hash(self):
         first=engine.install_local('codex',dry_run=True,root=self.root)
         (self.coach/'skills/example/SKILL.md').write_text('Changed fictional skill')
-        second=engine.install_local('codex',update=True,dry_run=True,root=self.root)
+        second=engine.install_local('codex',dry_run=True,root=self.root)
         self.assertEqual(first['plugins']['plugin-manager']['version'],second['plugins']['plugin-manager']['version'])
         self.assertNotEqual(first['plugins']['interview-coach']['version'],second['plugins']['interview-coach']['version'])
         copied=Path(second['path'])/'plugins/interview-coach/skills/example/SKILL.md'
@@ -59,14 +59,14 @@ class SharedLocalTests(SharedLocalTestsFixture, unittest.TestCase):
         skill.write_text(skill.read_text()+'\nFictional feature branch content.\n')
         git('add','--','skills');git('commit','-qm','Fictional branch fixture')
         skill.write_text(skill.read_text()+'\nUncommitted local instructions.\n')
-        changed=engine.install_local('codex',update=True,dry_run=True,root=self.root)
+        changed=engine.install_local('codex',dry_run=True,root=self.root)
         self.assertEqual(first['marketplace'],changed['marketplace'])
         self.assertEqual(first['path'],changed['path'])
         self.assertNotEqual(first['plugins']['interview-coach']['version'],changed['plugins']['interview-coach']['version'])
         self.assertEqual(skill.read_bytes(),(Path(changed['path'])/'plugins/interview-coach/skills/example/SKILL.md').read_bytes())
         # Discard only this test fixture's edit to exercise a second branch switch.
         git('restore','--','skills/example/SKILL.md');git('switch','main')
-        restored=engine.install_local('codex',update=True,dry_run=True,root=self.root)
+        restored=engine.install_local('codex',dry_run=True,root=self.root)
         self.assertEqual(first['plugins']['interview-coach']['version'],restored['plugins']['interview-coach']['version'])
         self.assertEqual(first['path'],restored['path'])
 

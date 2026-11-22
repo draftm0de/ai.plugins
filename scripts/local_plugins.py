@@ -86,7 +86,7 @@ def prepare(root, target):
             entry['version'] = snapshots[name]['version']
     return marketplace, catalog_key, catalog, snapshots
 
-def install_local(target, update=False, dry_run=False, root=ROOT):
+def install_local(target, dry_run=False, root=ROOT):
     if target not in ('claude', 'codex'):
         raise ValueError('Local development supports claude or codex')
     root = Path(root).resolve()
@@ -132,7 +132,7 @@ def install_local(target, update=False, dry_run=False, root=ROOT):
     for name in snapshots:
         selector = name + '@' + marketplace
         commands.append(['codex', 'plugin', 'add', selector, '--json'] if target == 'codex' else
-                        ['claude', 'plugin', 'update' if update else 'install', selector, '--scope', 'user'])
+                        ['claude', 'plugin', 'install', selector, '--scope', 'user'])
     if not dry_run:
         if not shutil.which(target):
             raise ValueError(f'{target} CLI not found; snapshots prepared but no plugins installed')
@@ -144,13 +144,13 @@ def install_local(target, update=False, dry_run=False, root=ROOT):
             'next': 'Open a new local session. Enable only the intended remote or development copy.'}
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, epilog='Snapshots use current checkouts, including uncommitted edits, on any branch. After edits/branch switches run update-local and open a new host session. No commit/push/PR or per-branch marketplace. Host CLI is only needed without --dry-run. Use configure; only .local/marketplace.json is runtime configuration.')
-    parser.add_argument('action', choices=['install-local', 'update-local'])
+    parser = argparse.ArgumentParser(description=__doc__, epilog='Snapshots use current checkouts, including uncommitted edits, on any branch. After edits/branch switches run install-local and open a new host session. No commit/push/PR or per-branch marketplace. Host CLI is only needed without --dry-run. Use configure; only .local/marketplace.json is runtime configuration.')
+    parser.add_argument('action', choices=['install-local'])
     parser.add_argument('--target', choices=['claude', 'codex'], default='claude')
     parser.add_argument('--dry-run', action='store_true')
     args = parser.parse_args()
     try:
-        result = install_local(args.target, args.action == 'update-local', args.dry_run)
+        result = install_local(args.target, args.dry_run)
         print(json.dumps(result, indent=2))
         return 0
     except (ValueError, OSError, KeyError, subprocess.CalledProcessError) as exc:

@@ -15,7 +15,7 @@ class IntegrationWorkflowTests(IntegrationWorkflowTestsFixture, unittest.TestCas
             run(['make','-s','install-local','TARGET='+host],self.plugin)
             for path in (self.plugin,existing):
                 skill=path/'skills/fictional-skill/SKILL.md';skill.write_text(skill.read_text()+'\nUpdated fictional '+host+' content.\n')
-            run(['make','-s','update-local','TARGET='+host],existing)
+            run(['make','-s','install-local','TARGET='+host],existing)
             if host=='claude':
                 listing=json.loads(run(['claude','plugin','list','--json']).stdout)
             for path in (self.plugin,existing):

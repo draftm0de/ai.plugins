@@ -17,7 +17,7 @@ This is the canonical prerequisite list for the management tools. Templates carr
 
 Die reguläre Veröffentlichung erfolgt nach konkreter Freigabe über einen aussagekräftigen separaten Feature-Branch ohne `claude/` oder `codex/`: Branch → Commit → Push → PR → Checks → Merge. Default- und Basisbranch dürfen nicht als Feature-Branch dienen. Der ausdrücklich freizugebende Bootstrap für vollständig leere Repositories ist die dokumentierte Ausnahme.
 
-Lokale Snapshots verwenden den aktuellen Checkout einschließlich uncommitteter Änderungen, unabhängig vom Branch. Nach Änderungen oder Branchwechsel `update-local` ausführen und eine neue Host-Sitzung öffnen. Kein Commit, Push oder PR für lokale Tests; ein gemeinsamer `<marketplace-id>-dev`, keine zusätzlichen Marketplaces pro Branch.
+Lokale Snapshots verwenden den aktuellen Checkout einschließlich uncommitteter Änderungen, unabhängig vom Branch. Nach Änderungen oder Branchwechsel `install-local` ausführen und eine neue Host-Sitzung öffnen. Kein Commit, Push oder PR für lokale Tests; ein gemeinsamer `<marketplace-id>-dev`, keine zusätzlichen Marketplaces pro Branch.
 
 `configure` ist der reguläre Einrichtungsweg. `local-marketplace.example.json` bleibt eine optionale manuelle Kopiervorlage. Zur Laufzeit wird ausschließlich `.local/marketplace.json` für lokale Zuordnungen gelesen. Diese Zuordnungen werden nicht committed. Vor dem Schreiben werden die wirksamen Ignore-Regeln geprüft.
 
@@ -26,9 +26,9 @@ Direkte Python-Aufrufe im jeweiligen Checkout (ohne Make):
 ```sh
 python3 -B scripts/verify.py --source . --kind auto
 # Marketplace:
-python3 -B scripts/local_plugins.py update-local --target claude
+python3 -B scripts/local_plugins.py install-local --target claude
 # Plugin:
-python3 -B scripts/plugin.py update-local --target codex
+python3 -B scripts/plugin.py install-local --target codex
 ```
 
 ## English
@@ -44,7 +44,7 @@ python3 -B scripts/plugin.py update-local --target codex
 
 Regular publication follows concrete approval using a descriptive separate feature branch without `claude/` or `codex/`: branch → commit → push → PR → checks → merge. Default/base branches cannot be the feature branch. Explicitly approved bootstrap for completely empty repositories remains the documented exception.
 
-Local snapshots use the current checkout including uncommitted changes, regardless of branch. After edits or branch switches run `update-local` and open a new host session. No commit, push or PR for local tests; one shared `<marketplace-id>-dev`, no additional marketplaces per branch.
+Local snapshots use the current checkout including uncommitted changes, regardless of branch. After edits or branch switches run `install-local` and open a new host session. No commit, push or PR for local tests; one shared `<marketplace-id>-dev`, no additional marketplaces per branch.
 
 `configure` is the normal setup path. `local-marketplace.example.json` remains an optional manual copy template. Only `.local/marketplace.json` is read for local runtime mappings. Never commit those mappings. Effective ignore rules are checked before writing.
 
@@ -53,7 +53,7 @@ Direct Python commands in the relevant checkout (without Make):
 ```sh
 python3 -B scripts/verify.py --source . --kind auto
 # Marketplace:
-python3 -B scripts/local_plugins.py update-local --target claude
+python3 -B scripts/local_plugins.py install-local --target claude
 # Plugin:
-python3 -B scripts/plugin.py update-local --target codex
+python3 -B scripts/plugin.py install-local --target codex
 ```

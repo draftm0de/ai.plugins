@@ -28,7 +28,7 @@ Marketplace `draftmode-ai-plugins`, displayed as **Draftmode AI Plugins**. Repos
 
 In Claude Code use, for example, `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-manager`, `/plugin-manager:configure`, `/plugin-manager:verify`, `/plugin-manager:update`, `/plugin-manager:publish`. In Codex select the currently named skill or describe the task and target repository. [Inputs and examples](plugins/plugin-manager/docs/en/usage.md).
 
-`update` maintains documentation; `update-local` refreshes local plugin snapshots including uncommitted changes. `install-local`, `update-local`, metadata synchronization and documentation validation are tool functions, not additional skills. Create does not create a GitHub repository or invent domain skill content. Publish treats plugin and marketplace separately; explicitly approved bootstrap of completely empty repositories remains the documented exception to the PR workflow.
+`update` maintains documentation. `install-local` builds and refreshes local plugin snapshots including uncommitted changes. Metadata synchronization and documentation validation are tool functions, not additional skills. Create does not create a GitHub repository or invent domain skill content. Publish treats plugin and marketplace separately; explicitly approved bootstrap of completely empty repositories remains the documented exception to the PR workflow.
 
 **Interview Coach** bundles the `interview-coach` skill for interview practice, targeted preparation, feedback and optional private learning progress. It belongs to the separate plugin repository; [responsibilities and modes](https://github.com/draftm0de/ai.plugin.interview-coach/blob/main/README.en.md#capabilities-and-modes).
 
@@ -70,7 +70,7 @@ In Claude Code, start the corresponding command, such as `/plugin-manager:market
 **In the terminal** — from the `ai.plugins` checkout:
 
 ```sh
-make marketplace-create ARGS='--root ../my-marketplace --name my-catalog --display-name "My Catalog" --owner "Confirmed Publisher"'
+python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py marketplace-create --root ../my-marketplace --name my-catalog --display-name "My Catalog" --owner "Confirmed Publisher"
 ```
 
 This creates `marketplace.json`, Claude and Codex host catalogs, standalone tools, a Makefile and documentation scaffolding. New marketplaces do not need an embedded Manager. Existing content is inspected first; differing files are not silently overwritten.
@@ -94,7 +94,7 @@ To work on **this** marketplace, do not run Create again. Associate existing plu
 ```sh
 make sync-marketplace
 make check-marketplace
-make marketplace-verify
+make verify
 make test
 ```
 
@@ -176,10 +176,10 @@ Example for a skeleton in an already cloned repository:
 
 ```sh
 # From the ai.plugins root:
-make plugin-create ARGS='--root ../my-plugin --marketplace . --skeleton --name my-plugin --display-name "My Plugin" --author "Confirmed Publisher" --languages de en --default-language de'
+python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py plugin-create --root ../my-plugin --marketplace . --skeleton --name my-plugin --display-name "My Plugin" --author "Confirmed Publisher" --languages de en --default-language de
 ```
 
-Skill import is unsupported. `make plugin-create ARGS='--help'` lists all options.
+Skill import is unsupported. `python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py plugin-create --help` lists all options.
 
 `plugin-create` creates development tools and documentation templates, registers the plugin in the marketplace and sets up local mappings. For a skeleton, then confirm the scope in `SCOPE.md`, implement the skills and add relevant tests. Structural validity alone does not establish a finished product.
 
@@ -199,7 +199,7 @@ For example, request:
 Alternatively, from the `ai.plugins` checkout in the terminal:
 
 ```sh
-make configure ARGS='--root ../my-plugin --marketplace .'
+python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py configure --root ../my-plugin --marketplace .
 ```
 
 Mappings live in `.local/marketplace.json` in both repositories. The plugin file stores its local default marketplace and other named associations. Other associations are preserved; local paths are not committed. [Create/Configure guide](plugins/plugin-manager/docs/en/usage.md) · [Technical options](plugins/plugin-manager/skills/_shared/references/workflows.md).
@@ -214,9 +214,9 @@ Mappings live in `.local/marketplace.json` in both repositories. The plugin file
 
 After edits or a branch switch:
 
-> Use update-local to refresh the local plugin snapshots for Codex, including my uncommitted changes.
+> Use install-local to refresh the local plugin snapshots for Codex, including my uncommitted changes.
 
-For Claude, specify “for Claude” instead. `install-local` and `update-local` are tool actions, not separate skills or slash commands. The agent runs the repository tools; the selected host CLI must be available.
+For Claude, specify “for Claude” instead. `install-local` is a tool action, not a separate skill or slash command. The agent runs the repository tools; the selected host CLI must be available.
 
 **In the terminal** — after configuration, from the marketplace or configured plugin repository:
 
@@ -231,9 +231,9 @@ Installation creates filtered snapshots under `dist/local-development/` and inst
 Refresh snapshots after changes or a branch switch:
 
 ```sh
-make update-local TARGET=claude
+make install-local TARGET=claude
 # Alternatively, for Codex:
-make update-local TARGET=codex
+make install-local TARGET=codex
 ```
 
 Then open a new host session and activate the intended development copy. Snapshots include uncommitted edits; local tests require no commit, push or PR. No additional marketplace is created for each branch.
@@ -267,7 +267,7 @@ make test
 `make verify` detects the repository type and reads structure and available local mappings. It runs no tests, repairs or target scripts. From `ai.plugins`, explicitly check a separate plugin with:
 
 ```sh
-make plugin-verify SOURCE=../my-plugin
+make verify SOURCE=../my-plugin
 ```
 
 | Check | Command | What it establishes |
@@ -302,7 +302,7 @@ The language policy in `docs/documentation.json` controls README and guide langu
 make -C plugins/plugin-manager validate-docs OUTPUT=.
 ```
 
-For other plugins, use their documented validator. Supplement structural and link checks with a content review. `update` maintains documentation; `update-local` refreshes installed development snapshots. Neither action publishes changes. [Manager development guide](plugins/plugin-manager/docs/en/development.md).
+For other plugins, use their documented validator. Supplement structural and link checks with a content review. `update` maintains documentation; `install-local` refreshes installed development snapshots. Neither action publishes changes. [Manager development guide](plugins/plugin-manager/docs/en/development.md).
 
 <a id="plugin-publish"></a>
 

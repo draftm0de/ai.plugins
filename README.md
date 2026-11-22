@@ -28,7 +28,7 @@ Marketplace für Claude und Codex. Repository: https://github.com/draftm0de/ai.p
 
 In Claude Code beispielsweise `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-manager`, `/plugin-manager:configure`, `/plugin-manager:verify`, `/plugin-manager:update`, `/plugin-manager:publish` verwenden. In Codex den aktuell benannten Skill wählen oder die Aufgabe mit dem Zielrepository beschreiben. [Eingaben und Beispiele](plugins/plugin-manager/docs/de/usage.md).
 
-`update` pflegt Dokumentation; `update-local` erneuert lokale Plugin-Snapshots einschließlich uncommitteter Änderungen. `install-local`, `update-local`, Metadaten-Synchronisierung und Dokumentationsvalidierung sind Werkzeugfunktionen, keine zusätzlichen Skills. Create legt kein GitHub-Repository an und erfindet keine fachlichen Skill-Inhalte. Publish behandelt Plugin und Marketplace getrennt; der ausdrücklich freizugebende Bootstrap vollständig leerer Repositories bleibt die dokumentierte Ausnahme vom PR-Ablauf.
+`update` pflegt Dokumentation. `install-local` erstellt lokale Plugin-Snapshots einschließlich uncommitteter Änderungen. `install-local`, Metadaten-Synchronisierung und Dokumentationsvalidierung sind Werkzeugfunktionen, keine zusätzlichen Skills. Create legt kein GitHub-Repository an und erfindet keine fachlichen Skill-Inhalte. Publish behandelt Plugin und Marketplace getrennt; der ausdrücklich freizugebende Bootstrap vollständig leerer Repositories bleibt die dokumentierte Ausnahme vom PR-Ablauf.
 
 **Interview Coach** bündelt den Skill `interview-coach` für Interviewtraining, gezielte Vorbereitung, Feedback und optionalen privaten Lernstand. Er gehört zum separaten Plugin-Repository; [Aufgaben und Modi](https://github.com/draftm0de/ai.plugin.interview-coach#funktionen-und-modi).
 
@@ -74,7 +74,7 @@ In Claude Code startest du den passenden Befehl, etwa `/plugin-manager:marketpla
 **Im Terminal** – aus dem `ai.plugins`-Checkout:
 
 ```sh
-make marketplace-create ARGS='--root ../mein-marketplace --name mein-katalog --display-name "Mein Katalog" --owner "Bestätigter Herausgeber"'
+python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py marketplace-create --root ../mein-marketplace --name mein-katalog --display-name "Mein Katalog" --owner "Bestätigter Herausgeber"
 ```
 
 Das erzeugt `marketplace.json`, die Host-Kataloge für Claude und Codex, eigenständige Werkzeuge, Makefile und ein Dokumentationsgerüst. Neue Marketplaces benötigen keinen eingebetteten Manager. Vorhandene Inhalte werden zuerst geprüft; abweichende Dateien werden nicht still überschrieben.
@@ -98,7 +98,7 @@ Für die Arbeit an **diesem** Marketplace ist kein erneuter Create-Aufruf nötig
 ```sh
 make sync-marketplace
 make check-marketplace
-make marketplace-verify
+make verify
 make test
 ```
 
@@ -179,12 +179,12 @@ Beispiel für ein Skeleton in einem bereits geklonten Repository:
 
 ```sh
 # Im Stamm von ai.plugins:
-make plugin-create ARGS='--root ../mein-plugin --marketplace . --skeleton --name mein-plugin --display-name "Mein Plugin" --author "Bestätigter Herausgeber" --languages de en --default-language de --license deferred'
+python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py plugin-create --root ../mein-plugin --marketplace . --skeleton --name mein-plugin --display-name "Mein Plugin" --author "Bestätigter Herausgeber" --languages de en --default-language de --license deferred
 ```
 
 `--license deferred` setzt eine ausdrücklich vertagte Lizenzentscheidung voraus. Für MIT stattdessen `--license MIT --copyright-year "BESTÄTIGTES_JAHR" --copyright-holder "BESTÄTIGTER_RECHTEINHABER"` verwenden; andere Lizenzen benötigen `--license KENNUNG --license-file /pfad/zum/bestätigten-lizenztext`.
 
-Ein Skill-Import ist nicht unterstützt. `make plugin-create ARGS='--help'` zeigt alle Optionen.
+Ein Skill-Import ist nicht unterstützt. `python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py plugin-create --help` zeigt alle Optionen.
 
 `plugin-create` erzeugt Entwicklungswerkzeuge und Dokumentationsvorlagen, trägt das Plugin im Marketplace ein und richtet lokale Zuordnungen ein. Beim Skeleton anschließend das Zielbild in `SCOPE.md` bestätigen, die Skills implementieren und passende Tests ergänzen. Strukturprüfung allein bestätigt noch kein fertiges Produkt.
 
@@ -204,7 +204,7 @@ Den Auftrag beispielsweise so formulieren:
 Alternativ im Terminal aus dem `ai.plugins`-Checkout:
 
 ```sh
-make configure ARGS='--root ../mein-plugin --marketplace .'
+python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py configure --root ../mein-plugin --marketplace .
 ```
 
 Die Zuordnung steht in beiden Repositories in `.local/marketplace.json`. Im Plugin enthält sie den lokalen Standard-Marketplace und weitere benannte Zuordnungen. Andere Zuordnungen bleiben erhalten; lokale Pfade werden nicht committed. [Create-/Configure-Anleitung](plugins/plugin-manager/docs/de/usage.md) · [Technische Optionen](plugins/plugin-manager/skills/_shared/references/workflows.md).
@@ -219,9 +219,9 @@ Die Zuordnung steht in beiden Repositories in `.local/marketplace.json`. Im Plug
 
 Nach Änderungen oder einem Branchwechsel:
 
-> Aktualisiere die lokalen Plugin-Snapshots mit update-local für Codex, einschließlich meiner uncommitteten Änderungen.
+> Aktualisiere die lokalen Plugin-Snapshots mit install-local für Codex, einschließlich meiner uncommitteten Änderungen.
 
-Für Claude entsprechend „für Claude“ angeben. `install-local` und `update-local` sind Werkzeugaktionen, keine eigenen Skills oder Slash-Befehle. Der Agent führt die Repository-Werkzeuge aus; die jeweilige Host-CLI muss verfügbar sein.
+Für Claude entsprechend „für Claude“ angeben. `install-local` ist eine Werkzeugaktion, kein eigener Skill und kein Slash-Befehl. Der Agent führt die Repository-Werkzeuge aus; die jeweilige Host-CLI muss verfügbar sein.
 
 **Im Terminal** – nach der Zuordnung im Marketplace- oder eingerichteten Plugin-Repository:
 
@@ -236,9 +236,9 @@ Die Installation erstellt gefilterte Snapshots unter `dist/local-development/` u
 Nach Änderungen oder einem Branchwechsel die Snapshots erneuern:
 
 ```sh
-make update-local TARGET=claude
+make install-local TARGET=claude
 # Alternativ für Codex:
-make update-local TARGET=codex
+make install-local TARGET=codex
 ```
 
 Anschließend eine neue Host-Sitzung öffnen und die gewünschte Entwicklungskopie aktivieren. Die Snapshots enthalten auch uncommittete Änderungen; lokale Tests benötigen keinen Commit, Push oder PR. Pro Branch wird kein zusätzlicher Marketplace angelegt.
@@ -272,7 +272,7 @@ make test
 `make verify` erkennt den Repository-Typ und liest Struktur sowie verfügbare lokale Zuordnungen. Es führt weder Tests noch Reparaturen oder Zielskripte aus. Aus `ai.plugins` kann ein separates Plugin explizit geprüft werden:
 
 ```sh
-make plugin-verify SOURCE=../mein-plugin
+make verify SOURCE=../mein-plugin
 ```
 
 | Prüfung | Aufruf | Aussage |
@@ -307,7 +307,7 @@ Die gespeicherte Sprachwahl in `docs/documentation.json` steuert README und Anle
 make -C plugins/plugin-manager validate-docs OUTPUT=.
 ```
 
-Bei anderen Plugins den dort dokumentierten Validator verwenden. Struktur- und Linkprüfung durch einen inhaltlichen Abgleich ergänzen. `update` pflegt Dokumentation; `update-local` erneuert installierte Entwicklungssnapshots. Keine der beiden Aktionen veröffentlicht Änderungen. [Manager-Entwicklerdokumentation](plugins/plugin-manager/docs/de/development.md).
+Bei anderen Plugins den dort dokumentierten Validator verwenden. Struktur- und Linkprüfung durch einen inhaltlichen Abgleich ergänzen. `update` pflegt Dokumentation; `install-local` erneuert installierte Entwicklungssnapshots. Keine der beiden Aktionen veröffentlicht Änderungen. [Manager-Entwicklerdokumentation](plugins/plugin-manager/docs/de/development.md).
 
 <a id="plugin-veroeffentlichen"></a>
 

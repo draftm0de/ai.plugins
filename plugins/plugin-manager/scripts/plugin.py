@@ -227,7 +227,7 @@ def codex_payload(portable):
     return files
 
 
-def install_local(target, update=False, dry_run=False, marketplace_root=None):
+def install_local(target, dry_run=False, marketplace_root=None):
     """Resolve the selected development marketplace; never fall back to a private catalog."""
     if target not in ('claude', 'codex'):
         raise ValueError('Local development supports claude or codex')
@@ -263,13 +263,13 @@ def install_local(target, update=False, dry_run=False, marketplace_root=None):
     spec = importlib.util.spec_from_file_location('selected_local_marketplace', helper)
     shared = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(shared)
-    return shared.install_local(target, update, dry_run, root=selected)
+    return shared.install_local(target, dry_run, root=selected)
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__, epilog='Git + Python 3.10+ management tools; Make optional. Local snapshots use the current checkout on any branch. After edits/branch switches run update-local and start a new host session. No commit/push/PR; host CLI only for automatic installation.')
+    parser = argparse.ArgumentParser(description=__doc__, epilog='Git + Python 3.10+ management tools; Make optional. Local snapshots use the current checkout on any branch. After edits/branch switches run install-local and start a new host session. No commit/push/PR; host CLI only for automatic installation.')
     sub = parser.add_subparsers(dest='command', required=True)
-    for command in ('install-local', 'update-local'):
+    for command in ('install-local',):
         action = sub.add_parser(command)
         action.add_argument('--target', choices=('claude', 'codex'), default='claude')
         action.add_argument('--dry-run', action='store_true')
@@ -281,7 +281,7 @@ def main(argv=None):
         if args.command in ('check', 'sync'):
             result = repository_metadata(check=args.command == 'check')
         else:
-            result = install_local(args.target, args.command == 'update-local', args.dry_run, args.marketplace)
+            result = install_local(args.target, args.dry_run, args.marketplace)
         print(json.dumps(result, indent=2))
         return 0
     except (OSError, ValueError, KeyError, subprocess.CalledProcessError) as exc:

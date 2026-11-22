@@ -14,7 +14,7 @@ class LocalDevelopmentTests(LocalDevelopmentTestsFixture, unittest.TestCase):
                     first=engine.install_local(host)
                     skill=self.root/'skills/fictional-skill/SKILL.md'
                     skill.write_text(skill.read_text()+'\nUpdated fictional '+host+' instructions.\n')
-                    second=engine.install_local(host,update=True)
+                    second=engine.install_local(host)
                     self.assertNotEqual(first['plugins']['fictional-product']['version'],second['plugins']['fictional-product']['version'])
                     cache=(codex_home if host=='codex' else claude_home)/'plugins/cache'/second['marketplace']/'fictional-product'/second['plugins']['fictional-product']['version']/'skills/fictional-skill/SKILL.md'
                     # Claude local sources can be loaded in-place; inspect the recorded source if no cached copy is present.

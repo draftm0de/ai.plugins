@@ -7,11 +7,10 @@ class SharedInstallerTests(SharedInstallerTestsFixture, unittest.TestCase):
         self.invoke('make','-s','install-local','DRY_RUN=1')
         before = {str(p):p.read_bytes() for p in (self.market/'dist').rglob('*') if p.is_file()}
         self.manifest['description']='   ';self.write_manifest()
-        for action in ('install-local','update-local'):
-            result=subprocess.run(['make','-s',action,'DRY_RUN=1'],cwd=self.root,capture_output=True,text=True)
-            self.assertNotEqual(result.returncode,0)
-            self.assertIn('description is required',result.stderr)
-            self.assertEqual(before,{str(p):p.read_bytes() for p in (self.market/'dist').rglob('*') if p.is_file()})
+        result=subprocess.run(['make','-s','install-local','DRY_RUN=1'],cwd=self.root,capture_output=True,text=True)
+        self.assertNotEqual(result.returncode,0)
+        self.assertIn('description is required',result.stderr)
+        self.assertEqual(before,{str(p):p.read_bytes() for p in (self.market/'dist').rglob('*') if p.is_file()})
 
     def test_parallel_host_layout_preserves_existing_snapshots(self):
         self.invoke('make','-s','install-local','DRY_RUN=1')
@@ -19,11 +18,10 @@ class SharedInstallerTests(SharedInstallerTestsFixture, unittest.TestCase):
         self.assertTrue(before)
         for obsolete in ('.claude/skills','.agents/skills'):
             path = self.root/obsolete; path.mkdir(parents=True)
-            for action in ('install-local','update-local'):
-                result = subprocess.run(['make','-s',action,'DRY_RUN=1'],cwd=self.root,capture_output=True,text=True)
-                self.assertNotEqual(0,result.returncode)
-                self.assertIn('Unsupported host-local',result.stderr)
-                self.assertEqual(before, {str(p):p.read_bytes() for p in (self.market/'dist').rglob('*') if p.is_file()})
+            result = subprocess.run(['make','-s','install-local','DRY_RUN=1'],cwd=self.root,capture_output=True,text=True)
+            self.assertNotEqual(0,result.returncode)
+            self.assertIn('Unsupported host-local',result.stderr)
+            self.assertEqual(before, {str(p):p.read_bytes() for p in (self.market/'dist').rglob('*') if p.is_file()})
             path.rmdir()
 
     def test_snapshot_rejects_version_and_custom_skill_root(self):
@@ -98,13 +96,13 @@ class SharedInstallerTests(SharedInstallerTestsFixture, unittest.TestCase):
             engine.configuration(self.root)
 
 
-    def test_arbitrary_manifest_drives_both_wrappers_and_update(self):
+    def test_arbitrary_manifest_drives_both_wrappers(self):
         first=json.loads(self.invoke('bash','install.sh','install-local','--target','claude','--dry-run').stdout)
         second=self.invoke('make','-s','install-local','TARGET=claude','DRY_RUN=1')
         self.assertEqual(first,json.loads(second.stdout))
         self.assertEqual(first['path'],first['commands'][0][4])
-        update=json.loads(self.invoke('bash','install.sh','update-local','--target','claude','--dry-run').stdout)
-        self.assertEqual('fictional-product@fictional-market-dev',update['commands'][1][3])
+        self.assertEqual('fictional-product@fictional-market-dev',first['commands'][1][3])
+        self.assertEqual('install',first['commands'][1][2])
         catalog=json.loads((self.market/'marketplace.json').read_text())
         self.assertEqual('fictional-market',catalog['name'])
         self.assertEqual('Fictional plugin',catalog['plugins'][0]['description'])
@@ -148,7 +146,7 @@ class SharedInstallerTests(SharedInstallerTestsFixture, unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'codex CLI not found'):engine.install_local('codex')
             run.assert_not_called()
         with patch.object(engine,'ROOT',self.root), patch.object(engine.shutil,'which',return_value='codex'), patch.object(engine.subprocess,'run',side_effect=subprocess.CalledProcessError(7,['codex'])) as run:
-            with self.assertRaises(subprocess.CalledProcessError):engine.install_local('codex',update=True)
+            with self.assertRaises(subprocess.CalledProcessError):engine.install_local('codex')
             self.assertEqual(1,run.call_count)
 
 
@@ -163,7 +161,7 @@ class LocalDevelopmentTests(LocalDevelopmentTestsFixture, unittest.TestCase):
             self.assertFalse(list((self.market/'dist/local-development').glob('*.zip')))
             skill=self.root/'skills/fictional-skill/SKILL.md'
             skill.write_text(skill.read_text()+'\nUncommitted fictional change.\n')
-            second=engine.install_local('codex',update=True,dry_run=True)
+            second=engine.install_local('codex',dry_run=True)
             self.assertNotEqual(first['plugins']['fictional-product']['version'],second['plugins']['fictional-product']['version'])
             copied=Path(second['path'])/'plugins/fictional-product/skills/fictional-skill/SKILL.md'
             self.assertEqual(skill.read_bytes(),copied.read_bytes())

@@ -50,6 +50,6 @@ make verify SOURCE=.
 make validate-docs OUTPUT=.
 ```
 
-`make sync-plugin` erzeugt die einzucheckenden Host-Metadaten. `make install-local` und `make update-local` testen lokale Änderungen ohne Commit oder Push; die Skill-Aktion **update** pflegt dagegen Dokumentation. [Entwicklung](docs/de/development.md).
+`make sync-plugin` erzeugt die einzucheckenden Host-Metadaten. `make install-local` testen lokale Änderungen ohne Commit oder Push; die Skill-Aktion **update** pflegt dagegen Dokumentation. [Entwicklung](docs/de/development.md).
 
 Dokumentation erstellt mit Plugin Manager.

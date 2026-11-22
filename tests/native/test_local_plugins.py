@@ -11,7 +11,7 @@ class SharedLocalTests(SharedLocalTestsFixture, unittest.TestCase):
                 first=engine.install_local(host,root=self.root)
                 for source in (self.manager,self.coach):
                     skill=source/'skills/example/SKILL.md';skill.write_text(skill.read_text()+'Updated '+host+'\n')
-                second=engine.install_local(host,update=True,root=self.root)
+                second=engine.install_local(host,root=self.root)
                 for name in ('plugin-manager','interview-coach'):
                     self.assertNotEqual(first['plugins'][name]['version'],second['plugins'][name]['version'])
                     cache=home/('.claude' if host=='claude' else '.codex')/'plugins/cache/shared-fixture-dev'/name/second['plugins'][name]['version']/'skills/example/SKILL.md'
