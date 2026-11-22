@@ -6,7 +6,7 @@
       "executable": false
     },
     "scripts/local_plugins.py": {
-      "sha256": "6b52e1abd1c63b195bf69573cfc854cbbd6b3047bf7fecd61a8f569fb8a60277",
+      "sha256": "e43812e571110587816617f6ba81f9fc8b579a9baf236bef6e190cb5120e50d3",
       "executable": false
     },
     "scripts/marketplace.py": {
@@ -14,7 +14,7 @@
       "executable": false
     },
     "scripts/plugin_payload.py": {
-      "sha256": "254887f2312916262a56fe3267f259f8e5ebf88e5fd18217f7ccf512eb783c00",
+      "sha256": "25137b954c9555933d6370b7e30623d36db0bd444dc275665fbdf7031c89ba99",
       "executable": false
     },
     "scripts/run_tests.py": {
@@ -22,7 +22,7 @@
       "executable": false
     },
     "scripts/verify.py": {
-      "sha256": "d0395dc314a9162b333e3a2520ede4062a67594bca191a0ae30f57ef294716a9",
+      "sha256": "f704ae8bf3a37326cba0e45b605b64d819bf8cb153442e9994df9461afbd94d2",
       "executable": false
     }
   },

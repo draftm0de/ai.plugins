@@ -30,7 +30,9 @@ class DeliveryTests(WorkflowFixture, unittest.TestCase):
         for rule in (r for r in template if r and not r.startswith('#')):
             self.assertIn(rule, lines)
         self.assertNotIn('.project/', lines)
-        self.assertFalse((self.plugin / '.project').exists())
+        self.assertIn('/.project/plugins/*/local.json', lines)  # the machine path of the one marketplace is never committed
+        self.assertEqual(['.project/plugins/plugin-manager/local.json'],  # nothing else of the workpackage is created
+                         [str(p.relative_to(self.plugin)) for p in (self.plugin / '.project').rglob('*') if p.is_file()])
         self.assertEqual([], [str(p) for p in self.plugin.rglob('operator.json')])
         self.assertEqual([], [str(p) for p in self.plugin.rglob('__pycache__')])
         probe = subprocess.run(['git', '-C', str(self.plugin), 'check-ignore', '--no-index', '--', '.project/operator.json', '.project/other.json'],
@@ -64,19 +66,27 @@ class DeliveryTests(WorkflowFixture, unittest.TestCase):
         self.assertNotIn(RULE, self.lines(other))
         self.assertFalse((other / 'skills/_shared/scripts/operator_language.py').exists())
 
-    def test_configure_does_not_edit_ignore_rules_of_existing_plugin(self):
-        self.create()
+    def test_associate_does_not_edit_ignore_rules_of_existing_plugin(self):
+        self.create_configured()
         text = '\n'.join(line for line in self.lines(self.plugin) if line != RULE) + '\n'
         (self.plugin / '.gitignore').write_text(text)
-        flow.configure(self.plugin, self.market)
+        flow.associate(self.plugin, self.market)
         self.assertEqual(text, (self.plugin / '.gitignore').read_text())
         self.assertNotIn(RULE, self.lines(self.market))
+
+    def test_associate_adds_only_the_local_path_rule_to_an_existing_plugin(self):
+        self.create_configured()
+        local_rule = '/.project/plugins/*/local.json'
+        text = '\n'.join(line for line in self.lines(self.plugin) if line not in (RULE, local_rule)) + '\n'
+        (self.plugin / '.gitignore').write_text(text)
+        flow.associate(self.plugin, self.market)
+        self.assertEqual(text.splitlines() + [local_rule], (self.plugin / '.gitignore').read_text().splitlines())
 
     def test_create_does_not_store_or_require_a_language(self):
         self.create()
         manifest = json.loads((self.plugin / 'plugin.json').read_text())
         self.assertNotIn('operator', json.dumps(manifest).lower())
-        self.assertFalse((self.plugin / '.project').exists())
+        self.assertFalse((self.plugin / '.project/operator.json').exists())
 
 
 if __name__ == '__main__':

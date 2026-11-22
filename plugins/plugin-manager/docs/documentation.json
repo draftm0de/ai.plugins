@@ -8,7 +8,7 @@
     "skills/_shared/templates",
     "skills/plugin-manager/SKILL.md",
     "skills/plugin-manager/flows/marketplace.md",
-    "skills/configure/SKILL.md",
+    "skills/plugin-manager/flows/associate.md",
     "skills/verify/SKILL.md",
     "skills/publish/SKILL.md",
     "skills/plugin-manager/flows/configure.md"

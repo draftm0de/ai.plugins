@@ -36,7 +36,7 @@ Local paths stay Git-ignored in `.local/marketplace.json`: `sources` in the mark
 
 Local snapshots read the current checkout including uncommitted changes, regardless of branch. After edits or branch switches run `install-local` and open a new host session. Local tests require no commit, push or PR. Keep one shared `<marketplace-id>-dev`, with no additional marketplaces per branch.
 
-`configure` is the normal setup path. `local-marketplace.example.json` is an optional manual copy template. Only `.local/marketplace.json` is read for local runtime mappings; never commit those mappings.
+The local association of a plugin with its one marketplace is set up and changed by `plugin-manager` (associate). The path of the marketplace checkout lives in the Git-ignored `.project/plugins/plugin-manager/local.json` of the plugin; the checkouts of the plugins live under `sources` in the Git-ignored `.local/marketplace.json` of the marketplace; never commit those mappings. `local-marketplace.example.json` is an optional manual copy template for the marketplace side.
 
 Without Make in the marketplace:
 
@@ -52,7 +52,7 @@ CI validates tests, metadata and documentation and publishes nothing. [Publish](
 
 The update action rereads current sources and preserves the configured languages. plugin-create generates templates; the agent completes them from evidenced product behavior. No invented publisher, license or skill instructions. init is unsupported.
 
-[Create/configure commands](../../skills/_shared/references/workflows.md)
+[Create/associate commands](../../skills/_shared/references/workflows.md)
 
 For an update, ask: “Run update for this repository and validate afterward.” The agent rereads `docs/documentation.json`, skill, references, manifests and tools, then maintains `README.md`, `README.en.md`, `docs/de/` and `docs/en/`. Scaffold only creates missing files; existing content is deliberately revised. `make validate-docs OUTPUT=.` checks structure and local links. These checks do not replace content review or host testing.
 
@@ -62,6 +62,6 @@ New plugin and marketplace templates include SCOPE.md and shared development rul
 
 From the Manager directory explicitly run `make test-behavior CLI=claude` or `CLI=codex`; `CASE=correct_consent` selects one case. [Scenarios, grading and limitations](../../tests/behavior/README.md). Both models receive complete fictional files and the same review rules, without expected answers. Tests cover correct implementations, real defects, test gaps, missing source and injected success claims. Automated grading is complemented by human review. No model calls in the normal suite; no installation or publication.
 
-Format checks precede changes: no parallel host skill directories or marketplace key in distribution metadata. Unknown catalog entry fields are rejected before configure, never discarded. Documentation schema versions must be integers. Conflicting existing docs/architecture.md or docs/prerequisites.md block plugin-create without overwriting content.
+Format checks precede changes: no parallel host skill directories or marketplace key in distribution metadata. Unknown catalog entry fields are rejected before associate, never discarded. Documentation schema versions must be integers. Conflicting existing docs/architecture.md or docs/prerequisites.md block plugin-create without overwriting content.
 
 plugin-create also rejects old host directories before changes. Skill import through plugin-create is unsupported; layout and documentation manifest checks remain in place.

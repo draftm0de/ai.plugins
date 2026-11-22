@@ -38,8 +38,8 @@ class FlowsDeliveryTests(WorkflowFixture, unittest.TestCase):
         configure = (self.plugin / 'skills/new-plugin/flows/configure.md').read_text()
         self.assertTrue(configure.strip())
         self.assertNotIn('plugin-manager', configure + skill)  # no foreign identity, only this plugin's own name
-        self.assertEqual({'schema_version': 1, 'product': None, 'derived': []},
-                         json.loads((self.plugin / 'skills/_shared/manifests/default.json').read_text()))
+        self.assertEqual({'schema_version': 1, 'product': None, 'requires_marketplace': False, 'derived': []},
+                         json.loads((self.plugin / 'skills/_shared/manifests/default.json').read_text()))  # no marketplace for the default kind
         self.assertEqual({'schema_version': 1, 'files': {}, 'removed': []},
                          json.loads((self.plugin / 'skills/_shared/manifests/default.sync.json').read_text()))
 

@@ -5,7 +5,7 @@ from tests.support.workflows_fixture import (
 class IntegrationWorkflowTests(IntegrationWorkflowTestsFixture, unittest.TestCase):
     @unittest.skipUnless(os.environ.get('AI_PLUGIN_TEST_NATIVE')=='1' and shutil.which('claude') and shutil.which('codex'),'Opt-in isolated native acceptance')
     def test_native_creation_configuration_install_update(self):
-        self.create();existing=self.repo('existing-plugin');self.create(existing);flow.configure(existing,self.market)
+        self.create();existing=self.repo('existing-plugin');self.create(existing);flow.associate(existing,self.market)
         home=self.root/'isolated-host';home.mkdir()
         claude=home/'claude';claude.mkdir();codex=home/'codex';codex.mkdir()
         env=dict(os.environ,HOME=str(home),CLAUDE_CONFIG_DIR=str(claude),CODEX_HOME=str(codex),DISABLE_AUTOUPDATER='1')

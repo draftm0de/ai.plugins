@@ -7,14 +7,14 @@ class IntegrationWorkflowTests(IntegrationWorkflowTestsFixture, unittest.TestCas
         (self.plugin/'README.md').write_text('Existing project introduction\n')
         (self.plugin/'LICENSE').write_text('Fictional licensing decision preserved\n')
         self.create(license='LicenseRef-Fictional', license_file=self.plugin/'LICENSE')
-        existing = self.repo('existing-plugin'); self.create(existing)
-        # Remove its association to exercise configure against a pre-existing plugin.
+        existing = self.repo('existing-plugin'); self.create_configured(existing)
+        # Remove its association to exercise associate against a pre-existing plugin.
         config = json.loads((self.market/'marketplace.json').read_text())
         config['plugins'] = [e for e in config['plugins'] if e['name'] != 'existing-plugin']
         (self.market/'marketplace.json').write_bytes(flow.encode(config))
         for p,b in flow.catalog_files(self.market,config).items(): p.write_bytes(b)
-        flow.configure(existing,self.market)
-        self.assertEqual([], flow.configure(existing,self.market)['changed'])
+        flow.associate(existing,self.market)
+        self.assertEqual([], flow.associate(existing,self.market)['changed'])
         self.assertEqual('Existing project introduction\n',(self.plugin/'README.md').read_text())
         self.assertEqual('Fictional licensing decision preserved\n',(self.plugin/'LICENSE').read_text())
         for path in (self.market,self.plugin,existing):

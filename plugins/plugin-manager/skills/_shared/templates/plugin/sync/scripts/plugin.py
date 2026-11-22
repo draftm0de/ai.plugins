@@ -238,21 +238,29 @@ def codex_payload(portable):
     return files
 
 
+# Ignored, machine-specific path of the one marketplace this plugin belongs to (written by plugin-manager associate).
+LOCAL_ASSOCIATION = '.project/plugins/plugin-manager/local.json'
+
+
 def install_local(target, dry_run=False, marketplace_root=None):
     """Resolve the selected development marketplace; never fall back to a private catalog."""
     if target not in ('claude', 'codex'):
         raise ValueError('Local development supports claude or codex')
     selected = marketplace_root
     if not selected:
-        path = source_path(ROOT, '.local/marketplace.json')
+        path = source_path(ROOT, LOCAL_ASSOCIATION)
         if path.exists():
-            selected = strict_json(read_file(path)).get('marketplace')
+            local = strict_json(read_file(path))
+            if (not isinstance(local, dict) or set(local) != {'schema_version', 'marketplace_path'} or type(local['schema_version']) is not int
+                    or local['schema_version'] != 1 or not isinstance(local['marketplace_path'], str) or not local['marketplace_path'].strip()):
+                raise ValueError('Unsupported ' + LOCAL_ASSOCIATION + '; run plugin-manager (associate) to write it again')
+            selected = local['marketplace_path']
     if selected:
         selected = Path(selected).expanduser()
         if not selected.is_absolute():
             selected = ROOT / selected
     if not selected:
-        raise ValueError('Local marketplace unavailable; run configure or pass --marketplace PATH')
+        raise ValueError('Local marketplace unavailable; run plugin-manager (associate) or pass --marketplace PATH')
     selected = Path(selected).resolve()
     helper = selected / 'scripts/local_plugins.py'
     if not helper.is_file() or helper.is_symlink():
@@ -270,7 +278,7 @@ def install_local(target, dry_run=False, marketplace_root=None):
             if candidate.resolve() == ROOT.resolve() and (entry.get('name', name) == name):
                 linked = True
     if not linked:
-        raise ValueError('Plugin is not locally associated with the selected marketplace; run configure')
+        raise ValueError('Plugin is not locally associated with the selected marketplace; run plugin-manager (associate)')
     spec = importlib.util.spec_from_file_location('selected_local_marketplace', helper)
     shared = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(shared)

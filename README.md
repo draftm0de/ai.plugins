@@ -17,7 +17,6 @@ Marketplace für Claude und Codex. Repository: https://github.com/draftm0de/ai.p
 | --- | --- |
 | [marketplace-create](plugins/plugin-manager/skills/marketplace-create/SKILL.md) | Marketplace in einem bestehenden lokalen GitHub-Checkout einrichten: Manifest, Host-Kataloge, Werkzeuge und Dokumentationsgerüst. |
 | [plugin-manager](plugins/plugin-manager/skills/plugin-manager/SKILL.md) | Sprache einrichten, Skeleton synchronisieren und ein neues Plugin über den zentralen Einstieg konfigurieren. |
-| [configure](plugins/plugin-manager/skills/configure/SKILL.md) | Bestehendes Plugin einem Marketplace zuordnen und lokale Entwicklung einrichten. Andere Zuordnungen erhalten. Bereits Teil von plugin-create. |
 | [verify](plugins/plugin-manager/skills/verify/SKILL.md) | Repository-Typ erkennen und nur lesend prüfen. Veröffentlichbare Struktur und verfügbare lokale Entwicklungskonfiguration getrennt bewerten. |
 | [update](plugins/plugin-manager/skills/update/SKILL.md) | README und Dokumentation anhand aktueller Quellen und gespeicherter Sprachwahl pflegen. Keine Installation oder Veröffentlichung. |
 | [publish](plugins/plugin-manager/skills/publish/SKILL.md) | Veröffentlichung für Plugin oder Marketplace planen. Erst nach konkreter Freigabe über Feature-Branch, Commit, Push, PR, Checks und Merge ausführen. |
@@ -26,7 +25,7 @@ Marketplace für Claude und Codex. Repository: https://github.com/draftm0de/ai.p
 
 ### Verwendung und Abgrenzung
 
-In Claude Code beispielsweise `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-manager`, `/plugin-manager:configure`, `/plugin-manager:verify`, `/plugin-manager:update`, `/plugin-manager:publish` verwenden. In Codex den aktuell benannten Skill wählen oder die Aufgabe mit dem Zielrepository beschreiben. [Eingaben und Beispiele](plugins/plugin-manager/docs/de/usage.md).
+In Claude Code beispielsweise `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-manager`, `/plugin-manager:verify`, `/plugin-manager:update`, `/plugin-manager:publish` verwenden. In Codex den aktuell benannten Skill wählen oder die Aufgabe mit dem Zielrepository beschreiben. [Eingaben und Beispiele](plugins/plugin-manager/docs/de/usage.md).
 
 `update` pflegt Dokumentation. `install-local` erstellt lokale Plugin-Snapshots einschließlich uncommitteter Änderungen. `install-local`, Metadaten-Synchronisierung und Dokumentationsvalidierung sind Werkzeugfunktionen, keine zusätzlichen Skills. Create legt kein GitHub-Repository an und erfindet keine fachlichen Skill-Inhalte. Publish behandelt Plugin und Marketplace getrennt; der ausdrücklich freizugebende Bootstrap vollständig leerer Repositories bleibt die dokumentierte Ausnahme vom PR-Ablauf.
 
@@ -79,7 +78,7 @@ python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py marketplac
 
 Das erzeugt `marketplace.json`, die Host-Kataloge für Claude und Codex, eigenständige Werkzeuge, Makefile und ein Dokumentationsgerüst. Neue Marketplaces benötigen keinen eingebetteten Manager. Vorhandene Inhalte werden zuerst geprüft; abweichende Dateien werden nicht still überschrieben.
 
-Für die Arbeit an **diesem** Marketplace ist kein erneuter Create-Aufruf nötig. Bestehende Plugin-Checkouts mit `configure` zuordnen; neue Plugins über `plugin-manager` hinzufügen, wie im [Plugin-Abschnitt](#plugin-erstellen) beschrieben.
+Für die Arbeit an **diesem** Marketplace ist kein erneuter Create-Aufruf nötig. Bestehende Plugin-Checkouts über `plugin-manager` (associate) zuordnen; neue Plugins über `plugin-manager` hinzufügen, wie im [Plugin-Abschnitt](#plugin-erstellen) beschrieben.
 
 <a id="marketplace-pruefen"></a>
 
@@ -104,7 +103,7 @@ make test
 
 In `ai.plugins` berücksichtigen `make sync-plugin` und `make check-plugin` zusätzlich die Metadaten des eingebetteten Managers. `make test` führt hier sowohl die Marketplace- als auch die Manager-Tests aus.
 
-Lokale Checkout-Pfade stehen in der Git-ignorierten `.local/marketplace.json` unter `sources`. `configure` ist der reguläre Einrichtungsweg. Optional kann `local-marketplace.example.json` als manuelle Kopiervorlage dienen; relative Pfade beziehen sich auf die Marketplace-Wurzel. Nur `.local/marketplace.json` wird zur Laufzeit gelesen.
+Lokale Checkout-Pfade stehen in der Git-ignorierten `.local/marketplace.json` unter `sources`. Die Zuordnung eines Plugins richtet `plugin-manager` (associate) ein und ändert sie; ein Plugin speichert den Pfad seines einen Marketplace in der von Git ignorierten `.project/plugins/plugin-manager/local.json`. Optional kann `local-marketplace.example.json` als manuelle Kopiervorlage dienen; relative Pfade beziehen sich auf die Marketplace-Wurzel.
 
 Die Prüfung trennt `structure_valid` von `local_development.complete`: Ein frischer Clone kann ohne lokale Zuordnungen strukturell gültig sein. Für die lokale Installation müssen dagegen alle benötigten Plugin-Checkouts verfügbar sein. [Lokale Bereitstellung](#plugin-lokal) · [Testübersicht](tests/README.md).
 
@@ -188,26 +187,26 @@ Ein Skill-Import ist nicht unterstützt. `python3 -B plugins/plugin-manager/skil
 
 `plugin-create` erzeugt Entwicklungswerkzeuge und Dokumentationsvorlagen, trägt das Plugin im Marketplace ein und richtet lokale Zuordnungen ein. Beim Skeleton anschließend das Zielbild in `SCOPE.md` bestätigen, die Skills implementieren und passende Tests ergänzen. Strukturprüfung allein bestätigt noch kein fertiges Produkt.
 
-Ein **bereits vorhandenes Plugin** wird mit `configure` zugeordnet.
+Ein Plugin gehört zu genau einem Marketplace. Um seine Zuordnung neu einzurichten (frischer Clone, verschobener Checkout) oder es in einen anderen Marketplace zu verschieben, dient der Flow `associate` von `plugin-manager`.
 
 **Im Chat**
 
 1. Das Plugin-Projekt öffnen.
 2. Den Plugin-Ordner als Arbeitsordner auswählen.
 3. Einen neuen Chat mit verfügbarem Plugin Manager starten.
-4. `configure` wählen oder in Claude Code `/plugin-manager:configure` aufrufen.
+4. In Claude Code `/plugin-manager:plugin-manager` aufrufen und um die Änderung der Marketplace-Zuordnung bitten.
 
 Den Auftrag beispielsweise so formulieren:
 
-> Ordne dieses Plugin mit configure dem Marketplace unter ../mein-marketplace zu und verwende ihn als lokalen Standard. Erhalte die anderen Zuordnungen.
+> Ändere die Marketplace-Zuordnung dieses Plugins auf den Marketplace unter ../mein-marketplace.
 
 Alternativ im Terminal aus dem `ai.plugins`-Checkout:
 
 ```sh
-python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py configure --root ../mein-plugin --marketplace .
+python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py associate --root ../mein-plugin --marketplace .
 ```
 
-Die Zuordnung steht in beiden Repositories in `.local/marketplace.json`. Im Plugin enthält sie den lokalen Standard-Marketplace und weitere benannte Zuordnungen. Andere Zuordnungen bleiben erhalten; lokale Pfade werden nicht committed. [Create-/Configure-Anleitung](plugins/plugin-manager/docs/de/usage.md) · [Technische Optionen](plugins/plugin-manager/skills/_shared/references/workflows.md).
+Die Identität `marketplace {name, repository}` des Plugins steht in seiner committeten `.project/plugins/plugin-manager/config.json`, der Pfad des Checkouts in der von Git ignorierten `.project/plugins/plugin-manager/local.json`; der Marketplace hält die Checkouts seiner Plugins unter `sources` in seiner `.local/marketplace.json`. Ein Wechsel verschiebt den Katalogeintrag in einer Transaktion; lokale Pfade werden nicht committet. [Create-/Associate-Anleitung](plugins/plugin-manager/docs/de/usage.md) · [Technische Optionen](plugins/plugin-manager/skills/_shared/references/workflows.md).
 
 <a id="plugin-lokal"></a>
 

@@ -17,11 +17,11 @@ class CatalogIdentityTests(unittest.TestCase):
         temp = tempfile.TemporaryDirectory(); self.addCleanup(temp.cleanup)
         base = Path(temp.name)
         self.plugin, self.market = (base/'plugin').resolve(), (base/'market').resolve()
-        for folder in (self.plugin/'.local', self.market/'.local'):
+        for folder in (self.plugin/'.project/plugins/plugin-manager', self.market/'.local'):
             folder.mkdir(parents=True)
         self.write(self.plugin/'plugin.json', name='demo-manager', repository=REPO,
                    extensions={'com.openai': {'interface': {'displayName': 'Demo Manager'}}})
-        self.write(self.plugin/'.local/marketplace.json', marketplace=str(self.market))
+        self.write(self.plugin/'.project/plugins/plugin-manager/local.json', schema_version=1, marketplace_path=str(self.market))
         self.write(self.market/'.local/marketplace.json', sources={'demo-manager': str(self.plugin)})
         verify.marketplace = lambda root: {}          # catalog structure is not under test here
 

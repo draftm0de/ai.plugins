@@ -60,14 +60,16 @@ Clone the existing remote when the target checkout is absent. Otherwise inspect 
 
 The agent must complete missing documentation from the actual source, preserving existing prose, and run documentation validation. Scaffolding reports this outstanding step explicitly; structural success alone does not certify docs, licensing or product behavior. Do not invent license terms. Retain existing language choices; ask only when not established.
 
-## configure
+## associate
+
+The operation of `skills/plugin-manager/flows/associate.md`; there is no separate configure skill or operation.
 
 ```sh
-python3 /path/to/installed/skills/_shared/scripts/workflows.py configure \
-  --root /work/existing-plugin --marketplace /work/catalog
+python3 /path/to/installed/skills/_shared/scripts/workflows.py associate \
+  --root /work/existing-plugin --plugin plugin-manager --marketplace /work/catalog [--drop-missing-old]
 ```
 
-Requires an existing valid plugin. Validate manifest identity against origin, register/update the external catalog entry and derive host catalogs. The marketplace's ignored `.local/marketplace.json` maps `sources.<plugin-name>` to a checkout. The plugin's ignored file stores `marketplace` as the local default and `marketplaces` as named associations. Paths are relative to the containing repository. Selecting a new default preserves previous associations and other catalog entries. Conflicting identities or checkout mappings require review; there is no silent reassignment or repair.
+A plugin belongs to exactly one marketplace. Requires the configuration evidence (`.project/plugins/plugin-manager/config.json`, schema_version 2) of the kind plugin and a valid plugin. Validate manifest identity against origin and the target as a marketplace, register or update the external catalog entry, derive the host catalogs and store the identity `marketplace: {name, repository}` in `config.json` (committed) and the path of the checkout in the Git-ignored `.project/plugins/plugin-manager/local.json`. The marketplace's ignored `.local/marketplace.json` maps `sources.<plugin-name>` to a checkout. Paths are relative to the containing repository. Changing the marketplace removes the entry, the `sources` mapping and the host catalog line from the previous marketplace and writes everything in one transaction with rollback; if the previous checkout is gone, `--drop-missing-old` releases only the local reference (`old_catalog_entry_remains: true`). The former plugin-side `.local/marketplace.json` and a `marketplaces` list are not read and not migrated. Conflicting identities or checkout mappings require review; there is no silent reassignment or repair. Nothing is committed or published.
 
 ## Local development and verification
 
@@ -83,11 +85,11 @@ All selected marketplace plugins need local checkouts before installation. Prefl
 
 ## Current entry points
 
-Only marketplace-create, plugin-create and configure are accepted. init is unsupported. No automatic choice, migration or creation.
+Only marketplace-create, plugin-create and associate are accepted. init is unsupported. No automatic choice, migration or creation.
 
-Before writing local associations, proposed root and `.local/.gitignore` rules are evaluated by real Git in an isolated repository. Global excludes cannot conceal unsafe repository rules. Negations that expose `.local/marketplace.json` cause an actionable error before either repository is written; existing rules, mappings and content remain unchanged. Review conflicting rules explicitly, then retry. Creation never makes initial commits. For a repository without HEAD, use the explicitly approved initial-publication mode in [publish.md](publish.md), or use an existing remote PR base.
+Before writing local associations, proposed root and `.local/.gitignore` rules are evaluated by real Git in an isolated repository. Global excludes cannot conceal unsafe repository rules. Negations that expose `.local/marketplace.json` or the plugin's `.project/plugins/plugin-manager/local.json` cause an actionable error before either repository is written; existing rules, mappings and content remain unchanged. Review conflicting rules explicitly, then retry. Creation never makes initial commits. For a repository without HEAD, use the explicitly approved initial-publication mode in [publish.md](publish.md), or use an existing remote PR base.
 
-Snapshots read the current checkout including uncommitted changes, regardless of branch. After changes or a branch switch, run install-local and open a new host session. Local testing requires no commit, push or PR and uses the same development marketplace across branches. configure is the normal setup path; local-marketplace.example.json is an optional manual copy template. Runtime reads only .local/marketplace.json; never commit local mappings.
+Snapshots read the current checkout including uncommitted changes, regardless of branch. After changes or a branch switch, run install-local and open a new host session. Local testing requires no commit, push or PR and uses the same development marketplace across branches. plugin-manager (associate) is the normal setup path for the association of a plugin; local-marketplace.example.json is an optional manual copy template for the marketplace side. Runtime reads the plugin's marketplace path only from .project/plugins/plugin-manager/local.json and the plugin checkouts only from the marketplace's .local/marketplace.json; never commit local mappings.
 
 ## Skeleton first, implementation later
 

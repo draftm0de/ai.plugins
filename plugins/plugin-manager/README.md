@@ -14,9 +14,9 @@ Für Entwickler und Teams, die Skills als installierbare Plugins pflegen. Der Ma
 
 ## Funktionen und Modi
 
-**plugin-manager** richtet einen geklonten Marketplace ein oder erstellt ein separates Plugin und ordnet es zu, beides als geführte Abläufe des zentralen Einstiegs. **configure** verbindet ein bestehendes Plugin mit einem Marketplace. **plugin-verify**, **marketplace-verify** und **verify** prüfen ausschließlich lesend. **update** pflegt Dokumentation und **publish** bereitet getrennte, freigabepflichtige Veröffentlichungen vor. `init` wird nicht unterstützt. [Abläufe](docs/de/usage.md).
+**plugin-manager** richtet einen geklonten Marketplace ein oder erstellt ein separates Plugin und ordnet es zu, beides als geführte Abläufe des zentralen Einstiegs. Die Marketplace-Zuordnung eines Plugins (genau ein Marketplace) ändert er auf Anfrage im Flow `associate`. **plugin-verify**, **marketplace-verify** und **verify** prüfen ausschließlich lesend. **update** pflegt Dokumentation und **publish** bereitet getrennte, freigabepflichtige Veröffentlichungen vor. `init` wird nicht unterstützt. [Abläufe](docs/de/usage.md).
 
-Die fünf Skills heißen `plugin-manager`, `configure`, `verify`, `update` und `publish`. Gemeinsame Regeln und Werkzeuge liegen in [`skills/_shared/`](skills/_shared/WORKFLOWS.md), mit plugin-manager als zentralem Einstieg. Explizite Prüfvarianten bleiben Befehle; init wird nicht unterstützt.
+Die vier Skills heißen `plugin-manager`, `verify`, `update` und `publish`. Gemeinsame Regeln und Werkzeuge liegen in [`skills/_shared/`](skills/_shared/WORKFLOWS.md), mit plugin-manager als zentralem Einstieg. Explizite Prüfvarianten bleiben Befehle; init wird nicht unterstützt.
 
 ## Schnellstart
 

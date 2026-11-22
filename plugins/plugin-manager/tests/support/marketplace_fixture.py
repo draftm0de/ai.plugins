@@ -14,10 +14,11 @@ def attach(plugin):
     repository = manifest.setdefault('repository', 'https://github.com/example/'+name)
     (plugin/'plugin.json').write_text(json.dumps(manifest))
     config = {'name':'fictional-market', 'displayName':'Fictional Market', 'owner':{'name':'Fictional Team'},
+              'repository':'https://github.com/example/fictional-market',
               'plugins':[{'name':name,'displayName':name,'description':manifest['description'],'repository':repository+'.git'}]}
     (market/'marketplace.json').write_text(json.dumps(config))
     (market/'.local').mkdir(exist_ok=True)
     (market/'.local/marketplace.json').write_text(json.dumps({'sources':{name:str(plugin)}}))
-    (plugin/'.local').mkdir(exist_ok=True)
-    (plugin/'.local/marketplace.json').write_text(json.dumps({'marketplace':str(market)}))
+    (plugin/'.project/plugins/plugin-manager').mkdir(parents=True, exist_ok=True)
+    (plugin/'.project/plugins/plugin-manager/local.json').write_text(json.dumps({'schema_version':1,'marketplace_path':str(market)}))
     return market

@@ -8,7 +8,7 @@ help:
 	@echo 'Tests: test (unit + integration + contracts), test-unit, test-integration, test-contracts, test-native, test-behavior'
 	@echo 'Git + Python 3.10+; Make is optional. Use python3 -B scripts/verify.py or the relevant Python helper directly.'
 	@echo 'Host CLI only for automatic local install. After edits/branch switches: install-local, then a new host session.'
-	@echo 'configure is normal setup; local-marketplace.example.json is optional. Runtime reads ignored .local/marketplace.json only.'
+	@echo 'plugin-manager (associate) sets the marketplace of this plugin; the install runtime reads its path from the ignored .project/plugins/plugin-manager/local.json only.'
 	@echo 'make install-local TARGET=claude|codex  Test checkout edits without GitHub'
 	@echo 'make sync-plugin / check-plugin     Generate / validate committed repository import metadata'
 # Test layers: deterministic checks by default; native/model tests are explicit.

@@ -8,7 +8,7 @@
 
 ## Produkt und Zugang
 
-Der Manager bündelt plugin-manager, configure, update, verify und publish. Der Import aus seinem GitHub-Repository wurde vom Nutzer für Claude und GPT bestätigt.
+Der Manager bündelt plugin-manager, update, verify und publish. Der Import aus seinem GitHub-Repository wurde vom Nutzer für Claude und GPT bestätigt.
 
 ## Voraussetzungen
 

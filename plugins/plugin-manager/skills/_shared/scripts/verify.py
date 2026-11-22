@@ -218,14 +218,19 @@ def local_configuration(root, kind):
     """Optional checkout availability is independent of published structure validity."""
     findings = []
     try:
-        local_path = safe(root, '.local/marketplace.json')
+        # A plugin keeps the path of its one marketplace in the ignored .project/plugins/plugin-manager/local.json,
+        # a marketplace the checkouts of its plugins in .local/marketplace.json.
+        local_file = '.project/plugins/plugin-manager/local.json' if kind == 'plugin' else '.local/marketplace.json'
+        local_path = safe(root, local_file)
         if not local_path.is_file():
             return {'status': 'unavailable', 'complete': False, 'findings': ['No local marketplace configuration (expected on a fresh clone)']}
-        local = read(root, '.local/marketplace.json')
+        local = read(root, local_file)
         if kind == 'plugin':
-            selected = local.get('marketplace')
+            if set(local) != {'schema_version', 'marketplace_path'} or local['schema_version'] != 1:
+                raise ValueError('Unsupported local marketplace association; run plugin-manager (associate)')
+            selected = local['marketplace_path']
             if not isinstance(selected, str) or not selected:
-                raise ValueError('No default local marketplace')
+                raise ValueError('No local marketplace path')
             market = Path(selected).expanduser()
             market = market if market.is_absolute() else root/market
             market = market.resolve()

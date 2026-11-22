@@ -23,9 +23,9 @@ HERE = Path(__file__).resolve().parent
 MANAGER_ROOT = HERE.parents[2]  # scripts -> _shared -> skills -> plugin root
 TEMPLATE_BASE = None  # relative to skills/_shared (templates/<kind>/sync); set by apply_kind()
 MANAGED_FILES = ()  # synced files plus tombstones of the active kind (project path == path below sync/, bytes copied unchanged)
-KINDS = {}  # kind -> {'base', 'product', 'files', 'removed', 'common', 'derived'}; read from manifests/<kind>.json and <kind>.sync.json
+KINDS = {}  # kind -> {'base', 'product', 'requires_marketplace', 'files', 'removed', 'common', 'derived'}; read from manifests/<kind>.json and <kind>.sync.json
 SYNC_FILE = None  # {path: {'sha256', 'executable'}} of the active kind (the expected values the sources are checked against)
-MANIFEST_KEYS = {'schema_version', 'product', 'derived'}
+MANIFEST_KEYS = {'schema_version', 'product', 'requires_marketplace', 'derived'}
 SYNC_KEYS = {'schema_version', 'files', 'removed'}
 HASH_HINT = ' (run make build-skeleton-hashes in the Plugin Manager repository)'
 # A folder without configuration evidence and without plugin.json/marketplace.json is a valid target when it holds
@@ -39,7 +39,10 @@ EVIDENCE_PATH = '.project/plugins/{plugin}/config.json'
 SKELETON_PATH = '.project/plugins/{plugin}/skeleton.json'
 PLUGIN = None  # running plugin (--plugin); set by main()
 LOCK_PATH = None  # SKELETON_PATH of the running plugin
-EVIDENCE_KEYS = {'schema_version', 'plugin', 'kind', 'artifact', 'configured_at'}
+EVIDENCE_KEYS = {'schema_version', 'plugin', 'kind', 'artifact', 'configured_at', 'marketplace'}
+EVIDENCE_VERSION = 2
+LOCAL_PATH = '.project/plugins/{plugin}/local.json'  # ignored, machine-specific: path of the one marketplace checkout
+LOCAL_KEYS = {'schema_version', 'marketplace_path'}
 TIMESTAMP = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z')
 LANGUAGE_PATH = '.project/operator.json'
 NAME = re.compile(r'[a-z0-9]+(?:-[a-z0-9]+)*')
@@ -197,9 +200,9 @@ def load_kinds():
                       and all(isinstance(d, dict) and set(d) == {'path', 'generate', 'check'} and safe_relative(d['path'])
                               and isinstance(d['generate'], str) and isinstance(d['check'], str) for d in data['derived']))
         if not (isinstance(data, dict) and set(data) == MANIFEST_KEYS and type(data['schema_version']) is int
-                and data['schema_version'] == 1 and derived_ok
+                and data['schema_version'] == 1 and derived_ok and type(data['requires_marketplace']) is bool
                 and (data['product'] is None or safe_relative(data['product']))):
-            raise Conflict(relative, 'Unsupported kind manifest (schema_version 1 with product, derived); no migration', 'template_base')
+            raise Conflict(relative, 'Unsupported kind manifest (schema_version 1 with product, requires_marketplace, derived); no migration', 'template_base')
         sync_relative = 'manifests/' + name + '.sync.json'
         sync = read_template_json(sync_relative)
         files_ok = (isinstance(sync, dict) and set(sync) == SYNC_KEYS and type(sync['schema_version']) is int
@@ -213,7 +216,7 @@ def load_kinds():
         if set(sync['files']) & set(sync['removed']):
             raise Conflict(sync_relative, 'A path is listed as synced file and as removed: '
                            + ', '.join(sorted(set(sync['files']) & set(sync['removed']))) + HASH_HINT, 'template_base')
-        KINDS[name] = {'base': 'templates/' + name + '/sync', 'product': data['product'],
+        KINDS[name] = {'base': 'templates/' + name + '/sync', 'product': data['product'], 'requires_marketplace': data['requires_marketplace'],
                        'files': {k: dict(v) for k, v in sync['files'].items()}, 'removed': tuple(sync['removed']),
                        'common': tuple(sorted(sync['files'])) + tuple(sync['removed']), 'derived': tuple(data['derived'])}
     if not KINDS:
@@ -247,14 +250,86 @@ def read_evidence(root):
     except (ValueError, UnicodeDecodeError) as exc:
         raise Conflict(path, 'Invalid configuration evidence: ' + str(exc)) from exc
     if not (isinstance(data, dict) and set(data) == EVIDENCE_KEYS and type(data['schema_version']) is int
-            and data['schema_version'] == 1 and data['plugin'] == PLUGIN and isinstance(data['kind'], str)
+            and data['schema_version'] == EVIDENCE_VERSION and data['plugin'] == PLUGIN and isinstance(data['kind'], str)
             and isinstance(data['artifact'], str) and NAME.fullmatch(data['artifact'])
             and isinstance(data['configured_at'], str) and TIMESTAMP.fullmatch(data['configured_at'])):
-        raise Conflict(path, 'Unsupported configuration evidence (schema_version 1 with plugin, kind plugin|marketplace, '
-                       'artifact and UTC configured_at); existing data preserved, no migration', 'config_format')
+        raise Conflict(path, 'Unsupported configuration evidence (schema_version ' + str(EVIDENCE_VERSION) + ' with plugin, kind, artifact, '
+                       'UTC configured_at and marketplace); existing data preserved, no migration', 'config_format')
     if data['kind'] not in KINDS:
         raise Conflict(path, 'Template base is missing for kind ' + repr(data['kind']) + ' (no manifests/<kind>.json)', 'template_base')
+    identity = data['marketplace']
+    if KINDS[data['kind']]['requires_marketplace']:
+        valid = (isinstance(identity, dict) and set(identity) == {'name', 'repository'} and isinstance(identity['name'], str)
+                 and NAME.fullmatch(identity['name']) and isinstance(identity['repository'], str) and identity['repository'].strip() != '')
+        message = 'A plugin belongs to exactly one marketplace: marketplace {name, repository} is required for kind ' + data['kind']
+    else:
+        valid, message = identity is None, 'marketplace must be null for kind ' + data['kind']
+    if not valid:
+        raise Conflict(path, 'Unsupported configuration evidence: ' + message + '; existing data preserved, no migration', 'config_format')
     return data
+
+
+def norm_repo(value):
+    text = value.strip().rstrip('/')
+    text = text[:-4] if text.endswith('.git') else text
+    return text.rstrip('/').lower()
+
+
+def read_local(root):
+    """(state, path): the ignored local.json of the running plugin. state is missing, unsupported or ok."""
+    path = LOCAL_PATH.format(plugin=PLUGIN)
+    try:
+        if check_chain(root, path, 'file') == 'missing':
+            return 'missing', None
+        data = strict_json(read_regular(root, path).decode('utf-8'))
+    except (Conflict, ValueError, UnicodeDecodeError):
+        return 'unsupported', None
+    if not (isinstance(data, dict) and set(data) == LOCAL_KEYS and type(data['schema_version']) is int and data['schema_version'] == 1
+            and isinstance(data['marketplace_path'], str) and data['marketplace_path'].strip() != ''):
+        return 'unsupported', None
+    return 'ok', data['marketplace_path']
+
+
+def resolve_association(root, artifact):
+    """Look at the local marketplace checkout of a plugin. Returns (state, path, identity): state is ok, path_missing,
+    path_invalid, mismatch (identity of the checkout or the catalog entry of the plugin differs) or unsupported;
+    identity is the {name, repository} the checkout declares (None unless readable)."""
+    local, value = read_local(root)
+    if local == 'missing':
+        return 'path_missing', None, None
+    if local == 'unsupported':
+        return 'unsupported', None, None
+    checkout = Path(os.path.abspath(Path(value).expanduser() if Path(value).is_absolute() else root / value))
+    try:
+        if not checkout.is_dir() or check_chain(checkout, 'marketplace.json', 'file') == 'missing':
+            return 'path_invalid', value, None
+        market = strict_json(read_regular(checkout, 'marketplace.json').decode('utf-8'))
+    except (Conflict, ValueError, UnicodeDecodeError, OSError):
+        return 'path_invalid', value, None
+    if not (isinstance(market, dict) and isinstance(market.get('name'), str) and isinstance(market.get('repository'), str)
+            and isinstance(market.get('plugins'), list)):
+        return 'path_invalid', value, None
+    identity = {'name': market['name'], 'repository': market['repository']}
+    try:
+        plugin_repo = strict_json(read_regular(root, 'plugin.json').decode('utf-8')).get('repository')
+    except (Conflict, ValueError, UnicodeDecodeError, OSError, AttributeError):
+        plugin_repo = None
+    entry = next((e for e in market['plugins'] if isinstance(e, dict) and e.get('name') == artifact), None)
+    if entry is None or not isinstance(plugin_repo, str) or not isinstance(entry.get('repository'), str) \
+            or norm_repo(entry['repository']) != norm_repo(plugin_repo):
+        return 'mismatch', value, identity
+    return 'ok', value, identity
+
+
+def association_report(root, evidence):
+    """Read-only hint for the status answer; never a gate for ready."""
+    if evidence is None or not KINDS[evidence['kind']]['requires_marketplace']:
+        return None
+    state, path, identity = resolve_association(root, evidence['artifact'])
+    declared = evidence['marketplace']
+    if state == 'ok' and (identity['name'] != declared['name'] or norm_repo(identity['repository']) != norm_repo(declared['repository'])):
+        state = 'mismatch'
+    return {'marketplace': declared, 'path': path, 'state': state}
 
 
 def product_name(root, filename):
@@ -578,7 +653,9 @@ def report(operation, root, name, plan, created_files=(), created_dirs=(), lock_
 def status(target):
     root, name, state = detect_target(target, allow_unconfigured=True)
     plan = inspect(root, None)
-    return dict(report('status', root, name, plan, state=state), entries=sorted(os.listdir(root)))
+    evidence = read_evidence(root) if state != 'unconfigured' else None
+    return dict(report('status', root, name, plan, state=state), entries=sorted(os.listdir(root)),
+                association=association_report(root, evidence))
 
 
 def atomic_write(path, data, mode=None):
@@ -893,11 +970,19 @@ def record(target, kind, artifact):
         raise Conflict('plugin.json', 'The embedded Plugin Manager is not a setup target')
     if state != 'unconfigured' and (state, name) != (kind, artifact):
         raise Conflict(EVIDENCE_PATH.format(plugin=PLUGIN), 'The workpackage is already configured differently', 'already_configured')
+    identity = None
+    if state == 'unconfigured' and KINDS[kind]['requires_marketplace']:
+        association, _, found = resolve_association(root, artifact)
+        if association != 'ok':
+            raise Conflict(LOCAL_PATH.format(plugin=PLUGIN), 'A plugin belongs to exactly one marketplace: associate first (association state: '
+                           + association + '); nothing was written', 'association_missing')
+        identity = found
     created_dirs, created_files, errors = [], [], []
     path = EVIDENCE_PATH.format(plugin=PLUGIN)
     if state == 'unconfigured':
-        body = (json.dumps({'schema_version': 1, 'plugin': PLUGIN, 'kind': kind, 'artifact': artifact,
-                            'configured_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}, indent=2) + '\n').encode()
+        body = (json.dumps({'schema_version': EVIDENCE_VERSION, 'plugin': PLUGIN, 'kind': kind, 'artifact': artifact,
+                            'configured_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+                            'marketplace': identity}, indent=2) + '\n').encode()
         try:
             ensure_plugin_dir(root, created_dirs)
             if not replace_if_unchanged(root / path, body, 0o666 & ~current_umask(), None):

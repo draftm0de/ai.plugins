@@ -17,7 +17,6 @@ Marketplace `draftmode-ai-plugins`, displayed as **Draftmode AI Plugins**. Repos
 | --- | --- |
 | [marketplace-create](plugins/plugin-manager/skills/marketplace-create/SKILL.md) | Set up a marketplace in an existing local GitHub checkout: manifest, host catalogs, tools and documentation scaffold. |
 | [plugin-manager](plugins/plugin-manager/skills/plugin-manager/SKILL.md) | Set up language, synchronize the skeleton and configure a new plugin through the central entry. |
-| [configure](plugins/plugin-manager/skills/configure/SKILL.md) | Associate an existing plugin with a marketplace and configure local development. Preserve other associations. Already included in plugin-create. |
 | [verify](plugins/plugin-manager/skills/verify/SKILL.md) | Detect repository type and inspect it read-only. Assess publishable structure separately from available local development configuration. |
 | [update](plugins/plugin-manager/skills/update/SKILL.md) | Maintain README and documentation from current sources and saved language settings. No installation or publication. |
 | [publish](plugins/plugin-manager/skills/publish/SKILL.md) | Plan publication for a plugin or marketplace. Execute through feature branch, commit, push, PR, checks and merge only after concrete approval. |
@@ -26,7 +25,7 @@ Marketplace `draftmode-ai-plugins`, displayed as **Draftmode AI Plugins**. Repos
 
 ### Usage and boundaries
 
-In Claude Code use, for example, `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-manager`, `/plugin-manager:configure`, `/plugin-manager:verify`, `/plugin-manager:update`, `/plugin-manager:publish`. In Codex select the currently named skill or describe the task and target repository. [Inputs and examples](plugins/plugin-manager/docs/en/usage.md).
+In Claude Code use, for example, `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-manager`, `/plugin-manager:verify`, `/plugin-manager:update`, `/plugin-manager:publish`. In Codex select the currently named skill or describe the task and target repository. [Inputs and examples](plugins/plugin-manager/docs/en/usage.md).
 
 `update` maintains documentation. `install-local` builds and refreshes local plugin snapshots including uncommitted changes. Metadata synchronization and documentation validation are tool functions, not additional skills. Create does not create a GitHub repository or invent domain skill content. Publish treats plugin and marketplace separately; explicitly approved bootstrap of completely empty repositories remains the documented exception to the PR workflow.
 
@@ -75,7 +74,7 @@ python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py marketplac
 
 This creates `marketplace.json`, Claude and Codex host catalogs, standalone tools, a Makefile and documentation scaffolding. New marketplaces do not need an embedded Manager. Existing content is inspected first; differing files are not silently overwritten.
 
-To work on **this** marketplace, do not run Create again. Associate existing plugin checkouts with `configure`; add new plugins with `plugin-manager`, as described in the [Plugin section](#plugin-create).
+To work on **this** marketplace, do not run Create again. Associate existing plugin checkouts through `plugin-manager` (associate); add new plugins with `plugin-manager`, as described in the [Plugin section](#plugin-create).
 
 <a id="marketplace-verify"></a>
 
@@ -100,7 +99,7 @@ make test
 
 In `ai.plugins`, `make sync-plugin` and `make check-plugin` also handle the embedded Manager’s metadata. Root `make test` runs both marketplace and Manager tests.
 
-Local checkout paths live under `sources` in the Git-ignored `.local/marketplace.json`. `configure` is the normal setup path. Optionally use `local-marketplace.example.json` as a manual copy template; relative paths start at the marketplace root. Runtime reads only `.local/marketplace.json`.
+Local checkout paths live under `sources` in the Git-ignored `.local/marketplace.json`. The association of a plugin is set up and changed by `plugin-manager` (associate); a plugin stores the path of its one marketplace in the Git-ignored `.project/plugins/plugin-manager/local.json`. Optionally use `local-marketplace.example.json` as a manual copy template; relative paths start at the marketplace root.
 
 Verification separates `structure_valid` from `local_development.complete`: a fresh clone may be structurally valid without local mappings. Local installation requires all necessary plugin checkouts. [Local installation](#plugin-local) · [Test guide](tests/README.md).
 
@@ -183,26 +182,26 @@ Skill import is unsupported. `python3 -B plugins/plugin-manager/skills/_shared/s
 
 `plugin-create` creates development tools and documentation templates, registers the plugin in the marketplace and sets up local mappings. For a skeleton, then confirm the scope in `SCOPE.md`, implement the skills and add relevant tests. Structural validity alone does not establish a finished product.
 
-Use `configure` for an **existing plugin**.
+A plugin belongs to exactly one marketplace. To set up its association again (fresh clone, moved checkout) or to move it to another marketplace, use the `associate` flow of `plugin-manager`.
 
 **In chat**
 
 1. Open the plugin project.
 2. Select the plugin folder as the working directory.
 3. Start a new chat with Plugin Manager available.
-4. Select `configure` or run `/plugin-manager:configure` in Claude Code.
+4. Run `/plugin-manager:plugin-manager` in Claude Code and ask to change the marketplace association.
 
 For example, request:
 
-> Use configure to associate this plugin with the marketplace at ../my-marketplace and make it the local default. Preserve other associations.
+> Change the marketplace association of this plugin to the marketplace at ../my-marketplace.
 
 Alternatively, from the `ai.plugins` checkout in the terminal:
 
 ```sh
-python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py configure --root ../my-plugin --marketplace .
+python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py associate --root ../my-plugin --marketplace .
 ```
 
-Mappings live in `.local/marketplace.json` in both repositories. The plugin file stores its local default marketplace and other named associations. Other associations are preserved; local paths are not committed. [Create/Configure guide](plugins/plugin-manager/docs/en/usage.md) · [Technical options](plugins/plugin-manager/skills/_shared/references/workflows.md).
+The plugin's identity `marketplace {name, repository}` is stored in its committed `.project/plugins/plugin-manager/config.json`, the path of the checkout in the Git-ignored `.project/plugins/plugin-manager/local.json`; the marketplace keeps the checkouts of its plugins under `sources` in its `.local/marketplace.json`. Changing the marketplace moves the catalog entry in one transaction; local paths are not committed. [Create/Associate guide](plugins/plugin-manager/docs/en/usage.md) · [Technical options](plugins/plugin-manager/skills/_shared/references/workflows.md).
 
 <a id="plugin-local"></a>
 

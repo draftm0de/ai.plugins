@@ -18,8 +18,8 @@ Git und Python 3.10+ sind für die Verwaltungswerkzeuge erforderlich; Make ist n
 
 Lokale Snapshots lesen den aktuellen Checkout einschließlich uncommitteter Änderungen, unabhängig vom Branch. Nach Änderungen oder Branchwechsel `install-local` ausführen und eine neue Host-Sitzung öffnen. Kein Commit, Push oder PR ist für lokale Tests erforderlich. Es bleibt bei einem gemeinsamen `<marketplace-id>-dev`, ohne zusätzliche Marketplaces pro Branch.
 
-`configure` ist der reguläre Einrichtungsweg. `local-marketplace.example.json` ist eine optionale manuelle Kopiervorlage. Nur `.local/marketplace.json` wird zur Laufzeit für lokale Zuordnungen gelesen; diese Zuordnungen werden nicht committed.
+Die lokale Zuordnung eines Plugins zu seinem einen Marketplace richtet `plugin-manager` (associate) ein und ändert sie. Der Pfad des Marketplace-Checkouts steht in der von Git ignorierten `.project/plugins/plugin-manager/local.json` des Plugins; die Checkouts der Plugins stehen unter `sources` in der von Git ignorierten `.local/marketplace.json` des Marketplace; diese Zuordnungen werden nicht committet. `local-marketplace.example.json` ist eine optionale manuelle Kopiervorlage für die Marketplace-Seite.
 
 ## Skills
 
-`plugin-manager`, `configure`, `verify`, `update` und `publish`. Gemeinsame Regeln: `skills/_shared/WORKFLOWS.md`; plugin-manager ist der zentrale Einstieg.
+`plugin-manager`, `verify`, `update` und `publish`; die Marketplace-Zuordnung eines Plugins ist ein Flow von plugin-manager. Gemeinsame Regeln: `skills/_shared/WORKFLOWS.md`; plugin-manager ist der zentrale Einstieg.

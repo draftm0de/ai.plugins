@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
   "product": "plugin.json",
+  "requires_marketplace": true,
   "derived": []
 }

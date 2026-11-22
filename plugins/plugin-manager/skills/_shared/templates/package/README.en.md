@@ -18,8 +18,8 @@ Management tools require Git and Python 3.10+; Make is only a convenience wrappe
 
 Local snapshots read the current checkout including uncommitted changes, regardless of branch. After edits or branch switches run `install-local` and open a new host session. Local tests require no commit, push or PR. Keep one shared `<marketplace-id>-dev`, with no additional marketplaces per branch.
 
-`configure` is the normal setup path. `local-marketplace.example.json` is an optional manual copy template. Only `.local/marketplace.json` is read for local runtime mappings; never commit those mappings.
+The local association of a plugin with its one marketplace is set up and changed by `plugin-manager` (associate). The path of the marketplace checkout lives in the Git-ignored `.project/plugins/plugin-manager/local.json` of the plugin; the checkouts of the plugins live under `sources` in the Git-ignored `.local/marketplace.json` of the marketplace; never commit those mappings. `local-marketplace.example.json` is an optional manual copy template for the marketplace side.
 
 ## Skills
 
-`plugin-manager`, `configure`, `verify`, `update` and `publish`. Shared rules: `skills/_shared/WORKFLOWS.md`; plugin-manager is the central entry.
+`plugin-manager`, `verify`, `update` and `publish`; the marketplace association of a plugin is a flow of plugin-manager. Shared rules: `skills/_shared/WORKFLOWS.md`; plugin-manager is the central entry.

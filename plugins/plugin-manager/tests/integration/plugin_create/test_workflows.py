@@ -162,13 +162,21 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
 
 
     def test_nested_ignore_conflict_blocks_plugin_creation_before_writes(self):
-        (self.plugin/'.gitignore').write_text('.local/\n!.local/\n.local/*\n')
-        (self.plugin/'.local').mkdir()
-        (self.plugin/'.local/.gitignore').write_text('!marketplace.json\n')
         before=(self.market/'marketplace.json').read_bytes()
+        # plugin side: the machine path of the one marketplace (local.json) must stay ignored
+        (self.plugin/'.gitignore').write_text('/.project/plugins/*/local.json\n!/.project/plugins/*/local.json\n')
         with self.assertRaisesRegex(ValueError,'Ineffective Git ignore'):self.create()
         self.assertFalse((self.plugin/'plugin.json').exists())
-        self.assertFalse((self.plugin/'.local/marketplace.json').exists())
+        self.assertFalse((self.plugin/'.project').exists())
+        self.assertEqual(before,(self.market/'marketplace.json').read_bytes())
+        # marketplace side: .local/marketplace.json (checkouts of the plugins) must stay ignored
+        (self.plugin/'.gitignore').unlink()
+        (self.market/'.gitignore').write_text('.local/\n!.local/\n.local/*\n')
+        (self.market/'.local').mkdir()
+        (self.market/'.local/.gitignore').write_text('!marketplace.json\n')
+        with self.assertRaisesRegex(ValueError,'Ineffective Git ignore'):self.create()
+        self.assertFalse((self.plugin/'plugin.json').exists())
+        self.assertFalse((self.plugin/'.project').exists())
         self.assertEqual(before,(self.market/'marketplace.json').read_bytes())
 
 

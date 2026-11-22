@@ -9,3 +9,4 @@ __pycache__/
 node_modules/
 .local/
 /.project/operator.json
+/.project/plugins/*/local.json

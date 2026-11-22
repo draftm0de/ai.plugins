@@ -24,8 +24,8 @@ class WorkpackageBase(unittest.TestCase):
         self.assertEqual(0, code, result.stderr + result.stdout)
 
     def evidence(self, path=EVIDENCE, **override):
-        data = {'schema_version': 1, 'plugin': PLUGIN, 'kind': 'plugin', 'artifact': 'demo-plugin',
-                'configured_at': '2026-11-22T10:00:00Z'}
+        data = {'schema_version': 2, 'plugin': PLUGIN, 'kind': 'plugin', 'artifact': 'demo-plugin',
+                'configured_at': '2026-11-22T10:00:00Z', 'marketplace': {'name': 'fictional-market', 'repository': 'https://github.com/fictional/market.git'}}
         data.update(override)
         target = self.p / path
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -59,7 +59,7 @@ class ConfigurationEvidenceTests(WorkpackageBase):
         self.assertTrue(other['configuration']['configured'])
 
     def test_marketplace_kind_allows_root_marketplace_json(self):
-        self.language(); self.evidence(kind='marketplace', artifact='demo-marketplace')
+        self.language(); self.evidence(kind='marketplace', artifact='demo-marketplace', marketplace=None)
         (self.p / 'plugin.json').unlink()
         (self.p / 'marketplace.json').write_text(json.dumps({'name': 'demo-marketplace'}))
         code, data, _ = self.status()
@@ -67,8 +67,13 @@ class ConfigurationEvidenceTests(WorkpackageBase):
 
     def test_invalid_evidence_stops_without_writes(self):
         self.language()
-        for override in ({'kind': 'website'}, {'extra': 1}, {'schema_version': 2}, {'plugin': 'other-plugin'},
-                         {'artifact': 5}, {'configured_at': 'yesterday'}):
+        for override in ({'kind': 'website'}, {'extra': 1}, {'schema_version': 1}, {'plugin': 'other-plugin'},
+                         {'artifact': 5}, {'configured_at': 'yesterday'},
+                         # R21: a plugin belongs to exactly one marketplace; the identity is required and strict
+                         {'marketplace': None}, {'marketplace': {'name': 'fictional-market'}}, {'marketplace': 'fictional-market'},
+                         {'marketplace': {'name': 'Bad Name', 'repository': 'https://github.com/fictional/market.git'}},
+                         {'marketplace': {'name': 'fictional-market', 'repository': ' '}},
+                         {'marketplace': {'name': 'fictional-market', 'repository': 'https://github.com/f/m.git', 'path': '../m'}}):
             with self.subTest(override=override):
                 self.evidence(**override)
                 before = tree(self.p)
@@ -76,6 +81,20 @@ class ConfigurationEvidenceTests(WorkpackageBase):
                 self.assertEqual((1, False, 'stop'), (code, data['ok'], data['next']))
                 self.assertIn(EVIDENCE, [c['path'] for c in data['conflicts']])
                 self.assertEqual(before, tree(self.p))
+
+    def test_schema_1_evidence_and_a_marketplace_on_a_marketplace_kind_are_unsupported(self):
+        self.language()
+        self.evidence(kind='marketplace', artifact='demo-marketplace', marketplace={'name': 'a-market', 'repository': 'https://github.com/f/m.git'})
+        code, data, _ = self.status()
+        self.assertEqual((1, 'stop'), (code, data['next']))
+        self.assertIn('marketplace must be null', data['conflicts'][0]['reason'])
+        old = {k: v for k, v in json.loads((self.p / EVIDENCE).read_text()).items() if k != 'marketplace'}
+        old['schema_version'] = 1
+        (self.p / EVIDENCE).write_text(json.dumps(old))
+        before = tree(self.p)
+        code, data, _ = self.status()
+        self.assertEqual((1, 'stop', 'config_format'), (code, data['next'], data['conflicts'][0]['code']))
+        self.assertEqual(before, tree(self.p))  # never migrated
 
     def test_corrupt_evidence_is_a_conflict_not_missing(self):
         self.language()

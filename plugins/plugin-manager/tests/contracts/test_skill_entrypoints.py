@@ -8,7 +8,7 @@ import unittest
 from tests.support.plugin_fixture import materialize
 
 ROOT = next(p for p in Path(__file__).resolve().parents if (p / 'Makefile').is_file())
-NAMES = {'plugin-manager', 'configure', 'verify', 'update', 'publish'}
+NAMES = {'plugin-manager', 'verify', 'update', 'publish'}
 
 
 class SkillEntrypointTests(unittest.TestCase):
@@ -27,7 +27,7 @@ class SkillEntrypointTests(unittest.TestCase):
                          'scripts/documentation.py', 'templates/plugin/seed/Makefile', 'templates/marketplace/seed/Makefile'):
             self.assertTrue((root/'skills/_shared'/relative).is_file(), relative)
 
-    def test_source_has_exactly_five_public_skills(self):
+    def test_source_has_exactly_four_public_skills(self):
         self.check_inventory(ROOT)
         manifest = json.loads((ROOT/'plugin.json').read_text())
         self.assertEqual('./skills/verify/SKILL.md', manifest['extensions']['com.openai']['onboardingSkill'])
@@ -35,7 +35,7 @@ class SkillEntrypointTests(unittest.TestCase):
         self.assertTrue((ROOT/config['source_skill']/'SKILL.md').is_file())
         self.assertIn('skills/_shared/WORKFLOWS.md', config['extra_sources'])
 
-    def test_both_host_payloads_keep_shared_rules_and_five_skills(self):
+    def test_both_host_payloads_keep_shared_rules_and_four_skills(self):
         with tempfile.TemporaryDirectory() as directory:
             for host in ('claude', 'codex'):
                 with self.subTest(host=host):
@@ -52,3 +52,7 @@ class SkillEntrypointTests(unittest.TestCase):
         # R20: the marketplace setup is a flow of plugin-manager, not a skill or command of its own
         self.assertFalse((ROOT/'skills/marketplace-create').exists())
         self.assertFalse((ROOT/'commands/marketplace-create.md').exists())
+        # R21: the marketplace association of a plugin is the flow associate of plugin-manager, not a skill or command of its own
+        self.assertFalse((ROOT/'skills/configure').exists())
+        self.assertFalse((ROOT/'commands/configure.md').exists())
+        self.assertTrue((ROOT/'skills/plugin-manager/flows/associate.md').is_file())

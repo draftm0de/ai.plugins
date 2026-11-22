@@ -39,6 +39,20 @@ class WorkflowFixture:
             display_name='Fictional Plugin', description='Fictional acceptance capability', author='Fictional Publisher', languages=['de','en'], default_language='de', **({'license':'deferred'} | licensing))
 
 
+    def record(self, root=None):
+        """Configuration evidence (schema 2) of the central entry, written only after a passed creation (record)."""
+        root = root or self.plugin
+        helper = flow.module(ROOT/'skills/_shared/scripts/project_setup.py', 'fixture_project_setup_' + root.name.replace('-', '_'))
+        helper.set_plugin('plugin-manager')
+        result = helper.record(str(root), 'plugin', root.name)
+        assert result['ok'], result
+        return result
+
+    def create_configured(self, root=None, **licensing):
+        result = self.create(root, **licensing)
+        self.record(root)
+        return result
+
     def make(self,root,action,host,market=None):
         args=['make','-s',action,'TARGET='+host,'DRY_RUN=1']
         if market: args.append('MARKETPLACE='+str(market))

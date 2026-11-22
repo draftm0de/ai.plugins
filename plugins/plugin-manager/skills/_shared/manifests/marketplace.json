@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "product": "marketplace.json",
+  "requires_marketplace": false,
   "derived": [
     {
       "path": ".claude-plugin/marketplace.json",

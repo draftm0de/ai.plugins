@@ -59,7 +59,7 @@ def prepare(root, target):
         else:
             configured = sources.get(name)
             if not isinstance(configured, str) or not configured:
-                raise ValueError(f'Missing local checkout for {name}; configure sources.{name} in {local_file}')
+                raise ValueError(f'Missing local checkout for {name}; set sources.{name} in {local_file} (plugin-manager associate writes it)')
             source = Path(configured).expanduser()
             if not source.is_absolute():
                 source = root/source
@@ -144,7 +144,7 @@ def install_local(target, dry_run=False, root=ROOT):
             'next': 'Open a new local session. Enable only the intended remote or development copy.'}
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, epilog='Snapshots use current checkouts, including uncommitted edits, on any branch. After edits/branch switches run install-local and open a new host session. No commit/push/PR or per-branch marketplace. Host CLI is only needed without --dry-run. Use configure; only .local/marketplace.json is runtime configuration.')
+    parser = argparse.ArgumentParser(description=__doc__, epilog='Snapshots use current checkouts, including uncommitted edits, on any branch. After edits/branch switches run install-local and open a new host session. No commit/push/PR or per-branch marketplace. Host CLI is only needed without --dry-run. The checkouts of the plugins are read only from the ignored .local/marketplace.json (plugin-manager associate writes it).')
     parser.add_argument('action', choices=['install-local'])
     parser.add_argument('--target', choices=['claude', 'codex'], default='claude')
     parser.add_argument('--dry-run', action='store_true')

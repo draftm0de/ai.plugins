@@ -10,7 +10,7 @@
       "executable": false
     },
     "scripts/plugin.py": {
-      "sha256": "254887f2312916262a56fe3267f259f8e5ebf88e5fd18217f7ccf512eb783c00",
+      "sha256": "25137b954c9555933d6370b7e30623d36db0bd444dc275665fbdf7031c89ba99",
       "executable": false
     },
     "scripts/run_tests.py": {
@@ -18,7 +18,7 @@
       "executable": false
     },
     "scripts/verify.py": {
-      "sha256": "d0395dc314a9162b333e3a2520ede4062a67594bca191a0ae30f57ef294716a9",
+      "sha256": "f704ae8bf3a37326cba0e45b605b64d819bf8cb153442e9994df9461afbd94d2",
       "executable": false
     },
     "skills/_shared/flows/entry.md": {
@@ -46,7 +46,7 @@
       "executable": false
     },
     "skills/_shared/scripts/project_setup.py": {
-      "sha256": "fc11ecb3f56249bb8a448fc4e37ee32f6545307c95eb6791df8bb8fe75da7b8f",
+      "sha256": "ea183011ee253d085023e4d4030d5eeef8cdf63df7cab18bd78d946613673040",
       "executable": false
     }
   },

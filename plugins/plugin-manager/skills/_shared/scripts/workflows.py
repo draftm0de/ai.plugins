@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create separate repositories and configure associations. Never commit or publish."""
+"""Create separate repositories and associate plugins with their one marketplace. Never commit or publish."""
 import argparse
 import importlib.util
 import json
@@ -131,15 +131,22 @@ def apply(files, replace=()):
 
 # Rules of the plugin template that only newly generated plugin repositories receive.
 PLUGIN_ONLY_IGNORES = frozenset({'/.project/operator.json'})
+# Rules every plugin repository needs where the machine-specific marketplace path is stored (never committed).
+PLUGIN_REPO_IGNORES = frozenset({'/.project/plugins/*/local.json'})
+OWNER = 'plugin-manager'  # the running plugin that owns the workpackage evidence of the plugin repositories
+EVIDENCE_FILE = '.project/plugins/{plugin}/config.json'
+LOCAL_FILE = '.project/plugins/' + OWNER + '/local.json'
 
 
-def ignore_file(root, new_plugin=False):
+def ignore_file(root, new_plugin=False, plugin_repo=False):
     path = safe_path(root/'.gitignore')
     text = path.read_text() if path.exists() else ''
     for pattern in (SKILL/'templates/plugin/seed/gitignore.txt').read_text().splitlines():
         if not pattern or pattern.startswith('#'):
             continue
         if pattern in PLUGIN_ONLY_IGNORES and not new_plugin:
+            continue
+        if pattern in PLUGIN_REPO_IGNORES and not plugin_repo:
             continue
         if pattern not in text.splitlines():
             text = text.rstrip() + '\n' + pattern + '\n'
@@ -155,12 +162,12 @@ def ignore_file(root, new_plugin=False):
         if nested.exists():
             (shadow/'.local').mkdir()
             (shadow/'.local/.gitignore').write_bytes(nested.read_bytes())
-        probe = '.local/marketplace.json'
+        probe = LOCAL_FILE if plugin_repo else '.local/marketplace.json'
         result = isolated_git(shadow, 'check-ignore', '--no-index', '--', probe)
         if result.returncode not in (0, 1):
             raise ValueError('Cannot evaluate proposed Git ignore rules')
         if probe not in result.stdout.splitlines():
-            raise ValueError('Ineffective Git ignore rules for .local/marketplace.json in ' + str(root) +
+            raise ValueError('Ineffective Git ignore rules for ' + probe + ' in ' + str(root) +
                              '; review .gitignore and .local/.gitignore before writing associations')
     return path, text.encode()
 
@@ -224,7 +231,45 @@ def marketplace_create(root, name=None, display_name=None, owner=None, repositor
     return {'action': 'marketplace-create', 'changed': apply(files, [ignore]), 'repository': origin, 'published': False}
 
 
-def association_files(plugin_root, market, manifest, new_plugin=False):
+def checkout_path(base, value):
+    path = Path(value).expanduser()
+    return Path(os.path.abspath(path if path.is_absolute() else base/path))
+
+
+def plugin_local_association(plugin_root):
+    """The one marketplace a plugin belongs to on this machine: relative path from the ignored local.json, or None.
+    Only {"schema_version": 1, "marketplace_path": "<path>"} is supported; the former plugin-side .local/marketplace.json
+    is neither read nor migrated."""
+    path = plugin_root/LOCAL_FILE
+    if not path.exists():
+        return None
+    local = read(path)
+    if (set(local) != {'schema_version', 'marketplace_path'} or type(local['schema_version']) is not int or local['schema_version'] != 1
+            or not isinstance(local['marketplace_path'], str) or not local['marketplace_path'].strip()):
+        raise ValueError('Unsupported plugin-local association format in ' + str(path) + ': only {"schema_version": 1, '
+                         '"marketplace_path": "<path>"} is supported (a plugin belongs to exactly one marketplace); '
+                         'existing data preserved, no migration')
+    return local['marketplace_path']
+
+
+def market_identity(path):
+    config = read(path/'marketplace.json')
+    if not isinstance(config.get('repository'), str) or not config['repository'].strip():
+        raise ValueError('The marketplace needs a repository URL in marketplace.json to be associated: ' + str(path/'marketplace.json'))
+    return {'name': config['name'], 'repository': config['repository']}
+
+
+def same_repository(a, b):
+    return repository_url(a) == repository_url(b)
+
+
+def plugin_entry(manifest, url):
+    return {'name': manifest['name'],
+            'displayName': manifest.get('extensions', {}).get('com.openai', {}).get('interface', {}).get('displayName', manifest['name']),
+            'description': manifest['description'], 'repository': url + '.git'}
+
+
+def association_files(plugin_root, market, manifest, new_plugin=False, allow_change=False):
     market = safe_path(market)
     git_repository(market)
     verifier = module(SKILL/'scripts/verify.py', 'trusted_verify')
@@ -232,8 +277,7 @@ def association_files(plugin_root, market, manifest, new_plugin=False):
     config = read(market/'marketplace.json')
     name = manifest['name']
     url = repository_url(manifest['repository'])
-    entry = {'name': name, 'displayName': manifest.get('extensions', {}).get('com.openai', {}).get('interface', {}).get('displayName', name),
-             'description': manifest['description'], 'repository': url + '.git'}
+    entry = plugin_entry(manifest, url)
     found = False
     for index, old in enumerate(config['plugins']):
         if old.get('name') == name:
@@ -244,78 +288,116 @@ def association_files(plugin_root, market, manifest, new_plugin=False):
             raise ValueError('Repository is already registered with another plugin identity')
     if not found:
         config['plugins'].append(entry)
-    for checkout in (market, plugin_root):
-        if subprocess.check_output(['git', '-C', str(checkout), 'ls-files', '--', '.local']).strip():
+    for checkout, tracked in ((market, '.local'), (plugin_root, LOCAL_FILE)):
+        if subprocess.check_output(['git', '-C', str(checkout), 'ls-files', '--', tracked]).strip():
             raise ValueError('Local configuration is tracked; review before writing private checkout mappings')
+    previous = plugin_local_association(plugin_root)
+    if previous and not allow_change and checkout_path(plugin_root, previous).resolve() != market.resolve():
+        raise ValueError('Plugin is already associated with another marketplace (' + previous + '); a plugin belongs to exactly one marketplace, use associate to change it')
     local = read(market/'.local/marketplace.json', {})
     sources = local.setdefault('sources', {})
     if name in sources:
-        previous = Path(sources[name]).expanduser()
-        previous = previous if previous.is_absolute() else market/previous
-        if previous.resolve() != plugin_root.resolve():
+        known = checkout_path(market, sources[name])
+        if known.resolve() != plugin_root.resolve():
             raise ValueError('Existing local checkout differs; review this mapping before replacement')
     sources[name] = os.path.relpath(plugin_root, market)
-    plugin_local = read(plugin_root/'.local/marketplace.json', {})
-    associations = plugin_local.setdefault('marketplaces', {})
-    old_default = plugin_local.get('marketplace')
-    if old_default:
-        old = Path(old_default).expanduser()
-        old = old if old.is_absolute() else plugin_root/old
-        if (old/'marketplace.json').is_file():
-            old_name = read(old/'marketplace.json')['name']
-            associations.setdefault(old_name, os.path.relpath(old, plugin_root))
     relative = os.path.relpath(market, plugin_root)
-    if config['name'] in associations:
-        previous = Path(associations[config['name']]).expanduser()
-        previous = previous if previous.is_absolute() else plugin_root/previous
-        if previous.resolve() != market.resolve():
-            raise ValueError('Marketplace identity already maps to a different checkout')
-    associations[config['name']] = relative
-    plugin_local['marketplace'] = relative
     files = {market/'marketplace.json': encode(config), market/'.local/marketplace.json': encode(local),
-             plugin_root/'.local/marketplace.json': encode(plugin_local)}
+             plugin_root/LOCAL_FILE: encode({'schema_version': 1, 'marketplace_path': relative})}
     files.update(catalog_files(market, config))
-    for root in (market, plugin_root):
-        path, content = ignore_file(root, new_plugin=new_plugin and root == plugin_root); files[path] = content
+    for root, is_plugin in ((market, False), (plugin_root, True)):
+        path, content = ignore_file(root, new_plugin=new_plugin and is_plugin, plugin_repo=is_plugin); files[path] = content
     return files
 
 
-def configure(root, marketplace, repository=None):
+def release_old_marketplace(old, plugin_root, manifest):
+    """Files that remove exactly this plugin from its previous marketplace checkout (name and repository must match)."""
+    git_repository(old)
+    verifier = module(SKILL/'scripts/verify.py', 'trusted_verify')
+    verifier.marketplace(old)
+    if subprocess.check_output(['git', '-C', str(old), 'ls-files', '--', '.local']).strip():
+        raise ValueError('Local configuration is tracked; review before writing private checkout mappings')
+    config = read(old/'marketplace.json')
+    name, url = manifest['name'], repository_url(manifest['repository'])
+    kept = []
+    for entry in config['plugins']:
+        if entry.get('name') == name:
+            if repository_url(entry['repository']) != url:
+                raise ValueError('Previous marketplace lists this plugin name for a different repository; review it there first')
+            continue
+        kept.append(entry)
+    config['plugins'] = kept
+    files = {old/'marketplace.json': encode(config)}
+    local = read(old/'.local/marketplace.json', {})
+    sources = local.get('sources', {})
+    if name in sources and checkout_path(old, sources[name]).resolve() == plugin_root.resolve():
+        del sources[name]
+        files[old/'.local/marketplace.json'] = encode(local)
+    files.update(catalog_files(old, config))
+    return files
+
+
+def load_evidence(root, plugin):
+    """Valid configuration evidence (schema 2) of the running plugin through the central helper, as ValueError."""
+    helper = module(SKILL/'scripts/project_setup.py', 'project_setup_for_associate')
+    try:
+        helper.set_plugin(plugin)
+        evidence = helper.read_evidence(root)
+    except helper.Conflict as conflict:
+        raise ValueError(conflict.reason + ' (' + str(conflict.path) + ')') from conflict
+    return evidence, helper.KINDS
+
+
+def associate(root, marketplace, repository=None, drop_missing_old=False, plugin=OWNER):
+    """Set or change the one marketplace a plugin belongs to, in one rollback-capable transaction.
+
+    The identity (name, repository) goes into the committed config.json, the path of the checkout into the ignored
+    local.json. Nothing is committed, pushed, installed or published."""
     root = safe_path(root); market = safe_path(marketplace)
     origin = git_repository(root, repository)
     if root == market or root.is_relative_to(market) or market.is_relative_to(root):
         raise ValueError('Use separate plugin and marketplace repositories')
+    evidence, kinds = load_evidence(root, plugin)
+    if evidence is None:
+        raise ValueError('Configure first: this workpackage has no configuration evidence for ' + plugin + ' (flows/configure.md)')
+    if not kinds[evidence['kind']]['requires_marketplace']:
+        raise ValueError('Only a plugin belongs to a marketplace; this workpackage is configured as ' + evidence['kind'])
     verifier = module(SKILL/'scripts/verify.py', 'trusted_verify')
     verifier.plugin(root)
     manifest = read(root/'plugin.json')
     if repository_url(manifest['repository']) != origin:
         raise ValueError('Plugin manifest conflicts with Git origin')
-    files = association_files(root, market, manifest)
-    replace = list(files)
-    # Add only missing developer entry points; existing tooling is not silently replaced.
-    template = lambda relative: template_source('plugin', relative)
-    for relative in ('scripts/plugin.py', 'scripts/verify.py', 'install.sh'):
-        path = safe_path(root/relative)
-        if not path.exists():
-            files[path] = template(relative).read_bytes()
-    if not (root/'Makefile').exists():
-        block = template('Makefile').read_text().split('# Local development and repository metadata', 1)[1]
-        files[root/'Makefile'] = ('export PYTHONDONTWRITEBYTECODE := 1\nPYTHON ?= python3\nTARGET ?= claude\nDRY_RUN ?= 0\nMARKETPLACE ?=\n# Local development and repository metadata' + block).encode()
-    else:
-        makefile = safe_path(root/'Makefile')
-        text = makefile.read_text()
-        missing = [action for action in ('install-local',)
-                   if not re.search(r'^' + action + r'(?:\s+[^:\n]+)?\s*:', text, re.M)
-                   and not re.search(r'^[^#\n:]*\b' + action + r'\b[^\n:]*:', text, re.M)]
-        if missing:
-            engine = root/'scripts/plugin.py'
-            if engine.exists() and engine.read_bytes() != template('scripts/plugin.py').read_bytes():
-                raise ValueError('Existing plugin tooling needs a reviewed Makefile integration before configure')
-            text += '\n# Local marketplace commands (Plugin Manager)\nPYTHON ?= python3\nTARGET ?= claude\nDRY_RUN ?= 0\nMARKETPLACE ?=\n'
-            for action in missing:
-                text += f'.PHONY: {action}\n{action}:\n\t$(PYTHON) scripts/plugin.py {action} --target "$(TARGET)" $(if $(MARKETPLACE),--marketplace "$(MARKETPLACE)",) $(if $(filter 1,$(DRY_RUN)),--dry-run,)\n'
-            files[makefile] = text.encode(); replace.append(makefile)
-    return {'action': 'configure', 'changed': apply(files, replace), 'published': False}
+    if manifest['name'] != evidence['artifact']:
+        raise ValueError('plugin.json carries another name than the configuration evidence (' + evidence['artifact'] + ')')
+    declared = evidence['marketplace']
+    target = market_identity(market)
+    same = target['name'] == declared['name']
+    if same and not same_repository(target['repository'], declared['repository']):
+        raise ValueError('Marketplace identity conflicts: ' + declared['name'] + ' is bound to another repository in the configuration')
+    previous = plugin_local_association(root)
+    old = None
+    if not same:  # the plugin leaves its marketplace: the old catalog entry has to go with it
+        if previous:
+            candidate = checkout_path(root, previous)
+            if (candidate/'marketplace.json').is_file() and market_identity(candidate)['name'] == declared['name']:
+                old = candidate
+        if old is None and not drop_missing_old:
+            raise ValueError('The previous marketplace ' + declared['name'] + ' is not available locally, so its catalog entry cannot be removed; '
+                             'restore its checkout at ' + (previous or '(no local path recorded)') + ', or confirm --drop-missing-old to release only the local reference')
+        if old is not None and (old.resolve() == root.resolve() or old.resolve().is_relative_to(root.resolve())):
+            raise ValueError('Use separate plugin and marketplace repositories')
+    files = association_files(root, market, manifest, allow_change=True)
+    if old is not None:
+        files.update(release_old_marketplace(old, root, manifest))
+    updated = dict(evidence); updated['marketplace'] = target
+    files[root/EVIDENCE_FILE.format(plugin=plugin)] = encode(updated)
+    changed = apply(files, list(files))
+    return {'action': 'associate', 'changed': changed, 'published': False,
+            'from': {'name': declared['name'], 'path': previous},
+            'to': {'name': target['name'], 'path': os.path.relpath(market, root)},
+            'old_catalog_entry_remains': (not same) and old is None,
+            'next': 'Committed files changed and are unversioned: config.json of the plugin, marketplace.json and the host catalogs of the marketplaces involved. '
+                    'Review them in their repositories and publish them through publish. Nothing was committed, pushed, installed or published.'}
 
 
 def complete_skeleton_documentation(stage, title):
@@ -363,7 +445,7 @@ def creation_checks(root, market, license_decision=None):
 def plugin_create(root, marketplace, *, name=None, display_name=None, description=None, repository=None, author=None, languages=None, default_language=None, skeleton=False, license=None, license_file=None, copyright_year=None, copyright_holder=None):
     root = safe_path(root)
     if any((root/item).exists() or (root/item).is_symlink() for item in ('plugin.json', 'marketplace.json')):
-        raise ValueError('Product already exists; use configure for an existing plugin')
+        raise ValueError('Product already exists; an existing plugin is not created again (associate changes its marketplace)')
     if not skeleton:
         raise ValueError('plugin-create supports only --skeleton; skill import is unsupported')
     market = safe_path(marketplace)
@@ -379,7 +461,7 @@ def plugin_create(root, marketplace, *, name=None, display_name=None, descriptio
         subprocess.run(['git', '-c', 'core.hooksPath=/dev/null', '-c', 'init.templateDir=', 'clone', '--', url + '.git', str(root)], check=True)
     origin = git_repository(root, repository)
     if (root/'plugin.json').exists() or (root/'marketplace.json').exists():
-        raise ValueError('Product already exists; use configure for an existing plugin')
+        raise ValueError('Product already exists; an existing plugin is not created again (associate changes its marketplace)')
     for obsolete in ('.claude/skills', '.agents/skills', '.claude-plugin/marketplace.json', '.agents/plugins/marketplace.json', '.codex-plugin/marketplace.json'):
         if (root/obsolete).exists() or (root/obsolete).is_symlink():
             raise ValueError('Unsupported host-local skill layout: ' + obsolete)
@@ -410,7 +492,7 @@ def plugin_create(root, marketplace, *, name=None, display_name=None, descriptio
         for path, data in engine.repository_files(manifest).items():
             (stage/path).write_bytes(encode(data))
         (stage/'skills/_shared/manifests').mkdir(parents=True, exist_ok=True)  # custom: the one default kind of a generated plugin
-        (stage/'skills/_shared/manifests/default.json').write_bytes(encode({'schema_version': 1, 'product': None, 'derived': []}))
+        (stage/'skills/_shared/manifests/default.json').write_bytes(encode({'schema_version': 1, 'product': None, 'requires_marketplace': False, 'derived': []}))
         (stage/'skills/_shared/manifests/default.sync.json').write_bytes(encode({'schema_version': 1, 'files': {}, 'removed': []}))
         complete_skeleton_documentation(stage, display_name)
         document(stage, license_decision)
@@ -439,18 +521,21 @@ def plugin_create(root, marketplace, *, name=None, display_name=None, descriptio
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, epilog='Requires Git and Python 3.10+; Make is optional. configure is normal setup; the example JSON is only a manual template. No automatic tool installation.')
+    parser = argparse.ArgumentParser(description=__doc__, epilog='Requires Git and Python 3.10+; Make is optional. associate sets or changes the one marketplace of a plugin; the example JSON is only a manual template. No automatic tool installation.')
     sub = parser.add_subparsers(dest='action', required=True)
-    for action in ('marketplace-create', 'plugin-create', 'configure'):
+    for action in ('marketplace-create', 'plugin-create', 'associate'):
         command = sub.add_parser(action)
         command.add_argument('--root', type=Path, default=Path.cwd(), help='User project root, never manager installation')
         command.add_argument('--repository')
-        if action != 'configure':
+        if action != 'associate':
             command.add_argument('--name'); command.add_argument('--display-name')
         if action == 'marketplace-create':
             command.add_argument('--owner')
         else:
-            command.add_argument('--marketplace', type=Path, required=True)
+            command.add_argument('--marketplace', type=Path, required=True, help='Local checkout of the one marketplace the plugin belongs to')
+        if action == 'associate':
+            command.add_argument('--plugin', default=OWNER, help='Running plugin that owns the workpackage evidence')
+            command.add_argument('--drop-missing-old', action='store_true', help='Release only the local reference when the previous marketplace checkout is gone (its catalog entry then remains there)')
         if action == 'plugin-create':
             command.add_argument('--skeleton', action='store_true', help='Nonfunctional skeleton with pending SCOPE.md; no invented domain content')
             command.add_argument('--description'); command.add_argument('--author')

@@ -66,12 +66,17 @@ class Sandbox:
             self.configure(name)
         return self
 
-    def configure(self, artifact='demo-plugin', kind='plugin'):
-        """Configuration evidence of the running plugin (R15); unconfigure() removes it again."""
+    requires_marketplace = True  # the real kind plugin belongs to exactly one marketplace (R21)
+    MARKETPLACE = {'name': 'fictional-market', 'repository': 'https://github.com/fictional/market.git'}
+
+    def configure(self, artifact='demo-plugin', kind='plugin', marketplace=...):
+        """Configuration evidence (schema 2) of the running plugin (R15); unconfigure() removes it again."""
         path = self.project / EVIDENCE
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps({'schema_version': 1, 'plugin': PLUGIN, 'kind': kind, 'artifact': artifact,
-                                    'configured_at': '2026-11-22T10:00:00Z'}))
+        if marketplace is ...:
+            marketplace = dict(self.MARKETPLACE) if kind == 'plugin' and self.requires_marketplace else None
+        path.write_text(json.dumps({'schema_version': 2, 'plugin': PLUGIN, 'kind': kind, 'artifact': artifact,
+                                    'configured_at': '2026-11-22T10:00:00Z', 'marketplace': marketplace}))
 
     def unconfigure(self):
         (self.project / EVIDENCE).unlink(missing_ok=True)
@@ -120,6 +125,7 @@ FICTIONAL = {  # path -> (bytes, executable)
 
 
 class FictionalSandbox(Sandbox):
+    requires_marketplace = False  # the fictional kind has no marketplace
     """Runs the REAL, unchanged project_setup.py (and the real operator_language.py it depends on) against a minimal
     fictional parent whose kind manifest lists the fictional files as common."""
 
@@ -136,7 +142,7 @@ class FictionalSandbox(Sandbox):
         self.removed = []
         manifests = self.manager / 'skills/_shared/manifests'
         manifests.mkdir(parents=True, exist_ok=True)
-        (manifests / 'plugin.json').write_text(json.dumps({'schema_version': 1, 'product': 'plugin.json', 'derived': []}))
+        (manifests / 'plugin.json').write_text(json.dumps({'schema_version': 1, 'product': 'plugin.json', 'requires_marketplace': False, 'derived': []}))
         for path, (data, executable) in self.files.items():
             target = self.sync_dir / path
             target.parent.mkdir(parents=True, exist_ok=True)

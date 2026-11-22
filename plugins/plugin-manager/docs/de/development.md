@@ -36,7 +36,7 @@ Lokale Pfade stehen Git-ignoriert in `.local/marketplace.json`: im Marketplace u
 
 Lokale Snapshots lesen den aktuellen Checkout einschließlich uncommitteter Änderungen, unabhängig vom Branch. Nach Änderungen oder Branchwechsel `install-local` ausführen und eine neue Host-Sitzung öffnen. Kein Commit, Push oder PR ist für lokale Tests erforderlich. Es bleibt bei einem gemeinsamen `<marketplace-id>-dev`, ohne zusätzliche Marketplaces pro Branch.
 
-`configure` ist der reguläre Einrichtungsweg. `local-marketplace.example.json` ist eine optionale manuelle Kopiervorlage. Nur `.local/marketplace.json` wird zur Laufzeit für lokale Zuordnungen gelesen; diese Zuordnungen werden nicht committed.
+Die lokale Zuordnung eines Plugins zu seinem einen Marketplace richtet `plugin-manager` (associate) ein und ändert sie. Der Pfad des Marketplace-Checkouts steht in der von Git ignorierten `.project/plugins/plugin-manager/local.json` des Plugins; die Checkouts der Plugins stehen unter `sources` in der von Git ignorierten `.local/marketplace.json` des Marketplace; diese Zuordnungen werden nicht committet. `local-marketplace.example.json` ist eine optionale manuelle Kopiervorlage für die Marketplace-Seite.
 
 Ohne Make im Marketplace:
 
@@ -62,6 +62,6 @@ Neue Plugin- und Marketplace-Vorlagen enthalten SCOPE.md sowie gemeinsame Entwic
 
 Im Manager-Verzeichnis ausdrücklich `make test-behavior CLI=claude` oder `CLI=codex` ausführen; `CASE=correct_consent` wählt einen Fall. [Szenarien, Auswertung und Grenzen](../../tests/behavior/README.md). Beide Modelle erhalten fiktive vollständige Dateien und dieselben Review-Regeln ohne erwartete Ergebnisse. Korrekte Implementierungen, echte Fehler, Testlücken, fehlende Source und eingeschleuste Erfolgsmeldungen werden geprüft. Die automatische Auswertung wird durch manuelle Sichtung ergänzt. Keine Modellaufrufe im normalen Testlauf; keine Installation oder Veröffentlichung.
 
-Formatprüfung vor Änderungen: Keine parallelen Host-Skill-Verzeichnisse und kein marketplace-Schlüssel in der Distribution. Unbekannte Katalogeintragsfelder werden vor configure abgelehnt, nicht verworfen. Dokumentations-Schema-Versionen müssen ganzzahlig sein. Abweichende vorhandene docs/architecture.md oder docs/prerequisites.md blockieren plugin-create, ohne Inhalte zu überschreiben.
+Formatprüfung vor Änderungen: Keine parallelen Host-Skill-Verzeichnisse und kein marketplace-Schlüssel in der Distribution. Unbekannte Katalogeintragsfelder werden vor associate abgelehnt, nicht verworfen. Dokumentations-Schema-Versionen müssen ganzzahlig sein. Abweichende vorhandene docs/architecture.md oder docs/prerequisites.md blockieren plugin-create, ohne Inhalte zu überschreiben.
 
 Auch plugin-create prüft alte Host-Verzeichnisse vor Änderungen. Skill-Import über plugin-create ist nicht unterstützt; Layout- und Dokumentationsmanifest-Prüfungen bleiben bestehen.

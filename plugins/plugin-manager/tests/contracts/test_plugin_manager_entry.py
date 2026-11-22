@@ -13,7 +13,7 @@ class EntryTextTests(unittest.TestCase):
         self.text = self.skill + '\n' + self.entry
 
     def flow(self, name):
-        folder = 'skills/plugin-manager/flows' if name in ('configure', 'marketplace') else 'skills/_shared/flows'
+        folder = 'skills/plugin-manager/flows' if name in ('configure', 'marketplace', 'associate') else 'skills/_shared/flows'
         return (ROOT / folder / (name + '.md')).read_text()
 
     def test_loop_routes_by_status_and_rechecks_after_each_flow(self):
@@ -233,6 +233,32 @@ class EntryTextTests(unittest.TestCase):
             self.assertNotIn('marketplace-create/SKILL.md', text, path)
             self.assertNotIn('/plugin-manager:marketplace-create', text, path)
 
+    def test_associate_flow_is_complete_and_self_contained(self):  # R21
+        text = self.flow('associate')
+        for needle in ('A plugin belongs to exactly one marketplace', 'config.json', 'local.json', 'status', '`association`',
+                       'path_missing', 'path_invalid', 'mismatch', 'unsupported', 'a suggestion is never a selection',
+                       'Use this checkout', 'Choose another checkout', 'Guided dialogue (both kinds)',
+                       'workflows.py" associate --root', '--plugin plugin-manager', '--marketplace', '--drop-missing-old',
+                       'old_catalog_entry_remains', '`action: "associate"`', 'success means exit 0', 'no `ok`',
+                       'unversioned', 'publish', 'one transaction with rollback', 'never read or migrate the former plugin-side'):
+            self.assertIn(needle, text)
+        self.assertLess(text.index('Run `status`'), text.index('Ask for the local path'))
+        self.assertLess(text.index('Ask for the local path'), text.index('workflows.py" associate --root'))
+        self.assertLess(text.index('Judge the result'), text.index('Only after the person'))  # --drop-missing-old needs explicit consent
+        for forbidden in ('skills/configure', 'skill `configure`', '/plugin-manager:configure', 'marketplaces` list is read'):
+            self.assertNotIn(forbidden, text)
+
+    def test_entry_routes_the_association_request_and_reports_it_only_as_a_hint(self):  # R21
+        for needle in ('flows/associate.md', 'exactly one marketplace', '`association`', 'never as a gate for `ready`',
+                       'local.json', 'schema_version 2', 'mandatory `marketplace` identity', 'set, change or move the marketplace'):
+            self.assertIn(needle, self.text)
+        self.assertNotIn('skills/configure', self.text)
+        for path in ('README.md', 'README.en.md', 'docs/de/usage.md', 'docs/en/usage.md', 'skills/_shared/WORKFLOWS.md',
+                     'skills/_shared/templates/package/README.md', 'skills/_shared/templates/package/README.en.md'):
+            text = (ROOT / path).read_text()
+            self.assertNotIn('skills/configure/SKILL.md', text, path)
+            self.assertNotIn('/plugin-manager:configure', text, path)
+
     def test_boundaries_and_no_host_claim(self):
         for needle in ('Never the installed Manager', 'Never the installed plugin directory', 'marketplace', 'untested', 'installs nothing',
                        'never open `.git` or `.idea`', 'documented prerequisites', 'reads Git metadata',
@@ -247,7 +273,7 @@ class EntryTextTests(unittest.TestCase):
 
     def test_command_wrapper_and_specialist_skills_unchanged(self):
         self.assertIn('/skills/plugin-manager/SKILL.md', (ROOT / 'commands/plugin-manager.md').read_text())
-        for name in ('configure', 'update', 'verify', 'publish'):
+        for name in ('update', 'verify', 'publish'):
             self.assertNotIn('project_setup', (ROOT / 'skills' / name / 'SKILL.md').read_text())
         self.assertNotIn('project_setup', (ROOT / 'skills/_shared/templates/plugin/seed/Makefile').read_text())
         # R19: the helper ships only as the canonical copy of the plugin template (byte-identical to the Manager's own)

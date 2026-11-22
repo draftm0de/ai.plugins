@@ -27,7 +27,10 @@ class ManifestTests(unittest.TestCase):
                          sorted(p.name for p in MANIFESTS.glob('*.json')))
         for kind in KINDS:
             with self.subTest(kind=kind):
-                self.assertEqual({'schema_version', 'product', 'derived'}, set(load(f'{kind}.json')))
+                manifest = load(f'{kind}.json')
+                self.assertEqual({'schema_version', 'product', 'requires_marketplace', 'derived'}, set(manifest))
+                # R21: only a plugin belongs to a marketplace; a marketplace and a generated plugin's default kind do not
+                self.assertEqual(kind == 'plugin', manifest['requires_marketplace'])
                 sync = load(f'{kind}.sync.json')
                 self.assertEqual({'schema_version', 'files', 'removed'}, set(sync))
                 self.assertEqual(1, sync['schema_version'])

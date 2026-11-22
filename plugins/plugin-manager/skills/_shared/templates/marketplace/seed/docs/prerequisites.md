@@ -19,7 +19,7 @@ Die reguläre Veröffentlichung erfolgt nach konkreter Freigabe über einen auss
 
 Lokale Snapshots verwenden den aktuellen Checkout einschließlich uncommitteter Änderungen, unabhängig vom Branch. Nach Änderungen oder Branchwechsel `install-local` ausführen und eine neue Host-Sitzung öffnen. Kein Commit, Push oder PR für lokale Tests; ein gemeinsamer `<marketplace-id>-dev`, keine zusätzlichen Marketplaces pro Branch.
 
-`configure` ist der reguläre Einrichtungsweg. `local-marketplace.example.json` bleibt eine optionale manuelle Kopiervorlage. Zur Laufzeit wird ausschließlich `.local/marketplace.json` für lokale Zuordnungen gelesen. Diese Zuordnungen werden nicht committed. Vor dem Schreiben werden die wirksamen Ignore-Regeln geprüft.
+Die lokale Zuordnung eines Plugins zu seinem einen Marketplace richtet plugin-manager (associate) ein und ändert sie. Der Marketplace-Pfad eines Plugins wird ausschließlich aus der von Git ignorierten `.project/plugins/plugin-manager/local.json` gelesen, die Checkouts der Plugins ausschließlich aus der `.local/marketplace.json` des Marketplace; `local-marketplace.example.json` bleibt eine optionale manuelle Kopiervorlage. Diese Zuordnungen werden nicht committed. Vor dem Schreiben werden die wirksamen Ignore-Regeln geprüft.
 
 Direkte Python-Aufrufe im jeweiligen Checkout (ohne Make):
 
@@ -46,7 +46,7 @@ Regular publication follows concrete approval using a descriptive separate featu
 
 Local snapshots use the current checkout including uncommitted changes, regardless of branch. After edits or branch switches run `install-local` and open a new host session. No commit, push or PR for local tests; one shared `<marketplace-id>-dev`, no additional marketplaces per branch.
 
-`configure` is the normal setup path. `local-marketplace.example.json` remains an optional manual copy template. Only `.local/marketplace.json` is read for local runtime mappings. Never commit those mappings. Effective ignore rules are checked before writing.
+The local association of a plugin with its one marketplace is set up and changed by plugin-manager (associate). The marketplace path of a plugin is read only from the Git-ignored `.project/plugins/plugin-manager/local.json`, the checkouts of the plugins only from the marketplace's `.local/marketplace.json`; `local-marketplace.example.json` remains an optional manual copy template. Never commit those mappings. Effective ignore rules are checked before writing.
 
 Direct Python commands in the relevant checkout (without Make):
 
