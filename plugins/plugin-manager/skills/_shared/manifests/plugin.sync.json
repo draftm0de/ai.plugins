@@ -10,7 +10,7 @@
       "executable": false
     },
     "scripts/plugin.py": {
-      "sha256": "70b2eb0d5ee4001a5938bbf9c648bcaf5a904d1b1f42bbc2aba1c4b5a3ebd385",
+      "sha256": "254887f2312916262a56fe3267f259f8e5ebf88e5fd18217f7ccf512eb783c00",
       "executable": false
     },
     "scripts/run_tests.py": {

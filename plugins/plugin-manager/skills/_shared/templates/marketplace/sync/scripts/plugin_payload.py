@@ -150,6 +150,17 @@ def repository_metadata(check=False):
     return {'valid': True, 'files': list(expected), 'updated': [] if check else drift}
 
 
+# Dot-named files that skeleton templates legitimately need. Exact names, files only,
+# and only below a `templates` folder of a skill; every other dot path stays excluded.
+TEMPLATE_DOT_FILES = frozenset({'.gitignore.tpl', '.gitkeep'})
+
+
+def allowed_resource(destination, relative, part):
+    parts = relative.parts
+    return (destination == 'skills' and part in TEMPLATE_DOT_FILES and part == parts[-1]
+            and 'templates' in parts[:-1] and not any(p.startswith('.') for p in parts[:-1]))
+
+
 def payload():
     manifest, skill_root, market, extra = configuration()
     # Host metadata is derived from the portable manifest; no duplicate version source.
@@ -169,7 +180,7 @@ def payload():
                 raise ValueError(f'Symlink in distributable source: {relative}')
             if any(part.startswith('.env') for part in relative.parts) or path.suffix in ('.key', '.pem'):
                 raise ValueError(f'Private file in distributable source: {relative}')
-            if any(part.startswith('.') or part in ('__pycache__','node_modules','dist') for part in relative.parts) or path.suffix in ('.pyc', '.pyo', '.pyd'):
+            if any((part.startswith('.') and not allowed_resource(destination, relative, part)) or part in ('__pycache__','node_modules','dist') for part in relative.parts) or path.suffix in ('.pyc', '.pyo', '.pyd'):
                 continue
             if path.is_file():
                 files[str(Path(destination) / relative)] = read_file(path)
