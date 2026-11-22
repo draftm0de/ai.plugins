@@ -30,7 +30,7 @@ cleanup; preserve unrelated host settings, private workspaces and test evidence.
 
 ## Temporary files, ignores and Python
 
-`templates/plugin/gitignore.txt` is the canonical initial `.gitignore`. Plugin creation
+`templates/plugin/seed/gitignore.txt` is the canonical initial `.gitignore`. Plugin creation
 copies it as `.gitignore`, with no verification step or empty work directories.
 It excludes `.DS_Store`, `.idea/`, `.tmp/`, `dist/`, Python caches/bytecode,
 `.venv/`, `node_modules/`, `.local/` and, for new plugin repositories only, `/.project/operator.json`. Existing projects merge these rules while retaining

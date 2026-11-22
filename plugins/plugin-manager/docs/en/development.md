@@ -10,7 +10,7 @@
 
 The six public entry points live at `skills/<action-name>/SKILL.md`. Shared rules live in `skills/_shared/WORKFLOWS.md`, helpers in `skills/_shared/scripts/` and templates in `skills/_shared/templates/`. `_shared` has no SKILL.md and is not exposed as an additional skill. `docs/documentation.json` points to `skills/update` and lists shared sources and the other skills under `extra_sources`.
 
-`skills/` is the host-neutral source. `plugin.json` owns plugin metadata; `marketplace.json` in a separate marketplace owns catalogs. Only the existing Manager in `ai.plugins/plugins/plugin-manager` remains embedded. New marketplaces need no Manager checkout. Canonical templates live under `skills/_shared/templates/plugin/` and `templates/marketplace/`.
+`skills/` is the host-neutral source. `plugin.json` owns plugin metadata; `marketplace.json` in a separate marketplace owns catalogs. Only the existing Manager in `ai.plugins/plugins/plugin-manager` remains embedded. New marketplaces need no Manager checkout. Canonical templates live under `skills/_shared/templates/plugin/` and `templates/marketplace/`, each split into `sync/` (kept in sync, hashed) and `seed/` (created once). `make build-skeleton-hashes` writes the hash files `skills/_shared/manifests/<kind>.sync.json`; `make check-skeleton-hashes` verifies them and runs in CI with exit 1 on drift.
 
 Management tools require Git and Python 3.10+; Make is only a convenience wrapper. Management needs the selected host CLI only for automatic local installation/updates; explicitly requested model tests also need an authenticated CLI. Publish uses a sufficiently capable GitHub connector or alternatively authenticated gh; no GitLab MRs. First verify remote read, push, PR create/read, checks, rules and controlled merge capabilities and permissions. Report missing capabilities specifically; never install tools automatically. No additional Python packages, release Actions or version/tag requirements.
 
@@ -22,7 +22,7 @@ The shared [test layout](../../tests/README.md) groups by test type first: `unit
 
 `make test` runs only unit, integration and contract tests. Individual layers: `make test-unit`, `make test-integration`, `make test-contracts`. `make test-native` and `make test-behavior` are requested separately. Absent suites explicitly report `NOT RUN`; native tests require explicit layer selection.
 
-`make test` checks tooling and temporary repository workflows. `make verify`, `make plugin-verify SOURCE=...` and `make marketplace-verify SOURCE=...` only read structure and available local mappings. They run no target scripts or repairs. `make validate-docs OUTPUT=.` separately validates documentation.
+`make test` checks tooling and temporary repository workflows. `make verify` and `make verify SOURCE=...` only read structure and available local mappings. They run no target scripts or repairs. `make validate-docs OUTPUT=.` separately validates documentation.
 
 Native acceptance: `make test-native` in the Manager directory. The workflow test uses fictional temporary repositories and isolated Claude/Codex profiles. It installs two separate plugins and checks loaded content after uncommitted edits. This does not replace GitHub/GUI acceptance.
 
@@ -30,18 +30,18 @@ Native acceptance: `make test-native` in the Manager directory. The workflow tes
 
 Repository installation requires no plugin ZIPs or manifest versions. `make sync-plugin`/`check-plugin` handle plugin manifests; `make sync-marketplace`/`check-marketplace` handle host catalogs. Root `sync-plugin`/`check-plugin` aggregate targets in ai.plugins additionally handle the embedded Manager.
 
-`make install-local TARGET=claude` or `TARGET=codex` creates filtered snapshots under `dist/local-development/` and installs all associated plugins as `<marketplace-id>-dev`. `make update-local` refreshes them without commit or push. `DRY_RUN=1` writes snapshots without calling a host. Host caches are not directly edited; the CLI manages its installations.
+`make install-local TARGET=claude` or `TARGET=codex` creates filtered snapshots under `dist/local-development/` and installs all associated plugins as `<marketplace-id>-dev`. It needs no commit or push, and calling it again refreshes the snapshots. `DRY_RUN=1` writes snapshots without calling a host. Host caches are not directly edited; the CLI manages its installations.
 
 Local paths stay Git-ignored in `.local/marketplace.json`: `sources` in the marketplace; `marketplace` and `marketplaces` in a plugin. Explicit `MARKETPLACE=...` overrides the default for one invocation. All required checkouts must be available before installation.
 
-Local snapshots read the current checkout including uncommitted changes, regardless of branch. After edits or branch switches run `update-local` and open a new host session. Local tests require no commit, push or PR. Keep one shared `<marketplace-id>-dev`, with no additional marketplaces per branch.
+Local snapshots read the current checkout including uncommitted changes, regardless of branch. After edits or branch switches run `install-local` and open a new host session. Local tests require no commit, push or PR. Keep one shared `<marketplace-id>-dev`, with no additional marketplaces per branch.
 
 `configure` is the normal setup path. `local-marketplace.example.json` is an optional manual copy template. Only `.local/marketplace.json` is read for local runtime mappings; never commit those mappings.
 
 Without Make in the marketplace:
 
 ```sh
-python3 -B scripts/local_plugins.py update-local --target claude
+python3 -B scripts/local_plugins.py install-local --target claude
 ```
 
 ## CI and releases

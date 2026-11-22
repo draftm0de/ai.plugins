@@ -74,7 +74,7 @@ Requires an existing valid plugin. Validate manifest identity against origin, re
 ```sh
 make verify
 make install-local TARGET=claude
-make update-local TARGET=codex
+make install-local TARGET=codex
 # From a plugin, override only this invocation:
 make install-local TARGET=codex MARKETPLACE=/work/another-catalog
 ```
@@ -87,7 +87,7 @@ Only marketplace-create, plugin-create and configure are accepted. init is unsup
 
 Before writing local associations, proposed root and `.local/.gitignore` rules are evaluated by real Git in an isolated repository. Global excludes cannot conceal unsafe repository rules. Negations that expose `.local/marketplace.json` cause an actionable error before either repository is written; existing rules, mappings and content remain unchanged. Review conflicting rules explicitly, then retry. Creation never makes initial commits. For a repository without HEAD, use the explicitly approved initial-publication mode in [publish.md](publish.md), or use an existing remote PR base.
 
-Snapshots read the current checkout including uncommitted changes, regardless of branch. After changes or a branch switch, run update-local and open a new host session. Local testing requires no commit, push or PR and uses the same development marketplace across branches. configure is the normal setup path; local-marketplace.example.json is an optional manual copy template. Runtime reads only .local/marketplace.json; never commit local mappings.
+Snapshots read the current checkout including uncommitted changes, regardless of branch. After changes or a branch switch, run install-local and open a new host session. Local testing requires no commit, push or PR and uses the same development marketplace across branches. configure is the normal setup path; local-marketplace.example.json is an optional manual copy template. Runtime reads only .local/marketplace.json; never commit local mappings.
 
 ## Skeleton first, implementation later
 
