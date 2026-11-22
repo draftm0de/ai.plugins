@@ -22,4 +22,4 @@ Lokale Snapshots lesen den aktuellen Checkout einschließlich uncommitteter Änd
 
 ## Skills
 
-`marketplace-create`, `plugin-create`, `configure`, `verify`, `update` und `publish`. Gemeinsame Regeln: `skills/_shared/WORKFLOWS.md`; kein zusätzlicher Manager-Skill.
+`plugin-manager`, `marketplace-create`, `configure`, `verify`, `update` und `publish`. Gemeinsame Regeln: `skills/_shared/WORKFLOWS.md`; plugin-manager ist der zentrale Einstieg.

@@ -16,17 +16,17 @@ Marketplace `draftmode-ai-plugins`, displayed as **Draftmode AI Plugins**. Repos
 | Skill | Responsibility |
 | --- | --- |
 | [marketplace-create](plugins/plugin-manager/skills/marketplace-create/SKILL.md) | Set up a marketplace in an existing local GitHub checkout: manifest, host catalogs, tools and documentation scaffold. |
-| [plugin-create](plugins/plugin-manager/skills/plugin-create/SKILL.md) | Create a separate plugin from a confirmed skill source and associate it with the marketplace. Clone a missing checkout; inspect existing content first. |
+| [plugin-manager](plugins/plugin-manager/skills/plugin-manager/SKILL.md) | Set up language, synchronize the skeleton and configure a new plugin through the central entry. |
 | [configure](plugins/plugin-manager/skills/configure/SKILL.md) | Associate an existing plugin with a marketplace and configure local development. Preserve other associations. Already included in plugin-create. |
 | [verify](plugins/plugin-manager/skills/verify/SKILL.md) | Detect repository type and inspect it read-only. Assess publishable structure separately from available local development configuration. |
 | [update](plugins/plugin-manager/skills/update/SKILL.md) | Maintain README and documentation from current sources and saved language settings. No installation or publication. |
 | [publish](plugins/plugin-manager/skills/publish/SKILL.md) | Plan publication for a plugin or marketplace. Execute through feature branch, commit, push, PR, checks and merge only after concrete approval. |
 
-`plugin-verify` and `marketplace-verify` remain explicit verification commands, not separate skills. `init` is not supported; use marketplace-create or plugin-create explicitly.
+`plugin-verify` and `marketplace-verify` remain explicit verification commands, not separate skills. `init` is not supported; use marketplace-create or plugin-manager explicitly.
 
 ### Usage and boundaries
 
-In Claude Code use, for example, `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-create`, `/plugin-manager:configure`, `/plugin-manager:verify`, `/plugin-manager:update`, `/plugin-manager:publish`. In Codex select the currently named skill or describe the task and target repository. [Inputs and examples](plugins/plugin-manager/docs/en/usage.md).
+In Claude Code use, for example, `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-manager`, `/plugin-manager:configure`, `/plugin-manager:verify`, `/plugin-manager:update`, `/plugin-manager:publish`. In Codex select the currently named skill or describe the task and target repository. [Inputs and examples](plugins/plugin-manager/docs/en/usage.md).
 
 `update` maintains documentation; `update-local` refreshes local plugin snapshots including uncommitted changes. `install-local`, `update-local`, metadata synchronization and documentation validation are tool functions, not additional skills. Create does not create a GitHub repository or invent domain skill content. Publish treats plugin and marketplace separately; explicitly approved bootstrap of completely empty repositories remains the documented exception to the PR workflow.
 
@@ -75,7 +75,7 @@ make marketplace-create ARGS='--root ../my-marketplace --name my-catalog --displ
 
 This creates `marketplace.json`, Claude and Codex host catalogs, standalone tools, a Makefile and documentation scaffolding. New marketplaces do not need an embedded Manager. Existing content is inspected first; differing files are not silently overwritten.
 
-To work on **this** marketplace, do not run Create again. Associate existing plugin checkouts with `configure`; add new plugins with `plugin-create`, as described in the [Plugin section](#plugin-create).
+To work on **this** marketplace, do not run Create again. Associate existing plugin checkouts with `configure`; add new plugins with `plugin-manager`, as described in the [Plugin section](#plugin-create).
 
 <a id="marketplace-verify"></a>
 
@@ -158,12 +158,12 @@ A new plugin belongs in a separate GitHub repository with its own manifests, ski
 1. Create a separate GitHub repository for the plugin. To select it directly as a project, clone it locally and open the checkout as a new Claude/Codex project.
 2. Select the plugin folder as the working directory. Have the local marketplace path ready; the installed catalog does not replace a marketplace checkout.
 3. Start a new chat with Plugin Manager available.
-4. Select `plugin-create` or run `/plugin-manager:plugin-create` in Claude Code. Specify whether to import an existing skill or create a skeleton.
+4. Select `plugin-manager` or run `/plugin-manager:plugin-manager` in Claude Code. Creation produces only an unfinished skeleton.
 5. Provide names, publisher, marketplace and documentation languages where these are not already known from the project.
 
-> Run plugin-create for this project in skeleton mode. Use the marketplace at ../my-marketplace, my-plugin as the identifier, “My Plugin” as the display name and “Confirmed Publisher” as the publisher. Document in German and English, with German as the default. Then work with me to confirm the intended scope in SCOPE.md.
+> Run plugin-manager for this project in skeleton mode. Use the marketplace at ../my-marketplace, my-plugin as the identifier, “My Plugin” as the display name and “Confirmed Publisher” as the publisher. Document in German and English, with German as the default. Then work with me to confirm the intended scope in SCOPE.md.
 
-For an existing skill, provide its folder and confirmed capability description instead. If the plugin checkout is missing, explicitly provide the target path and existing GitHub URL; `plugin-create` can clone it. Then open that folder as the project.
+Open the explicitly selected plugin checkout as the project before starting the central entry.
 
 **In the terminal** — choose one source mode for a new plugin:
 
@@ -179,7 +179,7 @@ Example for a skeleton in an already cloned repository:
 make plugin-create ARGS='--root ../my-plugin --marketplace . --skeleton --name my-plugin --display-name "My Plugin" --author "Confirmed Publisher" --languages de en --default-language de'
 ```
 
-For an existing skill, replace `--skeleton` with `--source ../my-skill --description "Confirmed capability description"`. `make plugin-create ARGS='--help'` lists all options.
+Skill import is unsupported. `make plugin-create ARGS='--help'` lists all options.
 
 `plugin-create` creates development tools and documentation templates, registers the plugin in the marketplace and sets up local mappings. For a skeleton, then confirm the scope in `SCOPE.md`, implement the skills and add relevant tests. Structural validity alone does not establish a finished product.
 

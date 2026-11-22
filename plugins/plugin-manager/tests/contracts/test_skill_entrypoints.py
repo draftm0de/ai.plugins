@@ -8,7 +8,7 @@ import unittest
 from tests.support.plugin_fixture import materialize
 
 ROOT = next(p for p in Path(__file__).resolve().parents if (p / 'Makefile').is_file())
-NAMES = {'plugin-manager', 'marketplace-create', 'plugin-create', 'configure', 'verify', 'update', 'publish'}
+NAMES = {'plugin-manager', 'marketplace-create', 'configure', 'verify', 'update', 'publish'}
 
 
 class SkillEntrypointTests(unittest.TestCase):
@@ -22,6 +22,8 @@ class SkillEntrypointTests(unittest.TestCase):
             for relative in re.findall(r'`(\.\./_shared/[^`]+)`', text):
                 self.assertTrue((path.parent/relative.split(' ', 1)[0]).is_file(), relative)
         self.assertFalse((root/'skills/_shared/SKILL.md').exists())
+        self.assertFalse((root/'skills/plugin-create/SKILL.md').exists())
+        self.assertFalse((root/'commands/plugin-create.md').exists())
         for relative in ('WORKFLOWS.md', 'references/publish.md', 'references/prerequisites.md',
                          'scripts/publish_plan.py', 'scripts/workflows.py', 'scripts/verify.py',
                          'scripts/documentation.py', 'templates/plugin/Makefile', 'templates/marketplace/Makefile'):

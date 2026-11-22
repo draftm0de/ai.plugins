@@ -8,10 +8,10 @@
     "skills/_shared/templates",
     "skills/plugin-manager/SKILL.md",
     "skills/marketplace-create/SKILL.md",
-    "skills/plugin-create/SKILL.md",
     "skills/configure/SKILL.md",
     "skills/verify/SKILL.md",
-    "skills/publish/SKILL.md"
+    "skills/publish/SKILL.md",
+    "skills/plugin-manager/flows/configure.md"
   ],
   "open_questions": [],
   "documentation": {

@@ -20,7 +20,9 @@ python3 /path/to/installed/skills/_shared/scripts/workflows.py marketplace-creat
 
 Origin supplies the repository URL; --repository can check an explicit URL against it. Existing marketplace metadata supplies omitted names/owner; unknown facts require clarification. The result contains canonical marketplace.json, both derived host catalogs, standalone scripts, Makefile, DE/EN starter instructions and local-marketplace.example.json. No embedded manager or plugin is created. Existing identity conflicts stop creation. Repeating the same operation is idempotent.
 
-## plugin-create
+## plugin-create (internal generator operation)
+
+The public entry is `plugin-manager`; there is no separate plugin-create skill or slash command. Its saved operator-language gate and state routing govern this internal creation flow. The Python operation and its creation checks remain unchanged.
 
 ### Conversation language and licensing decisions
 
@@ -28,15 +30,14 @@ Origin supplies the repository URL; --repository can check an explicit URL again
 
 Use a structured question tool when the current host exposes one (such as Claude's `AskUserQuestion`). Call the available tool according to its actual schema and limits; do not merely print its name or a numbered questionnaire. When no question tool is available in the current mode, state that briefly and ask one short question at a time in chat. Do not switch host modes, install tools or claim a dialog was displayed when it was not.
 
-1. Resolve conversation language first. Without a language signal, the first question is only “Welche Gesprächssprache möchtest du verwenden? / Which conversation language would you like to use?” with Deutsch and English choices. Wait for the answer before the remaining setup questions. With a known language, skip this step.
-   This applies equally to existing plugins: do not combine the language choice with an action question. Once resolved, all subsequent questions, labels and explanations are monolingual in that language; preserve technical identifiers without adding translated duplicates.
-   Inspect the authorized target for plugin.json or marketplace.json before creation/licensing questions. An existing product stops creation before license validation, including on repeated helper calls. For an existing plugin, offer only “Verifizieren” and “Konfigurieren” in German, or “Verify” and “Configure” in English. Do not offer creation of another plugin or request another target path in this dialog. Do not repeat known identity or licensing questions, or automatically run configure/verify before the user chooses.
+1. Use the saved operator language resolved by the central entry before configuration. Do not ask again or infer it from documentation settings or English instruction text. All questions, labels and reports use that language; technical identifiers stay unchanged. The central state check handles existing plugins without restarting creation. The internal generator independently rejects an existing product before license validation.
+
 2. Create a skeleton only; do not ask for a creation mode or source skill path. Clarify a missing marketplace path. Translate choices to the resolved language. Reuse already confirmed paths and inspect only the authorized target and selected sources; do not explore unrelated sibling repositories to supply defaults.
 3. Clarify missing identity fields, then documentation languages and their default. Suggestions from the target name must be labelled as suggestions requiring selection; do not infer publisher, language or license from neighboring repositories. Keep questions small and coherent rather than bundling all missing inputs into one form or message. Do not ask again for confirmed facts.
 4. Resolve the license using the rules below. Offer choosing a specific license or explicitly deferring; request the actual license choice when needed, without recommending legal terms. An unanswered required question remains pending.
 5. After the required answers are available, proceed within the user's creation authorization; do not add a redundant blanket approval question. Report actual checks and unresolved decisions after creation.
 
-For this action, use the language of the current user message for questions, progress and the completion report. A bare slash command carries no language choice: retain the established conversation language, or briefly ask for it if none exists. English workflow text, repository names and documentation language settings do not establish the conversation language. Resolve documentation languages independently from the target's saved policy or the user's explicit choice; ask when missing or contradictory.
+Documentation languages are resolved independently from the target's saved policy or the user's explicit choice; ask when missing or contradictory. They never change the operator language implicitly.
 
 Resolve licensing before invoking the creation helper or writing target files. Reuse an explicit session decision or an unambiguous existing license in the target repository without asking again. If absent, ask which license should apply, with an explicit option to defer. Wait for an answer; absence of an answer is not permission to omit this step. Do not infer a license from the publisher, Git author, marketplace or neighboring repositories. Conflicting license files, metadata or user instructions require clarification before writes; preserve all existing content.
 

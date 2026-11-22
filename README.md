@@ -16,17 +16,17 @@ Marketplace für Claude und Codex. Repository: https://github.com/draftm0de/ai.p
 | Skill | Aufgabe |
 | --- | --- |
 | [marketplace-create](plugins/plugin-manager/skills/marketplace-create/SKILL.md) | Marketplace in einem bestehenden lokalen GitHub-Checkout einrichten: Manifest, Host-Kataloge, Werkzeuge und Dokumentationsgerüst. |
-| [plugin-create](plugins/plugin-manager/skills/plugin-create/SKILL.md) | Separates Plugin als Skeleton erstellen und dem Marketplace zuordnen. Fehlenden Checkout klonen; vorhandene Inhalte zuerst prüfen. |
+| [plugin-manager](plugins/plugin-manager/skills/plugin-manager/SKILL.md) | Sprache einrichten, Skeleton synchronisieren und ein neues Plugin über den zentralen Einstieg konfigurieren. |
 | [configure](plugins/plugin-manager/skills/configure/SKILL.md) | Bestehendes Plugin einem Marketplace zuordnen und lokale Entwicklung einrichten. Andere Zuordnungen erhalten. Bereits Teil von plugin-create. |
 | [verify](plugins/plugin-manager/skills/verify/SKILL.md) | Repository-Typ erkennen und nur lesend prüfen. Veröffentlichbare Struktur und verfügbare lokale Entwicklungskonfiguration getrennt bewerten. |
 | [update](plugins/plugin-manager/skills/update/SKILL.md) | README und Dokumentation anhand aktueller Quellen und gespeicherter Sprachwahl pflegen. Keine Installation oder Veröffentlichung. |
 | [publish](plugins/plugin-manager/skills/publish/SKILL.md) | Veröffentlichung für Plugin oder Marketplace planen. Erst nach konkreter Freigabe über Feature-Branch, Commit, Push, PR, Checks und Merge ausführen. |
 
-`plugin-verify` und `marketplace-verify` bleiben explizite Prüfvarianten als Befehle, keine eigenen Skills. `init` wird nicht unterstützt; verwende ausdrücklich marketplace-create oder plugin-create.
+`plugin-verify` und `marketplace-verify` bleiben explizite Prüfvarianten als Befehle, keine eigenen Skills. `init` wird nicht unterstützt; verwende ausdrücklich marketplace-create oder plugin-manager.
 
 ### Verwendung und Abgrenzung
 
-In Claude Code beispielsweise `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-create`, `/plugin-manager:configure`, `/plugin-manager:verify`, `/plugin-manager:update`, `/plugin-manager:publish` verwenden. In Codex den aktuell benannten Skill wählen oder die Aufgabe mit dem Zielrepository beschreiben. [Eingaben und Beispiele](plugins/plugin-manager/docs/de/usage.md).
+In Claude Code beispielsweise `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-manager`, `/plugin-manager:configure`, `/plugin-manager:verify`, `/plugin-manager:update`, `/plugin-manager:publish` verwenden. In Codex den aktuell benannten Skill wählen oder die Aufgabe mit dem Zielrepository beschreiben. [Eingaben und Beispiele](plugins/plugin-manager/docs/de/usage.md).
 
 `update` pflegt Dokumentation; `update-local` erneuert lokale Plugin-Snapshots einschließlich uncommitteter Änderungen. `install-local`, `update-local`, Metadaten-Synchronisierung und Dokumentationsvalidierung sind Werkzeugfunktionen, keine zusätzlichen Skills. Create legt kein GitHub-Repository an und erfindet keine fachlichen Skill-Inhalte. Publish behandelt Plugin und Marketplace getrennt; der ausdrücklich freizugebende Bootstrap vollständig leerer Repositories bleibt die dokumentierte Ausnahme vom PR-Ablauf.
 
@@ -79,7 +79,7 @@ make marketplace-create ARGS='--root ../mein-marketplace --name mein-katalog --d
 
 Das erzeugt `marketplace.json`, die Host-Kataloge für Claude und Codex, eigenständige Werkzeuge, Makefile und ein Dokumentationsgerüst. Neue Marketplaces benötigen keinen eingebetteten Manager. Vorhandene Inhalte werden zuerst geprüft; abweichende Dateien werden nicht still überschrieben.
 
-Für die Arbeit an **diesem** Marketplace ist kein erneuter Create-Aufruf nötig. Bestehende Plugin-Checkouts mit `configure` zuordnen; neue Plugins über `plugin-create` hinzufügen, wie im [Plugin-Abschnitt](#plugin-erstellen) beschrieben.
+Für die Arbeit an **diesem** Marketplace ist kein erneuter Create-Aufruf nötig. Bestehende Plugin-Checkouts mit `configure` zuordnen; neue Plugins über `plugin-manager` hinzufügen, wie im [Plugin-Abschnitt](#plugin-erstellen) beschrieben.
 
 <a id="marketplace-pruefen"></a>
 
@@ -162,12 +162,12 @@ Ein neues Plugin gehört in ein separates GitHub-Repository mit eigenen Manifest
 1. Ein separates GitHub-Repository für das Plugin anlegen. Für die direkte Projektauswahl lokal klonen und den Checkout als neues Projekt in Claude/Codex öffnen.
 2. Den Plugin-Ordner als Arbeitsordner auswählen. Den lokalen Marketplace-Pfad bereithalten; der installierte Katalog ersetzt keinen Marketplace-Checkout.
 3. Einen neuen Chat mit verfügbarem Plugin Manager starten.
-4. `plugin-create` wählen oder in Claude Code `/plugin-manager:plugin-create` starten. Die Erstellung legt ausschließlich ein Skeleton an.
+4. `plugin-manager` wählen oder in Claude Code `/plugin-manager:plugin-manager` starten. Die Erstellung legt ausschließlich ein Skeleton an.
 5. Namen, Herausgeber, Marketplace und Dokumentationssprachen nennen, soweit sie noch nicht aus dem Projekt bekannt sind.
 
-> Führe plugin-create für dieses Projekt als Skeleton aus. Verwende den Marketplace unter ../mein-marketplace, die Kennung mein-plugin, den Anzeigenamen „Mein Plugin“ und den Herausgeber „Bestätigter Herausgeber“. Dokumentiere auf Deutsch und Englisch mit Deutsch als Standard. Kläre anschließend mit mir das Zielbild in SCOPE.md.
+> Führe plugin-manager für dieses Projekt als Skeleton aus. Verwende den Marketplace unter ../mein-marketplace, die Kennung mein-plugin, den Anzeigenamen „Mein Plugin“ und den Herausgeber „Bestätigter Herausgeber“. Dokumentiere auf Deutsch und Englisch mit Deutsch als Standard. Kläre anschließend mit mir das Zielbild in SCOPE.md.
 
-Wenn der Plugin-Checkout noch fehlt, den Zielpfad und die bestehende GitHub-URL ausdrücklich angeben; `plugin-create` kann ihn klonen. Anschließend diesen Ordner als Projekt öffnen.
+Den ausdrücklich ausgewählten Plugin-Checkout vor dem zentralen Aufruf als Projekt öffnen.
 
 **Im Terminal** – ein neues Plugin als Skeleton erstellen:
 

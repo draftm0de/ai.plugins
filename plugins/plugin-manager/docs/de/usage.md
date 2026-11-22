@@ -12,20 +12,16 @@ Zielpfade stammen aus deinem geöffneten Projekt oder einer ausdrücklichen Anga
 
 ## Ablauf auswählen
 
-In Claude Code: `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-create` oder `/plugin-manager:configure`. In Codex/GPT die entsprechende Fähigkeit wählen oder die Aktion beschreiben. `init` wird nicht unterstützt.
+In Claude Code: `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-manager` oder `/plugin-manager:configure`. In Codex/GPT die entsprechende Fähigkeit wählen oder die Aktion beschreiben. `init` wird nicht unterstützt.
 
-Bei `plugin-create` folgen Rückfragen und Antworten der Sprache deiner aktuellen Nachricht. Bei einem reinen Slash-Befehl bleibt die bisherige Gesprächssprache erhalten; ohne Sprachkontext fragt der Agent kurz nach. Die Dokumentationssprachen werden unabhängig davon festgelegt.
-
-Fehlende Angaben werden über den strukturierten Fragedialog des Hosts in kleinen Schritten abgefragt, sofern dieses Werkzeug verfügbar ist. Ohne Sprachkontext kommt zuerst nur die Sprachwahl; danach geht es in der gewählten Sprache weiter. Bereits bestätigte Angaben werden nicht erneut abgefragt. Ist kein Dialogwerkzeug verfügbar, erklärt der Agent das kurz und stellt jeweils eine Frage im Chat.
-
-Auch bei einem bestehenden Plugin wird zuerst nur eine fehlende Gesprächssprache geklärt. Danach stehen ausschließlich „Verifizieren“ und „Konfigurieren“ zur Auswahl, mit deutschen Beschreibungen. Ein erneuter Erstellungsaufruf erkennt ein vorhandenes Produkt vor der Lizenzprüfung und verändert es nicht.
+Der zentrale Einstieg `plugin-manager` liest zuerst den Projektzustand und verwendet die gespeicherte Bedienersprache; fehlt sie, fragt er ausdrücklich danach. Er synchronisiert das Skeleton und startet die geführte Erstkonfiguration nur ohne plugin.json. Dokumentationssprachen bleiben unabhängig. Offene Konfigurationsangaben verhindern Generator-Schreibzugriffe. Bestehende Plugins werden nicht neu erstellt: Nach nötiger Skeleton-Arbeit meldet der Einstieg den Zustand und wartet. Für eine Marketplace-Zuordnung eines bestehenden Plugins bleibt der separate Skill `configure` verfügbar.
 
 Vor der Erstellung klärt der Agent die Lizenzentscheidung. Eine eindeutige vorhandene Lizenz oder bereits getroffene Entscheidung wird übernommen; andernfalls fragt er nach einer Lizenz oder einer ausdrücklichen Vertagung. Ohne Antwort beginnt die Erstellung nicht. Widersprüche werden vor Änderungen geklärt und vorhandene Lizenzdateien bleiben erhalten. Eine vertagte Entscheidung erscheint im Abschlussbericht als offen. Eine gewählte Lizenz wird umgesetzt: MIT mit bestätigtem Copyright-Jahr und Rechteinhaber, andere Lizenzen anhand einer ausdrücklich bestätigten vollständigen Textdatei. Lizenzdatei, Manifest und Dokumentation werden gemeinsam erstellt und geprüft. Die Entscheidung bleibt in docs/license.md erhalten, auch bei ausdrücklicher Vertagung.
 
 | Aktion | Eingaben | Ergebnis |
 | --- | --- | --- |
 | marketplace-create | Geklontes Repository, Anzeigename, Kennung, Herausgeber | Gemeinsamer Katalog, beide Host-Kataloge und eigenständige Werkzeuge |
-| plugin-create | Separater Checkout/Pfad, bestehende GitHub-URL, Marketplace, Name, Kennung, Beschreibung, Herausgeber, Skeleton-Modus, Sprachen | Plugin-Struktur ohne eigene Kataloge, Zuordnung und Dokumentationsvorlagen |
+| plugin-manager | Separater Checkout/Pfad, bestehende GitHub-URL, Marketplace, Name, Kennung, Beschreibung, Herausgeber, Skeleton-Modus, Sprachen | Plugin-Struktur ohne eigene Kataloge, Zuordnung und Dokumentationsvorlagen |
 | configure | Bestehendes Plugin und gewählter Marketplace | Katalogeintrag und lokale Zuordnung; andere Zuordnungen bleiben |
 
 ### Dokumentation aktualisieren

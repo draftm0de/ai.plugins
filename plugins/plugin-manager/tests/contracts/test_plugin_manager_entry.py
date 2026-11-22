@@ -42,10 +42,15 @@ class EntryTextTests(unittest.TestCase):
 
     def test_configure_flow_keeps_skeleton_and_invents_nothing(self):
         text = self.flow('configure')
-        for needle in ('../../plugin-create/SKILL.md', 'in this folder', 'never invent or dummy-fill', 'explicitly selected',
+        for needle in ('../../_shared/references/workflows.md', 'in this folder', 'never invent or dummy-fill', 'explicitly selected',
                        'never roll anything back', 'not a failure of the skeleton', 'nothing is replaced', 'remotes'):
             self.assertIn(needle, text)
-        self.assertTrue((ROOT / 'skills/plugin-create/SKILL.md').is_file())
+        self.assertFalse((ROOT / 'skills/plugin-create/SKILL.md').exists())
+        self.assertNotIn('../../plugin-create/SKILL.md', text)
+        for rule in ('Silence is not deferral', '--license MIT', '--copyright-holder',
+                     '--license-file', 'checks.licensing', 'Never execute target code',
+                     'nonfunctional scaffold', 'Never offer skill import'):
+            self.assertIn(rule, text)
 
     def test_configure_dialogue_is_guided_after_abort_like_the_first_call(self):
         text = self.flow('configure')
@@ -198,7 +203,7 @@ class EntryTextTests(unittest.TestCase):
 
     def test_command_wrapper_and_specialist_skills_unchanged(self):
         self.assertIn('/skills/plugin-manager/SKILL.md', (ROOT / 'commands/plugin-manager.md').read_text())
-        for name in ('configure', 'update', 'verify', 'publish', 'plugin-create'):
+        for name in ('configure', 'update', 'verify', 'publish'):
             self.assertNotIn('project_setup', (ROOT / 'skills' / name / 'SKILL.md').read_text())
         self.assertNotIn('project_setup', (ROOT / 'skills/_shared/templates/plugin/Makefile').read_text())
         self.assertFalse(any('project_setup' in p.name for p in (ROOT / 'skills/_shared/templates').rglob('*')))

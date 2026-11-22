@@ -8,7 +8,7 @@
 
 ## Product and access
 
-The Manager bundles marketplace-create, plugin-create, configure, update, verify and publish. The user confirmed imports from its GitHub repository in Claude and GPT.
+The Manager bundles plugin-manager, marketplace-create, configure, update, verify and publish. The user confirmed imports from its GitHub repository in Claude and GPT.
 
 ## Requirements
 

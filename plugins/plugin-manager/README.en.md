@@ -16,7 +16,7 @@ For developers and teams maintaining skills as installable plugins. The Manager 
 
 **marketplace-create** configures a cloned marketplace. **plugin-create** creates and associates a separate plugin. **configure** connects an existing plugin to a marketplace. **plugin-verify**, **marketplace-verify** and **verify** are read-only. **update** maintains documentation and **publish** prepares separate approval-gated publications. `init` is unsupported. [Workflows](docs/en/usage.md).
 
-The six skills are `marketplace-create`, `plugin-create`, `configure`, `verify`, `update` and `publish`. `plugin-manager` names the plugin only. Shared rules and tools live in [`skills/_shared/`](skills/_shared/WORKFLOWS.md), without an additional skill. Explicit verify variants remain commands; init is unsupported.
+The six skills are `plugin-manager`, `marketplace-create`, `configure`, `verify`, `update` and `publish`. Shared rules and tools live in [`skills/_shared/`](skills/_shared/WORKFLOWS.md), with plugin-manager as the central entry. Explicit verify variants remain commands; init is unsupported.
 
 ## Quick start
 

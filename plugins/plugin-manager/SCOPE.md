@@ -20,7 +20,7 @@ Test: tests/integration/test_shared_installer.py
 
 Status: confirmed
 Acceptance: Before creation writes, the agent reuses an unambiguous existing target license or explicit session decision; otherwise it asks for a license or explicit deferral and waits for the answer. Conflicts require clarification and existing license content is preserved. Silence is not deferral. The completion report identifies a deferred decision as unresolved and distinguishes a selected license from files actually created.
-Source: skills/plugin-create/SKILL.md
+Source: skills/plugin-manager/flows/configure.md
 Source: skills/_shared/references/workflows.md
 Test: tests/behavior/plugin_create_acceptance.md
 
@@ -30,14 +30,14 @@ Status: confirmed
 Acceptance: New skeleton documentation contains localized, evidence-based scaffold content without unresolved placeholders for every selected language. No domain capabilities or test success are invented. Existing user prose is preserved and its validation failures remain visible. Creation checks actual plugin and marketplace structure and documentation, reports their results separately from licensing, pending functional acceptance and unexecuted tests/host checks, and does not claim completion on failed checks.
 Source: skills/_shared/scripts/workflows.py
 Source: skills/_shared/templates/skeleton-content.json
-Source: skills/plugin-create/SKILL.md
+Source: skills/plugin-manager/flows/configure.md
 Test: tests/integration/plugin_create/test_workflows.py
 
 ## R3: Separate conversation language from documentation language
 
 Status: confirmed
-Acceptance: plugin-create uses the language of the current user message for its interaction. With a bare slash command it uses the established conversation language; without either signal it asks briefly. Documentation languages are resolved independently and never determine the conversation language implicitly.
-Source: skills/plugin-create/SKILL.md
+Acceptance: Creation through the central plugin-manager entry uses the project-scoped operator-language gate of R12/R14. Documentation languages are resolved independently and never determine the operator language implicitly. The former standalone plugin-create entry is removed.
+Source: skills/plugin-manager/flows/configure.md
 Source: skills/_shared/references/workflows.md
 Test: tests/behavior/plugin_create_acceptance.md
 
@@ -45,7 +45,7 @@ Test: tests/behavior/plugin_create_acceptance.md
 
 Status: confirmed
 Acceptance: Missing setup inputs are collected using the host's available structured question tool in small coherent groups. Unknown conversation language is asked alone first and the agent waits before continuing in that language. Confirmed inputs are not asked again. When no structured tool is available, the agent explains this limitation and asks one concise question at a time in chat instead of dumping a questionnaire. No target writes occur while required answers are missing.
-Source: skills/plugin-create/SKILL.md
+Source: skills/plugin-manager/flows/configure.md
 Source: skills/_shared/references/workflows.md
 Test: tests/behavior/plugin_create_acceptance.md
 
@@ -56,15 +56,15 @@ Acceptance: plugin-create requires an explicit license identifier or explicit de
 Source: skills/_shared/scripts/licensing.py
 Source: skills/_shared/scripts/workflows.py
 Source: skills/_shared/templates/licenses/MIT.txt
-Source: skills/plugin-create/SKILL.md
+Source: skills/plugin-manager/flows/configure.md
 Test: tests/integration/plugin_create/test_licensing.py
 
 ## R7: Repeated creation detects existing products before license validation
 
 Status: confirmed
-Acceptance: An existing target product is rejected before licensing validation or creation writes, even with missing/conflicting licensing arguments. Unknown conversation language is resolved alone before offering existing-plugin actions; known language is used exclusively. The existing-plugin dialog offers only verification and configuration; it does not offer creation of another plugin or request another target path. Existing files and marketplace entries remain unchanged.
+Acceptance: An existing target product is rejected before licensing validation or creation writes, even with missing/conflicting licensing arguments. Unknown conversation language is resolved alone before offering existing-plugin actions; known language is used exclusively. The central entry does not recreate an existing plugin; after language/skeleton handling it reports ready and waits under R12/R14. The former standalone existing-plugin action dialog is removed. Existing files and marketplace entries remain unchanged.
 Source: skills/_shared/scripts/workflows.py
-Source: skills/plugin-create/SKILL.md
+Source: skills/plugin-manager/flows/configure.md
 Source: skills/_shared/references/workflows.md
 Test: tests/integration/plugin_create/test_workflows.py
 Test: tests/behavior/plugin_create_acceptance.md
@@ -74,7 +74,7 @@ Test: tests/behavior/plugin_create_acceptance.md
 Status: confirmed
 Acceptance: plugin-create creates only a new nonfunctional skeleton. Its dialogue offers no skill import or mode choice and requests no source skill path. The public helper rejects --source and --import before writes, including when combined with --skeleton. Other actions retain their own source-reading options. Existing source directories and target/marketplace data remain unchanged on rejected import calls.
 Source: skills/_shared/scripts/workflows.py
-Source: skills/plugin-create/SKILL.md
+Source: skills/plugin-manager/flows/configure.md
 Source: skills/_shared/references/workflows.md
 Test: tests/integration/plugin_create/test_workflows.py
 Test: tests/behavior/plugin_create_acceptance.md
@@ -132,3 +132,11 @@ Acceptance: The plugin generator and central skeleton setup share a CLAUDE.md te
 Source: skills/_shared/templates/plugin/CLAUDE.md
 Source: skills/_shared/scripts/project_setup.py
 Test: tests/integration/project_setup/test_setup.py
+
+## R14: Creation through the central Manager entry
+
+Status: confirmed
+Acceptance: Plugin creation has no separate public plugin-create skill or command wrapper. The central plugin-manager configuration flow owns the guided creation instructions and uses the existing internal plugin-create --skeleton generator. Licensing, preservation and creation checks remain required. The configure skill for existing marketplace associations remains available. Creation uses the saved operator-language gate of R12; former standalone entry dialogue rules do not create another public entry.
+Source: skills/plugin-manager/flows/configure.md
+Test: tests/contracts/test_skill_entrypoints.py
+Test: tests/contracts/test_plugin_manager_entry.py
