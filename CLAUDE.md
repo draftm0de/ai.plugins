@@ -1,4 +1,7 @@
-# Project instructions
+<!--
+This file exists only for Claude compatibility.
+Keep it limited to this comment and the import below.
+Maintain all agent instructions in AGENTS.md.
+-->
 
-Read and follow AGENTS.md, SCOPE.md and docs/architecture.md in this repository.
-They are the shared source of development rules; do not maintain duplicate rules here.
+@AGENTS.md
