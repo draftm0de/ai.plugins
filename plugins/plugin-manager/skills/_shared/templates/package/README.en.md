@@ -2,7 +2,7 @@
 
 [Deutsch](README.md) | **English**
 
-This plugin documents accessible local skills and plugins from source evidence. Documentation languages are chosen per repository: German only, English only or both. Use `marketplace-create` for a marketplace, `plugin-create` for a separate plugin, `configure` for its association, `update` to refresh documentation, or `verify` for a read-only structure audit. The agent asks about material uncertainties. Passing structural checks does not establish production readiness. Nothing is published or installed without instruction.
+This plugin documents accessible local skills and plugins from source evidence. Documentation languages are chosen per repository: German only, English only or both. Use `plugin-manager` to set up a marketplace or create a separate plugin, `configure` for its association, `update` to refresh documentation, or `verify` for a read-only structure audit. The agent asks about material uncertainties. Passing structural checks does not establish production readiness. Nothing is published or installed without instruction.
 
 In Claude: `/plugin-manager:verify SOURCE_PATH`, with equivalent `:plugin-create` and `:update` commands. In ChatGPT request the action in natural language. The host must have access to the source; helpers require Python 3.10 or newer.
 
@@ -22,4 +22,4 @@ Local snapshots read the current checkout including uncommitted changes, regardl
 
 ## Skills
 
-`plugin-manager`, `marketplace-create`, `configure`, `verify`, `update` and `publish`. Shared rules: `skills/_shared/WORKFLOWS.md`; plugin-manager is the central entry.
+`plugin-manager`, `configure`, `verify`, `update` and `publish`. Shared rules: `skills/_shared/WORKFLOWS.md`; plugin-manager is the central entry.

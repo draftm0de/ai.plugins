@@ -203,6 +203,13 @@ def marketplace_create(root, name=None, display_name=None, owner=None, repositor
         raise ValueError('Existing marketplace identity conflicts; creation does not migrate it')
     config = existing or {'name': name, 'displayName': display_name, 'owner': publisher, 'repository': origin, 'plugins': []}
     files = template_files('marketplace', root)
+    # Synced skeleton files (manifests/marketplace.sync.json) belong to the skeleton and sync flows: an existing regular
+    # file is neither judged nor replaced here, a missing one is created.
+    synced = read(SKILL/'manifests/marketplace.sync.json')['files']
+    for relative in synced:
+        existing_file = root/relative
+        if existing_file.is_file() and not existing_file.is_symlink():
+            files.pop(existing_file, None)
     files[root/'marketplace.json'] = encode(config)
     files.update(catalog_files(root, config))
     # Keep existing project prose and licensing untouched.
@@ -210,8 +217,8 @@ def marketplace_create(root, name=None, display_name=None, owner=None, repositor
         if not (root/filename).exists():
             text = (f'# {display_name}\n\nMarketplace `{name}`: {origin}\n\n' +
                 ('Plugin-Repositories werden in `marketplace.json` eingetragen. Lokale Pfade stehen ausschließlich in `.local/marketplace.json`.\n\n' if lang == 'de' else 'Plugin repositories are registered in `marketplace.json`. Local paths belong only in `.local/marketplace.json`.\n\n') +
-                '```sh\nmake verify\nmake check-marketplace\nmake install-local TARGET=claude\n```\n\n' +
-                ('Ein frischer Clone benötigt für lokale Installation zuerst Checkout-Zuordnungen über configure. local-marketplace.example.json ist nur eine optionale manuelle Kopiervorlage; nur .local/marketplace.json wird zur Laufzeit gelesen und bleibt uncommitted. Snapshots verwenden den aktuellen Checkout einschließlich uncommitteter Änderungen auf jedem Branch. Nach Änderungen oder Branchwechsel install-local und eine neue Host-Sitzung; kein Commit/Push/PR und kein Marketplace pro Branch. [Voraussetzungen](docs/prerequisites.md): Git und Python 3.10+, Make optional, Host-CLI nur für automatische lokale Installation. Strukturprüfung ist keine GitHub-/GUI-Abnahme.\n' if lang == 'de' else 'A fresh clone needs checkout associations through configure before local installation. local-marketplace.example.json is only an optional manual template; only .local/marketplace.json is read at runtime and stays uncommitted. Snapshots use the current checkout including uncommitted edits on any branch. After edits or branch switches run install-local and open a new host session; no commit/push/PR or per-branch marketplace. [Prerequisites](docs/prerequisites.md): Git and Python 3.10+, optional Make, host CLI only for automatic local installation. Structural verification is not GitHub/GUI acceptance.\n'))
+                '```sh\npython3 -B scripts/verify.py --source .\npython3 -B scripts/marketplace.py check\nmake install-local TARGET=claude\n```\n\n' +
+                ('Ein frischer Clone benötigt für lokale Installation zuerst Checkout-Zuordnungen über die Plugin-Zuordnung von plugin-manager. local-marketplace.example.json ist nur eine optionale manuelle Kopiervorlage; nur .local/marketplace.json wird zur Laufzeit gelesen und bleibt uncommitted. Snapshots verwenden den aktuellen Checkout einschließlich uncommitteter Änderungen auf jedem Branch. Nach Änderungen oder Branchwechsel install-local und eine neue Host-Sitzung; kein Commit/Push/PR und kein Marketplace pro Branch. [Voraussetzungen](docs/prerequisites.md): Git und Python 3.10+, Make optional, Host-CLI nur für automatische lokale Installation. Strukturprüfung ist keine GitHub-/GUI-Abnahme.\n' if lang == 'de' else 'A fresh clone needs checkout associations through the plugin association of plugin-manager before local installation. local-marketplace.example.json is only an optional manual template; only .local/marketplace.json is read at runtime and stays uncommitted. Snapshots use the current checkout including uncommitted edits on any branch. After edits or branch switches run install-local and open a new host session; no commit/push/PR or per-branch marketplace. [Prerequisites](docs/prerequisites.md): Git and Python 3.10+, optional Make, host CLI only for automatic local installation. Structural verification is not GitHub/GUI acceptance.\n'))
             files[root/filename] = text.encode()
     ignore, content = ignore_file(root); files[ignore] = content
     return {'action': 'marketplace-create', 'changed': apply(files, [ignore]), 'repository': origin, 'published': False}

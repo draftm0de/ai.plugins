@@ -12,16 +12,16 @@ Zielpfade stammen aus deinem geöffneten Projekt oder einer ausdrücklichen Anga
 
 ## Ablauf auswählen
 
-In Claude Code: `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-manager` oder `/plugin-manager:configure`. In Codex/GPT die entsprechende Fähigkeit wählen oder die Aktion beschreiben. `init` wird nicht unterstützt.
+In Claude Code: `/plugin-manager:plugin-manager` (Marketplace-Einrichtung und Plugin-Erstellung) oder `/plugin-manager:configure`. In Codex/GPT die entsprechende Fähigkeit wählen oder die Aktion beschreiben. `init` wird nicht unterstützt.
 
-Der zentrale Einstieg `plugin-manager` liest zuerst den Projektzustand und verwendet die gespeicherte Bedienersprache; fehlt sie, fragt er ausdrücklich danach. Er synchronisiert das Skeleton und startet die geführte Erstkonfiguration nur ohne plugin.json. Dokumentationssprachen bleiben unabhängig. Offene Konfigurationsangaben verhindern Generator-Schreibzugriffe. Bestehende Plugins werden nicht neu erstellt: Nach nötiger Skeleton-Arbeit meldet der Einstieg den Zustand und wartet. Für eine Marketplace-Zuordnung eines bestehenden Plugins bleibt der separate Skill `configure` verfügbar.
+Der zentrale Einstieg `plugin-manager` liest zuerst den Projektzustand und verwendet die gespeicherte Bedienersprache; fehlt sie, fragt er ausdrücklich danach. Er fragt, ob das Arbeitspaket als Plugin oder als Marketplace konfiguriert wird, führt die geführte Konfiguration aus, solange kein Konfigurationsnachweis existiert, und synchronisiert danach das Skeleton. Dokumentationssprachen bleiben unabhängig. Offene Konfigurationsangaben verhindern Generator-Schreibzugriffe. Bestehende Plugins werden nicht neu erstellt: Nach nötiger Skeleton-Arbeit meldet der Einstieg den Zustand und wartet. Für eine Marketplace-Zuordnung eines bestehenden Plugins bleibt der separate Skill `configure` verfügbar.
 
 Vor der Erstellung klärt der Agent die Lizenzentscheidung. Eine eindeutige vorhandene Lizenz oder bereits getroffene Entscheidung wird übernommen; andernfalls fragt er nach einer Lizenz oder einer ausdrücklichen Vertagung. Ohne Antwort beginnt die Erstellung nicht. Widersprüche werden vor Änderungen geklärt und vorhandene Lizenzdateien bleiben erhalten. Eine vertagte Entscheidung erscheint im Abschlussbericht als offen. Eine gewählte Lizenz wird umgesetzt: MIT mit bestätigtem Copyright-Jahr und Rechteinhaber, andere Lizenzen anhand einer ausdrücklich bestätigten vollständigen Textdatei. Lizenzdatei, Manifest und Dokumentation werden gemeinsam erstellt und geprüft. Die Entscheidung bleibt in docs/license.md erhalten, auch bei ausdrücklicher Vertagung.
 
 | Aktion | Eingaben | Ergebnis |
 | --- | --- | --- |
-| marketplace-create | Geklontes Repository, Anzeigename, Kennung, Herausgeber | Gemeinsamer Katalog, beide Host-Kataloge und eigenständige Werkzeuge |
-| plugin-manager | Separater Checkout/Pfad, bestehende GitHub-URL, Marketplace, Name, Kennung, Beschreibung, Herausgeber, Skeleton-Modus, Sprachen | Plugin-Struktur ohne eigene Kataloge, Zuordnung und Dokumentationsvorlagen |
+| plugin-manager (Art Marketplace) | Geklontes Repository, Anzeigename, Kennung, Herausgeber | Gemeinsamer Katalog, beide Host-Kataloge und eigenständige Werkzeuge |
+| plugin-manager (Art Plugin) | Separater Checkout/Pfad, bestehende GitHub-URL, Marketplace, Name, Kennung, Beschreibung, Herausgeber, Skeleton-Modus, Sprachen | Plugin-Struktur ohne eigene Kataloge, Zuordnung und Dokumentationsvorlagen |
 | configure | Bestehendes Plugin und gewählter Marketplace | Katalogeintrag und lokale Zuordnung; andere Zuordnungen bleiben |
 
 ### Dokumentation aktualisieren

@@ -14,16 +14,16 @@ Targets come from your open project or explicit input, never automatically from 
 
 ## Choose a workflow
 
-In Claude Code use `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-manager` or `/plugin-manager:configure`. In Codex/GPT select the capability or describe the action. `init` is unsupported.
+In Claude Code use `/plugin-manager:plugin-manager` (marketplace setup and plugin creation) or `/plugin-manager:configure`. In Codex/GPT select the capability or describe the action. `init` is unsupported.
 
-The central `plugin-manager` entry first reads the project state and uses the saved operator language, asking explicitly if none is stored. It synchronizes the skeleton and starts guided initial configuration only when plugin.json is absent. Documentation languages remain independent. Questions are asked in small coherent steps; unanswered configuration facts prevent generator writes. Existing plugins are not recreated: after any needed skeleton work the entry reports the state and waits. Use the separate `configure` skill explicitly to associate an existing plugin with a marketplace.
+The central `plugin-manager` entry first reads the project state and uses the saved operator language, asking explicitly if none is stored. It asks whether the workpackage is configured as a plugin or a marketplace, runs the guided configuration while no configuration evidence exists and then synchronizes the skeleton. Documentation languages remain independent. Questions are asked in small coherent steps; unanswered configuration facts prevent generator writes. Existing plugins are not recreated: after any needed skeleton work the entry reports the state and waits. Use the separate `configure` skill explicitly to associate an existing plugin with a marketplace.
 
 Before creation, the agent resolves the licensing decision. It reuses an unambiguous existing license or established decision; otherwise it asks for a license or explicit deferral. Creation does not begin without an answer. Conflicts are clarified before changes and existing license files are preserved. A deferred decision is reported as unresolved. A selected license is implemented: MIT with a confirmed copyright year and rights holder, other licenses from an explicitly confirmed complete text file. The license file, manifest and documentation are created and checked together. The decision persists in docs/license.md, including explicit deferral.
 
 | Action | Inputs | Result |
 | --- | --- | --- |
-| marketplace-create | Cloned repository, display name, identifier, publisher | Shared catalog, both host catalogs and standalone tools |
-| plugin-manager | Separate checkout/path, existing GitHub URL, marketplace, display name, identifier, description, publisher, skeleton mode, languages | Plugin structure without catalogs, association and documentation templates |
+| plugin-manager (kind marketplace) | Cloned repository, display name, identifier, publisher | Shared catalog, both host catalogs and standalone tools |
+| plugin-manager (kind plugin) | Separate checkout/path, existing GitHub URL, marketplace, display name, identifier, description, publisher, skeleton mode, languages | Plugin structure without catalogs, association and documentation templates |
 | configure | Existing plugin and chosen marketplace | Catalog entry and local mapping; other associations remain |
 
 ### Update documentation

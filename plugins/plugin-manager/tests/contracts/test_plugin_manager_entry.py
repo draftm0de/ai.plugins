@@ -13,7 +13,7 @@ class EntryTextTests(unittest.TestCase):
         self.text = self.skill + '\n' + self.entry
 
     def flow(self, name):
-        folder = 'skills/plugin-manager/flows' if name == 'configure' else 'skills/_shared/flows'
+        folder = 'skills/plugin-manager/flows' if name in ('configure', 'marketplace') else 'skills/_shared/flows'
         return (ROOT / folder / (name + '.md')).read_text()
 
     def test_loop_routes_by_status_and_rechecks_after_each_flow(self):
@@ -204,9 +204,34 @@ class EntryTextTests(unittest.TestCase):
                        'language, configuration, skeleton, sync, ready'):
             self.assertIn(needle, self.text)
         text = self.flow('configure')
-        for needle in ('Plugin or marketplace?', 'no preselection', 'marketplace-create', 'record --target', '--kind plugin|marketplace'):
+        for needle in ('Plugin or marketplace?', 'no preselection', 'flows/marketplace.md', 'record --target', '--kind plugin|marketplace',
+                       'Guided dialogue (both kinds)'):
             self.assertIn(needle, text)
         self.assertLess(text.index('Plugin or marketplace?'), text.index('record --target'))
+        self.assertNotIn('marketplace-create/SKILL.md', text)
+        self.assertNotIn('lock', text.lower().replace('block', ''))  # skeleton evidence, not "lock"
+        self.assertNotIn('generator refuses because a skeleton file deviates', text)
+
+    def test_marketplace_flow_is_complete_and_self_contained(self):  # R20
+        text = self.flow('marketplace')
+        for needle in ('Guided dialogue (both kinds)', 'configure.md', 'marketplace-create --root', '--name', '--display-name', '--owner',
+                       'record --target', '--kind marketplace', '--artifact', 'never taken from the Git author', 'a suggestion is never a selection',
+                       'no `ok`', 'exit 0', 'idempotent', 'marketplace.json', 'local-marketplace.example.json', 'derived host catalogs',
+                       'plugin repository', 'status', 'published'):
+            self.assertIn(needle, text)
+        self.assertLess(text.index('marketplace-create --root'), text.index('record --target'))
+        self.assertNotIn('marketplace-create/SKILL.md', text)
+        self.assertNotIn('skill `marketplace-create`', text)
+        for gone in ('make verify', 'make check-marketplace'):
+            self.assertNotIn(gone, text)
+
+    def test_marketplace_create_skill_and_command_are_gone(self):  # R20
+        self.assertFalse((ROOT / 'skills/marketplace-create').exists())
+        self.assertFalse((ROOT / 'commands/marketplace-create.md').exists())
+        for path in ('skills/_shared/WORKFLOWS.md', 'skills/_shared/references/workflows.md', 'skills/plugin-manager/SKILL.md'):
+            text = (ROOT / path).read_text(encoding='utf-8')
+            self.assertNotIn('marketplace-create/SKILL.md', text, path)
+            self.assertNotIn('/plugin-manager:marketplace-create', text, path)
 
     def test_boundaries_and_no_host_claim(self):
         for needle in ('Never the installed Manager', 'Never the installed plugin directory', 'marketplace', 'untested', 'installs nothing',

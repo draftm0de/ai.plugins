@@ -8,9 +8,9 @@ Reuse confirmed session facts, existing manifests, documentation language policy
 
 Inspect existing files before any write. The helpers preflight collisions, preserve existing README/docs and licenses, and refuse differing owned-tool destinations. Configuration does not perform legacy migrations. Present conflicting files and resolve only within the user's authorized scope. Private content is never an input source. No action creates a GitHub repository, commits, pushes, installs or publishes implicitly.
 
-## marketplace-create
+## marketplace-create (generator operation of the marketplace flow)
 
-The GitHub repository must already exist and be cloned. Example with fictional inputs:
+The procedure for the person is the flow `../../plugin-manager/flows/marketplace.md` of the central entry; there is no separate skill. This section is the technical reference of the helper operation. The GitHub repository must already exist and be cloned. Example with fictional inputs:
 
 ```sh
 python3 /path/to/installed/skills/_shared/scripts/workflows.py marketplace-create \

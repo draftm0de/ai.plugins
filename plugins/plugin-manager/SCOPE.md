@@ -191,3 +191,15 @@ Acceptance: A newly generated plugin ships the common part byte-identically: ski
 Source: skills/_shared/templates/plugin/sync/skills/_shared
 Source: skills/_shared/scripts/workflows.py
 Test: tests/integration/plugin_create/test_workflows.py
+
+## R20: Marketplace setup is part of the central entry
+
+Status: confirmed
+Acceptance: The marketplace setup is a flow of the single plugin-manager skill; there is no skill skills/marketplace-create and no commands/marketplace-create.md. The complete procedure is skills/plugin-manager/flows/marketplace.md (no reference to a separate skill). flows/configure.md asks "Plugin or marketplace?" first (R17), holds the dialogue rules shared by both kinds (section "Guided dialogue (both kinds)") and hands over to flows/marketplace.md for the marketplace. The cloned marketplace folder is the working folder. Technical name (kebab-case), display name and owner/publisher are asked one at a time or in small coherent groups, never invented and never taken from the Git author; an existing marketplace.json supplies missing values and the origin supplies the repository URL (optionally checked against an explicit one). Nothing is written before the facts are answered. The helper call is workflows.py marketplace-create --root <folder> --name ... --display-name ... --owner ... [--repository ...]; success is exit 0 (the answer carries action, changed, repository and published: false, but no ok or checks), then record --kind marketplace --artifact <name> writes the configuration evidence, then status leads to the skeleton flow (hash evidence) and ready. Repeating the operation is idempotent; an identity conflict stops without writes; a plugin repository (plugin.json) is no marketplace. As in R17 the generator neither judges nor replaces an existing synced file listed in manifests/marketplace.sync.json (a deviating one stays byte-identical and surfaces as a sync decision afterwards); seed files never change existing files. The generated starter READMEs name only existing commands (python3 -B scripts/verify.py, python3 -B scripts/marketplace.py sync|check, make install-local), never removed make targets.
+Source: skills/plugin-manager/flows/marketplace.md
+Source: skills/plugin-manager/flows/configure.md
+Source: skills/_shared/scripts/workflows.py
+Test: tests/contracts/test_plugin_manager_entry.py
+Test: tests/contracts/test_skill_entrypoints.py
+Test: tests/integration/marketplace_create/test_workflows.py
+
