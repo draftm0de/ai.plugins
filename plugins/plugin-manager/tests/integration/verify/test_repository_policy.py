@@ -21,7 +21,7 @@ class RepositoryPolicyTests(unittest.TestCase):
         self.root = Path(self.temp.name).resolve()
         self.repo = self.root/'repo'
         self.repo.mkdir()
-        (self.repo/'.gitignore').write_bytes((ROOT/'skills/_shared/templates/plugin/gitignore.txt').read_bytes())
+        (self.repo/'.gitignore').write_bytes((ROOT/'skills/_shared/templates/plugin/seed/gitignore.txt').read_bytes())
         subprocess.run(['git','init','--quiet','--template=',str(self.repo)],check=True)
 
     def test_ignore_rules_work_and_nested_negations_fail_without_mutation(self):
@@ -37,7 +37,7 @@ class RepositoryPolicyTests(unittest.TestCase):
     def test_missing_rules_and_tracked_outputs_are_reported(self):
         (self.repo/'.gitignore').write_text('.DS_Store\n')
         self.assertTrue(policy.hygiene(self.repo)[0])
-        (self.repo/'.gitignore').write_bytes((ROOT/'skills/_shared/templates/plugin/gitignore.txt').read_bytes())
+        (self.repo/'.gitignore').write_bytes((ROOT/'skills/_shared/templates/plugin/seed/gitignore.txt').read_bytes())
         local=self.repo/'.tmp/evidence.txt'
         local.parent.mkdir();local.write_text('Fictional evidence to preserve')
         subprocess.run(['git','-C',str(self.repo),'add','-f','.tmp/evidence.txt'],check=True)

@@ -203,7 +203,7 @@ class FolderTests(RemovalBase):
         self.assertEqual(0, self.box.call('setup')[0])
         self.assertTrue((self.p / 'docs').is_dir())  # docs/zeta.txt still has a present source
         self.assertEqual(ZETA, (self.p / 'docs/zeta.txt').read_bytes())
-        for protected in ('.project', '.project/plugin.skeleton.lock.json'):
+        for protected in ('.project', LOCK):
             self.assertTrue((self.p / protected).exists())
 
     def test_foreign_content_keeps_the_folder_and_is_never_deleted(self):
@@ -241,7 +241,7 @@ class SourceBaseTests(RemovalBase):
             self.assertEqual(before, tree(self.p))
 
     def test_missing_base_all_sources_missing_and_unsafe_paths_never_mean_removal(self):
-        base = self.box.manager / 'skills/_shared/templates/plugin'
+        base = self.box.manager / 'skills/_shared/templates/plugin/sync'
         saved = self.box.base / 'saved-templates'
         shutil.move(str(base), str(saved))
         self.blocked('template_base')
@@ -349,13 +349,16 @@ class DeleteFailureReportTests(RemovalBase):
 
 class GeneratorCooperationTests(WorkflowFixture, unittest.TestCase):
     """Generator integration: the real generator and real templates are the subject, not the removal rules."""
-    def test_generator_runs_after_skeleton_and_active_files_stay_untouched(self):
+    def test_skeleton_after_generator_and_evidence_leaves_active_files_untouched(self):
         ps = load_module(fx.SHARED / 'scripts/project_setup.py', 'removal_flow')
         self.assertTrue(ps.language_only(str(self.plugin), 'de')['ok'])
-        self.assertTrue(ps.setup(str(self.plugin))['ok'])
+        self.create()  # existing generator (R17: configuration first); it already writes the common files it owns
         active = fx.FILES[0]
-        self.assertTrue((self.plugin / active).is_file())
-        self.create()  # existing generator; nothing it finds identical is overwritten
+        written = (self.plugin / active).read_bytes()
+        self.assertTrue(ps.record(str(self.plugin), 'plugin', 'new-plugin')['ok'])
+        self.assertEqual(('plugin', 'skeleton'), (ps.status(str(self.plugin))['state'], ps.status(str(self.plugin))['next']))
+        self.assertTrue(ps.setup(str(self.plugin))['ok'])  # records evidence for identical files, removes nothing active
         status = ps.status(str(self.plugin))
         self.assertEqual(('plugin', 'ready'), (status['state'], status['next']))
+        self.assertEqual(written, (self.plugin / active).read_bytes())
         self.assertEqual(fx.template(active), (self.plugin / active).read_bytes())

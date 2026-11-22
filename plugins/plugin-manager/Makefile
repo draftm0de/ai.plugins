@@ -12,7 +12,7 @@ AUTHOR ?=
 DEFAULT_LANGUAGE ?=
 TITLE ?=
 
-.PHONY: help test inspect scaffold validate-docs
+.PHONY: help test inspect scaffold validate-docs build-skeleton-hashes check-skeleton-hashes
 help:
 	@echo 'Tests: test (unit + integration + contracts), test-unit, test-integration, test-contracts, test-native, test-behavior'
 	@echo 'Git + Python 3.10+; Make is optional. Use python3 -B scripts/verify.py or the relevant Python helper directly.'
@@ -24,6 +24,7 @@ help:
 	@echo 'make inspect SOURCE=/path/to/skill  Inspect source without executing it'
 	@echo 'make scaffold SOURCE=... OUTPUT=... Create missing doc templates and copy the icon'
 	@echo 'make validate-docs OUTPUT=...       Validate finished docs; scaffolds intentionally fail'
+	@echo 'make build-skeleton-hashes / check-skeleton-hashes  Write / verify the generated skeleton hash files (exit 1 on drift)'
 	@echo 'make test                          All deterministic skill/shared/integration tests'
 	@echo 'make test TEST_GROUP=publish        Select a skill/component within deterministic layers'
 
@@ -43,6 +44,10 @@ inspect:
 scaffold:
 	@test -n "$(SOURCE)" -a -n "$(OUTPUT)" || (echo "SOURCE and OUTPUT are required" >&2; exit 2)
 	$(PYTHON) skills/_shared/scripts/documentation.py scaffold --source "$(SOURCE)" --output "$(OUTPUT)" $(if $(TITLE),--title "$(TITLE)",) $(if $(LANGUAGES),--languages $(LANGUAGES),) $(if $(DEFAULT_LANGUAGE),--default-language $(DEFAULT_LANGUAGE),)
+build-skeleton-hashes:
+	$(PYTHON) -B scripts/skeleton_hashes.py build
+check-skeleton-hashes:
+	$(PYTHON) -B scripts/skeleton_hashes.py check
 validate-docs:
 	@test -n "$(OUTPUT)" || (echo "OUTPUT is required" >&2; exit 2)
 	$(PYTHON) skills/_shared/scripts/documentation.py validate --output "$(OUTPUT)"

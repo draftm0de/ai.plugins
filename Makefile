@@ -5,7 +5,7 @@ DRY_RUN ?= 0
 SOURCE ?= .
 PLUGIN_DIR := plugins/plugin-manager
 .SUFFIXES:
-.PHONY: help sync-plugin check-plugin test verify validate-docs install-local
+.PHONY: help sync-plugin check-plugin test verify validate-docs install-local build-skeleton-hashes check-skeleton-hashes
 help:
 	@echo 'Tests: test (unit + integration + contracts), test-unit, test-integration, test-contracts, test-native, test-behavior'
 	@echo 'Git + Python 3.10+; Make is optional. Use python3 -B scripts/verify.py or the relevant Python helper directly.'
@@ -15,6 +15,7 @@ help:
 	@echo 'make verify SOURCE=path  Read-only checks for the selected repository type'
 	@echo 'make sync-plugin / check-plugin: generate or check marketplace and plugin metadata'
 	@echo 'make test / verify / validate-docs'
+	@echo 'make build-skeleton-hashes / check-skeleton-hashes  Write / verify the skeleton hash files of the Plugin Manager'
 	@echo 'make install-local TARGET=claude|codex DRY_RUN=0|1'
 sync-plugin:
 	$(MAKE) -C $(PLUGIN_DIR) sync-plugin
@@ -32,6 +33,8 @@ test-behavior:
 	$(MAKE) -C $(PLUGIN_DIR) test-behavior
 verify:
 	$(PYTHON) scripts/verify.py --source "$(SOURCE)" --kind auto $(if $(filter 1,$(REVIEW)),--review,)
+build-skeleton-hashes check-skeleton-hashes:
+	$(MAKE) -C $(PLUGIN_DIR) $@
 validate-docs:
 	$(MAKE) -C $(PLUGIN_DIR) validate-docs OUTPUT=.
 install-local:

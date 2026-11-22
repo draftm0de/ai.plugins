@@ -119,7 +119,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         self.assertEqual(before, {str(p):p.read_bytes() for base in (self.plugin,self.market) for p in base.rglob('*') if p.is_file()})
 
     def test_collisions_and_wrong_origins_preserve_files(self):
-        (self.plugin/'scripts').mkdir();(self.plugin/'scripts/plugin.py').write_text('personal tooling')
+        (self.plugin/'AGENTS.md').write_text('personal rules')  # custom file (not in the common skeleton list): still a strict collision
         before=(self.market/'marketplace.json').read_bytes()
         with self.assertRaisesRegex(ValueError,'Existing content differs'):self.create()
         self.assertFalse((self.plugin/'plugin.json').exists())
@@ -127,6 +127,14 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'conflicts'):
             flow.marketplace_create(self.market,repository='https://github.com/example/wrong')
 
+
+    def test_existing_common_skeleton_file_is_neither_judged_nor_replaced(self):
+        (self.plugin/'scripts').mkdir();(self.plugin/'scripts/plugin.py').write_text('personal tooling')
+        result=self.create()
+        self.assertEqual('personal tooling',(self.plugin/'scripts/plugin.py').read_text())  # left to the skeleton and sync flows
+        self.assertTrue((self.plugin/'plugin.json').exists())
+        self.assertTrue((self.plugin/'scripts/verify.py').exists())  # missing common files are still created
+        self.assertEqual('skeleton',result['implementation_status'])
 
     def test_clone_missing_checkout_and_no_remote_creation(self):
         destination=self.root/'cloned'

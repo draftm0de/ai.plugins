@@ -1,0 +1,7 @@
+# Flow: shared development skeleton
+
+Used when `status` says `next: skeleton` (the language is known). The workpackage is configured for this plugin (a kind of this plugin's manifests); Git, origin and marketplace are not needed.
+
+1. Run `python3 -B "<helper>" setup --target "<folder>" --plugin <plugin>`. It re-checks the target itself before writing, adds only missing files and folders from the fixed list, ensures the ignore rule when a language is stored and records hashes of verified template-identical files in `.project/plugins/<plugin>/skeleton.json`. It also executes `removals.auto` (owned files whose source was removed in the parent and whose local file is untouched) and `removals.lock_cleanup`, removing only those files, their lock entries and then empty parent folders. Deviating files are not touched here and keep their lock entries; their decision is the separate sync flow.
+2. Check `ok` and the exit code. On `ok: false` or exit 1 report a failed setup with each reason in `conflicts`/`errors` and the partial changes that actually happened (`created.files`, `created.directories`, `created.unverified`, `removed.files`, `removed.directories`, `language.saved`, `gitignore.changed`, `lock.changed`) and stop.
+3. On success run `status` again (see `entry.md`). Report removed files and folders (`removed.files`, `removed.directories`) by path only, and accepted deviations (`skeleton.accepted_deviations`) and kept removed files (`removals.kept`) as such; open decisions (`sync.decisions`) are handled by the sync flow, not here.

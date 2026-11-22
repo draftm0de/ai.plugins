@@ -85,7 +85,7 @@ def audit(root):
                     suspicious.append(str(item.relative_to(path)))
             add('payload:' + name, 'fail' if suspicious else 'pass', 'Review unsafe/unexpected distributable paths: ' + ', '.join(suspicious) if suspicious else 'No obvious secret or unexpected paths or symlinks; ordinary Python caches are excluded by snapshot generation, not a secret-content scan')
     # Load our trusted template, never the target repository's executable code.
-    template = SKILL / 'templates/plugin'
+    template = SKILL / 'templates/plugin/sync'
     for relative in ('scripts/plugin.py', 'install.sh'):
         target = root / relative
         matches = target.is_file() and not target.is_symlink() and target.read_bytes() == (template / relative).read_bytes()
@@ -99,9 +99,9 @@ def audit(root):
         if text.count(marker_start) != 1 or text.count(marker_end) != 1:
             return None
         return text.split(marker_start, 1)[1].split(marker_end, 1)[0]
-    expected_block = command_block((template / 'Makefile').read_text())
+    expected_block = command_block((SKILL / 'templates/plugin/seed/Makefile').read_text())
     outside = make.replace(marker_start + (command_block(make) or '') + marker_end, '')
-    overrides = bool(re.search(r'^(?:install|update|package|install-local|update-local|check-plugin|sync-plugin)\s*:', outside, re.MULTILINE))
+    overrides = bool(re.search(r'^(?:install|update|package|install-local|check-plugin|sync-plugin)\s*:', outside, re.MULTILINE))
     valid_make = command_block(make) == expected_block and not overrides and 'plugin.mk' not in make
     add('installer:make', 'pass' if valid_make else 'fail', 'Makefile must contain canonical local-development and metadata recipes without duplicate or retired targets')
     try:
@@ -188,18 +188,20 @@ def scaffold_plugin(source, output, languages=None, default_language=None, repos
         manifest['repository'] = repository
     if author:
         manifest['author'] = {'name': author}
-    spec = importlib.util.spec_from_file_location('create_plugin_template', SKILL / 'templates/plugin/scripts/plugin.py')
+    spec = importlib.util.spec_from_file_location('create_plugin_template', SKILL / 'templates/plugin/sync/scripts/plugin.py')
     engine = importlib.util.module_from_spec(spec); spec.loader.exec_module(engine)
     for relative, data in engine.repository_files(manifest).items():
         files[relative] = (json.dumps(data, indent=2) + '\n').encode()
     files['plugin.json'] = (json.dumps(manifest, indent=2) + '\n').encode()
     files['assets/icon.png'] = icon_source().read_bytes()
-    for path in (SKILL / 'templates/plugin').rglob('*'):
-        if path.is_file():
-            relative = str(path.relative_to(SKILL / 'templates/plugin'))
-            if relative == 'gitignore.txt': relative = '.gitignore'
-            if relative == 'ci.yml': relative = '.github/workflows/validate.yml'
-            files[relative] = path.read_bytes()
+    for part in ('sync', 'seed'):
+        folder = SKILL / 'templates/plugin' / part
+        for path in folder.rglob('*'):
+            if path.is_file():
+                relative = str(path.relative_to(folder))
+                if part == 'seed' and relative == 'gitignore.txt': relative = '.gitignore'
+                if part == 'seed' and relative == 'ci.yml': relative = '.github/workflows/validate.yml'
+                files[relative] = path.read_bytes()
     for relative in files:
         target = output / relative
         if target.exists() or target.is_symlink():

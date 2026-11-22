@@ -84,8 +84,8 @@ class MarketplaceTests(MarketplaceTestsFixture, unittest.TestCase):
     def test_canonical_standalone_runtime_copies_match(self):
         skill=ROOT/'plugins/plugin-manager/skills/_shared'
         for name in ('marketplace.py','local_plugins.py','plugin_payload.py','verify.py'):
-            self.assertEqual((skill/'templates/marketplace/scripts'/name).read_bytes(),(ROOT/'scripts'/name).read_bytes(),name)
-        self.assertEqual((skill/'templates/plugin/scripts/plugin.py').read_bytes(),(ROOT/'scripts/plugin_payload.py').read_bytes())
+            self.assertEqual((skill/'templates/marketplace/sync/scripts'/name).read_bytes(),(ROOT/'scripts'/name).read_bytes(),name)
+        self.assertEqual((skill/'templates/plugin/sync/scripts/plugin.py').read_bytes(),(ROOT/'scripts/plugin_payload.py').read_bytes())
         self.assertEqual((skill/'scripts/verify.py').read_bytes(),(ROOT/'scripts/verify.py').read_bytes())
         for kind in ('plugin','marketplace'):
-            self.assertEqual((skill/'references/prerequisites.md').read_bytes(),(skill/'templates'/kind/'docs/prerequisites.md').read_bytes())
+            self.assertEqual((skill/'references/prerequisites.md').read_bytes(),(skill/'templates'/kind/'seed/docs/prerequisites.md').read_bytes())

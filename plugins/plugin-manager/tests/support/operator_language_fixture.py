@@ -8,7 +8,7 @@ import sys
 import tempfile
 
 ROOT = next(p for p in Path(__file__).resolve().parents if (p / 'Makefile').is_file())
-GENERATOR = ROOT / 'skills/_shared/templates/plugin/skills/_shared'
+GENERATOR = ROOT / 'skills/_shared/templates/plugin/sync/skills/_shared'
 MANAGER = ROOT / 'skills/_shared'
 HELPER = 'scripts/operator_language.py'
 REFERENCE = 'references/operator-language.md'

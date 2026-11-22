@@ -7,19 +7,23 @@ ROOT = next(p for p in Path(__file__).resolve().parents if (p / 'Makefile').is_f
 
 class EntryTextTests(unittest.TestCase):
     def setUp(self):
-        self.text = (ROOT / 'skills/plugin-manager/SKILL.md').read_text()
+        # The entry rules are the common flow plus the Manager's slim SKILL.md (R19); needles check both together.
+        self.skill = (ROOT / 'skills/plugin-manager/SKILL.md').read_text()
+        self.entry = (ROOT / 'skills/_shared/flows/entry.md').read_text()
+        self.text = self.skill + '\n' + self.entry
 
     def flow(self, name):
-        return (ROOT / 'skills/plugin-manager/flows' / (name + '.md')).read_text()
+        folder = 'skills/plugin-manager/flows' if name == 'configure' else 'skills/_shared/flows'
+        return (ROOT / folder / (name + '.md')).read_text()
 
     def test_loop_routes_by_status_and_rechecks_after_each_flow(self):
         for needle in ('status --target', '`stop`', '`language`', '`skeleton`', '`configure`', '`ready`',
-                       'flows/language.md', 'flows/skeleton.md', 'flows/configure.md',
+                       'language.md', 'skeleton.md', '../../<plugin>/flows/configure.md', 'flows/configure.md',
                        'After each flow that succeeded in this sense', 'run `status` again'):
             self.assertIn(needle, self.text)
         for name in ('language', 'skeleton', 'configure'):
             self.assertIn('run `status` again', self.flow(name))
-        order = [self.text.index(m) for m in ('`stop` (`state: conflict`', '| `language` |', '| `skeleton` |', '| `configure` |', '| `ready` |')]
+        order = [self.entry.index(m) for m in ('`stop` (`state: conflict`', '| `language` |', '| `configure` |', '| `skeleton` |', '| `ready` |')]
         self.assertEqual(sorted(order), order)  # fixed priority in the routing table
 
     def test_stop_rules_no_endless_loops_and_ready_waits(self):
@@ -89,14 +93,14 @@ class EntryTextTests(unittest.TestCase):
     def test_entry_reads_common_language_rule_instead_of_duplicating_it(self):
         reference = (ROOT / 'skills/_shared/references/operator-language.md').read_text()
         self.assertIn('## Language of all visible text', reference)
-        for needle in ('read and apply `../_shared/references/operator-language.md`', 'Language of all visible text',
+        for needle in ('read and apply `../references/operator-language.md`', 'Language of all visible text',
                        'closing or next-step card fields'):
             self.assertIn(needle, self.text)
         for duplicated in ('Apply the language before output', 'Fixed labels the host itself supplies', 'JSON keys are not translated'):
             self.assertNotIn(duplicated, self.text)
         self.assertTrue((ROOT / 'skills/plugin-manager/../_shared/references/operator-language.md').is_file())
         # manager-specific rules stay in the entry
-        for needle in ('read-only asks and saves no language', 'setup order with the ignore rule', 'greet briefly, name the state and wait',
+        for needle in ('read-only asks and saves no language', 'setup order with the ignore rule', 'on `ready` output only the ready line and wait',
                        'start no verify or other action on your own', 'exactly one `status`', 'Precedence: this entry'):
             self.assertIn(needle, self.text)
         self.assertIn('flow', self.text)
@@ -112,26 +116,29 @@ class EntryTextTests(unittest.TestCase):
             self.assertIn(needle, text)
         self.assertLess(text.index('Ask explicitly'), text.index('sync --target'))
 
-    def test_entry_routes_sync_between_skeleton_and_configure_and_keeps_replace_boundary(self):
-        order = [self.text.index(m) for m in ('| `skeleton` |', '| `sync` |', '| `configure` |')]
+    def test_entry_routes_sync_after_skeleton_and_keeps_replace_boundary(self):
+        order = [self.entry.index(m) for m in ('| `skeleton` |', '| `sync` |', '| `ready` |')]
         self.assertEqual(sorted(order), order)
-        for needle in ('flows/sync.md', 'Deletion is limited to a managed file whose source was removed', 'only by an explicit `adopt` decision',
+        for needle in ('sync.md', 'Deletion is limited to a managed file whose source was removed', 'only by an explicit `adopt` decision',
                        'schema_version 2', 'rejected unchanged, never migrated', '`accepted`', '`decision_needed`',
-                       '`language`, `setup` and `sync`'):
+                       '`language`, `setup`, `sync` and `record`'):
             self.assertIn(needle, self.text)
         self.assertIn('Deviations are only resolved by the sync flow', self.flow('configure'))
         self.assertIn('decision is the separate sync flow', self.flow('skeleton'))
 
     def test_relative_references_in_skill_and_flows_resolve_to_existing_files(self):
         import re
-        sources = [(ROOT / 'skills/plugin-manager/SKILL.md')] + sorted((ROOT / 'skills/plugin-manager/flows').glob('*.md'))
+        sources = [ROOT / 'skills/plugin-manager/SKILL.md', ROOT / 'skills/plugin-manager/flows/configure.md'] + sorted((ROOT / 'skills/_shared/flows').glob('*.md'))
         checked = 0
         for source in sources:
             for reference in re.findall(r'`(\.\./[^`\s]+)`', source.read_text()):
+                reference = reference.replace('<plugin>', 'plugin-manager')  # the Manager is the plugin of these checks
+                if '<kind>' in reference:
+                    continue  # a pattern over the manifests, not a file
                 checked += 1
                 self.assertTrue((source.parent / reference.split('#')[0]).exists(), str(source.name) + ': ' + reference)
         self.assertGreater(checked, 5)
-        self.assertIn('`../../_shared/references/operator-language.md`', self.flow('sync'))
+        self.assertIn('`../references/operator-language.md`', self.flow('sync'))
         self.assertNotIn('(see `../_shared/references/operator-language.md`)', self.flow('sync'))
 
     def test_no_outdated_never_updated_texts_contradict_the_sync(self):
@@ -173,22 +180,36 @@ class EntryTextTests(unittest.TestCase):
 
     def test_success_is_judged_per_flow_answer(self):
         for needle in ('exit 0 and `ok: true`', 'no `ok`', '`checks.status == "passed"`', '`needs_attention`',
-                       '`changed`', 'never proves a successful configuration', 'do not store any flag'):
+                       '`changed`', 'only after that success', 'cannot be shown as `ready`'):
             self.assertIn(needle, self.text)
         text = self.flow('configure')
         for needle in ('no `ok`', 'exit 0 **and** `checks.status == "passed"`', 'needs_attention', 'files actually listed in `changed`',
                        'do not say "ready"', 'do not derive success from a plugin.json that now exists',
-                       'After a really successful configuration run `status` again'):
+                       'Only after a passed run write the evidence'):
             self.assertIn(needle, text)
-        self.assertLess(text.index('needs_attention'), text.index('After a really successful configuration'))
+        self.assertLess(text.index('needs_attention'), text.index('Only after a passed run write the evidence'))
 
     def test_precedence_over_language_reference_and_management_file_exceptions(self):
         for needle in ('Precedence: this entry', 'do not apply here', '.gitignore', '.project/operator.json',
-                       '.project/plugin.skeleton.lock.json'):
+                       '.project/plugins/plugin-manager/skeleton.json'):
             self.assertIn(needle, self.text)
 
+    def test_ready_is_one_status_line_in_the_operator_language(self):  # R18
+        for needle in ('Plugin plugin-manager Status: fully configured', 'Plugin plugin-manager Status: vollständig konfiguriert',
+                       'exactly one line', 'nothing else'):
+            self.assertIn(needle, self.text)
+
+    def test_configuration_evidence_per_plugin_and_kind_question_first(self):  # R15, R17
+        for needle in ('--plugin plugin-manager', '.project/plugins/plugin-manager/config.json', 'never evidence',
+                       'language, configuration, skeleton, sync, ready'):
+            self.assertIn(needle, self.text)
+        text = self.flow('configure')
+        for needle in ('Plugin or marketplace?', 'no preselection', 'marketplace-create', 'record --target', '--kind plugin|marketplace'):
+            self.assertIn(needle, text)
+        self.assertLess(text.index('Plugin or marketplace?'), text.index('record --target'))
+
     def test_boundaries_and_no_host_claim(self):
-        for needle in ('Never the installed Manager', 'marketplace', 'untested', 'installs nothing',
+        for needle in ('Never the installed Manager', 'Never the installed plugin directory', 'marketplace', 'untested', 'installs nothing',
                        'never open `.git` or `.idea`', 'documented prerequisites', 'reads Git metadata',
                        'adds no Git mutation or network action', 'contains no plugin.json or placeholder identity'):
             self.assertIn(needle, self.text)
@@ -203,5 +224,10 @@ class EntryTextTests(unittest.TestCase):
         self.assertIn('/skills/plugin-manager/SKILL.md', (ROOT / 'commands/plugin-manager.md').read_text())
         for name in ('configure', 'update', 'verify', 'publish'):
             self.assertNotIn('project_setup', (ROOT / 'skills' / name / 'SKILL.md').read_text())
-        self.assertNotIn('project_setup', (ROOT / 'skills/_shared/templates/plugin/Makefile').read_text())
-        self.assertFalse(any('project_setup' in p.name for p in (ROOT / 'skills/_shared/templates').rglob('*')))
+        self.assertNotIn('project_setup', (ROOT / 'skills/_shared/templates/plugin/seed/Makefile').read_text())
+        # R19: the helper ships only as the canonical copy of the plugin template (byte-identical to the Manager's own)
+        shipped = sorted(str(p.relative_to(ROOT / 'skills/_shared/templates')) for p in (ROOT / 'skills/_shared/templates').rglob('*')
+                         if 'project_setup' in p.name)
+        self.assertEqual(['plugin/sync/skills/_shared/scripts/project_setup.py'], shipped)
+        self.assertEqual((ROOT / 'skills/_shared/scripts/project_setup.py').read_bytes(),
+                         (ROOT / 'skills/_shared/templates/plugin/sync/skills/_shared/scripts/project_setup.py').read_bytes())

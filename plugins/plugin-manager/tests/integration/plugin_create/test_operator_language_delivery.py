@@ -21,7 +21,7 @@ class DeliveryTests(WorkflowFixture, unittest.TestCase):
         return (repository / '.gitignore').read_text().splitlines()
 
     def test_created_plugin_ships_copies_and_exact_ignore_rule_without_preference(self):
-        template = (flow.SKILL / 'templates/plugin/gitignore.txt').read_text().splitlines()
+        template = (flow.SKILL / 'templates/plugin/seed/gitignore.txt').read_text().splitlines()
         self.create()
         for relative in (HELPER, REFERENCE):
             self.assertEqual((GENERATOR / relative).read_bytes(), (self.plugin / 'skills/_shared' / relative).read_bytes())

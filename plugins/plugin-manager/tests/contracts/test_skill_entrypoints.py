@@ -24,7 +24,7 @@ class SkillEntrypointTests(unittest.TestCase):
         self.assertFalse((root/'skills/_shared/SKILL.md').exists())
         for relative in ('WORKFLOWS.md', 'references/publish.md', 'references/prerequisites.md',
                          'scripts/publish_plan.py', 'scripts/workflows.py', 'scripts/verify.py',
-                         'scripts/documentation.py', 'templates/plugin/Makefile', 'templates/marketplace/Makefile'):
+                         'scripts/documentation.py', 'templates/plugin/seed/Makefile', 'templates/marketplace/seed/Makefile'):
             self.assertTrue((root/'skills/_shared'/relative).is_file(), relative)
 
     def test_source_has_exactly_six_public_skills(self):

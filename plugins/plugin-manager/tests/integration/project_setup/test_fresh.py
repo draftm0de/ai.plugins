@@ -13,7 +13,7 @@ RULE = '/.project/operator.json'
 
 class FreshBase(unittest.TestCase):
     def setUp(self):
-        self.box = Sandbox().make(); self.addCleanup(self.box.close)
+        self.box = Sandbox().make(configured=False); self.addCleanup(self.box.close)  # no evidence: not configured
         self.p = self.box.project
         (self.p / 'plugin.json').unlink()
 
@@ -53,14 +53,14 @@ class DispatchTests(FreshBase):
         def foreign_top(): (self.p / 'README.md').write_text('mine'); (self.p / 'src').mkdir()
         def foreign_in_scripts(): (self.p / 'scripts').mkdir(); (self.p / 'scripts/own.py').write_text('x')
         def foreign_skill(): (self.p / 'skills/x').mkdir(parents=True)
-        def foreign_project(): (self.p / '.project').mkdir(); (self.p / '.project/x.txt').write_text('x')
+        def foreign_project(): (self.p / '.project').mkdir(exist_ok=True); (self.p / '.project/x.txt').write_text('x')
         def bad_json(): (self.p / 'plugin.json').write_text('{bad')
         def manifest_dir(): (self.p / 'plugin.json').mkdir()
         def marketplace(): (self.p / 'marketplace.json').write_text('{}')
         def idea_file(): (self.p / '.idea').write_text('f')
         def git_symlink(): (self.box.base / 'moved').mkdir(); (self.p / '.git').symlink_to(self.box.base / 'moved')
-        def bad_language(): (self.p / '.project').mkdir(); (self.p / '.project/operator.json').write_text('{broken')
-        def bad_lock(): (self.p / '.project').mkdir(); (self.p / LOCK).write_text('{"schema_version": 9, "files": {}}')
+        def bad_language(): (self.p / '.project').mkdir(exist_ok=True); (self.p / '.project/operator.json').write_text('{broken')
+        def bad_lock(): (self.p / LOCK).parent.mkdir(parents=True, exist_ok=True); (self.p / LOCK).write_text('{"schema_version": 9, "files": {}}')
         def scripts_symlink(): (self.box.base / 'elsewhere').mkdir(); (self.p / 'scripts').symlink_to(self.box.base / 'elsewhere')
         def ignore_symlink():
             (self.box.base / 'shared.txt').write_text('x\n'); (self.p / '.gitignore').symlink_to(self.box.base / 'shared.txt')
@@ -123,33 +123,46 @@ class GuidedConfigurationTests(WorkflowFixture, unittest.TestCase):
         self.ps = load_module(fx.SHARED / 'scripts/project_setup.py', 'config_flow')
 
     def prepare(self):
+        # R17: language first, then configuration; no skeleton exists before the kind is known
         self.assertEqual('language', self.ps.status(str(self.plugin))['next'])
         self.assertTrue(self.ps.language_only(str(self.plugin), 'de')['ok'])
-        self.assertEqual('skeleton', self.ps.status(str(self.plugin))['next'])
-        self.assertTrue(self.ps.setup(str(self.plugin))['ok'])
         self.assertEqual('configure', self.ps.status(str(self.plugin))['next'])
+        for operation in (lambda: self.ps.setup(str(self.plugin)),):
+            with self.assertRaises(self.ps.Conflict) as caught:
+                operation()
+            self.assertEqual('not_configured', caught.exception.code)
 
-    def test_preconfigured_skeleton_then_existing_generator_then_ready(self):
+    def finish(self):
+        """Evidence of the successful configuration run (R15), written only after the generator succeeded."""
+        self.assertTrue(self.ps.record(str(self.plugin), 'plugin', 'new-plugin')['ok'])
+
+    def test_generator_then_evidence_then_skeleton_then_ready(self):
         self.prepare()
-        kept = {r: (self.plugin / r).read_bytes() for r in (*FILES, '.project/operator.json', LOCK, '.git/HEAD', '.idea/workspace.xml')}
+        kept = {r: (self.plugin / r).read_bytes() for r in ('.project/operator.json', '.git/HEAD', '.idea/workspace.xml')}
         self.create()  # existing generator, exact selected folder, explicit marketplace
+        self.assertEqual('configure', self.ps.status(str(self.plugin))['next'])  # no evidence before a passed run
+        self.finish()
         for relative, data in kept.items():
             self.assertEqual(data, (self.plugin / relative).read_bytes(), relative)
         lines = (self.plugin / '.gitignore').read_text().splitlines()
         self.assertEqual((1, True), (lines.count(RULE), 'local-notes/' in lines))
         status = self.ps.status(str(self.plugin))
-        self.assertEqual(('plugin', 'ready', True, 'new-plugin'), (status['state'], status['next'], status['plugin_configured'], status['plugin']))
+        self.assertEqual(('plugin', 'skeleton', True, 'new-plugin'), (status['state'], status['next'], status['plugin_configured'], status['plugin']))
+        self.assertTrue(self.ps.setup(str(self.plugin))['ok'])
+        status = self.ps.status(str(self.plugin))
+        self.assertEqual(('ready', False), (status['next'], status['sync']['needed']))
+        for relative in FILES:
+            self.assertEqual(fx.template(relative), (self.plugin / relative).read_bytes(), relative)
         again = self.ps.setup(str(self.plugin))
         self.assertTrue(again['ok'] and again['matches_template'] and not again['lock']['changed'])
 
-    def test_generator_collision_with_deviating_skeleton_file_changes_nothing(self):
+    def test_skeleton_file_before_configuration_is_not_fresh_and_stops_before_the_generator(self):
         self.prepare()
+        (self.plugin / 'scripts').mkdir()
         (self.plugin / 'scripts/plugin.py').write_bytes(b'my own version')
-        plugin_before, market_before = tree(self.plugin), tree(self.market)
-        with self.assertRaises(ValueError):
-            self.create()
-        self.assertEqual((plugin_before, market_before), (tree(self.plugin), tree(self.market)))
-        self.assertEqual('sync', self.ps.status(str(self.plugin))['next'])  # decision pending; skeleton intact, not a failure
+        with self.assertRaises(self.ps.Conflict) as caught:
+            self.ps.status(str(self.plugin))
+        self.assertEqual('not_fresh', caught.exception.code)
 
     def test_generator_license_rules_still_apply(self):
         self.prepare()

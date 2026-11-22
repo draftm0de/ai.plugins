@@ -28,9 +28,9 @@ class PluginTests(unittest.TestCase):
                 self.assertNotIn('install.sh', files)
                 self.assertFalse(any(n.startswith(('tests/', '.git/')) for n in files))
                 prefix = 'skills/_shared/'
-                for name in ('WORKFLOWS.md', 'scripts/documentation.py', 'templates/plugin/Makefile', 'templates/docs/de/development.md'):
+                for name in ('WORKFLOWS.md', 'scripts/documentation.py', 'templates/plugin/seed/Makefile', 'templates/docs/de/development.md'):
                     self.assertIn(prefix + name, files)
-                self.assertNotIn(prefix + 'templates/plugin/plugin.mk', files)
+                self.assertNotIn(prefix + 'templates/plugin/seed/plugin.mk', files)
                 self.assertEqual(files['assets/icon.png'], files[prefix + 'assets/icon.png'])
                 materialize(installed, host)
                 self.assertEqual(files, {str(p.relative_to(installed)): p.read_bytes() for p in installed.rglob('*') if p.is_file()})

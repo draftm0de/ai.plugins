@@ -16,6 +16,11 @@ class Base(unittest.TestCase):
         self.box = Sandbox().make(); self.addCleanup(self.box.close)
         self.p = self.box.project
 
+    def language_ok(self, tag):
+        code, data, result = self.box.call('language', '--language', tag)
+        self.assertEqual((0, True), (code, data['ok']), result.stderr + result.stdout)
+        return data
+
     def setup_ok(self, *args):
         code, data, result = self.box.call('setup', *args)
         self.assertEqual((0, True), (code, data['ok']), result.stderr + result.stdout)
@@ -39,7 +44,7 @@ class StatusTests(Base):
         self.assertEqual((before, manager), (tree(self.p), tree(self.box.manager)))  # no folders, lock, bytecode
 
     def test_status_with_stored_language_reports_it_without_writing(self):
-        (self.p / '.project').mkdir()
+        (self.p / '.project').mkdir(exist_ok=True)
         (self.p / '.project/operator.json').write_text('{"schema_version": 1, "operator_language": "en"}')
         before = tree(self.p)
         _, data, _ = self.box.call('status')
@@ -67,7 +72,7 @@ class SupplementTests(Base):
         data = self.setup_ok('--language', 'de')
         for relative in FILES:
             self.assertEqual(template(relative), (self.p / relative).read_bytes())
-            src = (fx.SHARED / 'templates/plugin' / relative).stat().st_mode & 0o111
+            src = (fx.SHARED / 'templates/plugin/sync' / relative).stat().st_mode & 0o111
             self.assertEqual(bool(src), bool((self.p / relative).stat().st_mode & 0o111), relative)
         self.assertEqual({r: pair(template(r)) for r in FILES}, {k: v for k, v in self.box.lock().items() if k in FILES})
         self.assertTrue(set(FILES) <= set(data['created']['files']))  # delivery of the canonical templates
@@ -85,7 +90,7 @@ class SupplementTests(Base):
         (self.p / 'scripts').mkdir()
         target = self.p / 'scripts/verify.py'
         target.write_bytes(template('scripts/verify.py')); target.chmod(0o600)
-        (self.p / '.project').mkdir()
+        (self.p / '.project').mkdir(exist_ok=True)
         (self.p / LOCK).write_text(json.dumps({'schema_version': 2, 'files': {'scripts/verify.py': raw_pair('0' * 64), 'other/x.txt': raw_pair('a' * 64)}}))
         self.setup_ok()
         self.assertEqual(0o600, stat.S_IMODE(target.stat().st_mode))
@@ -94,7 +99,7 @@ class SupplementTests(Base):
 
     def test_different_files_are_kept_with_old_lock_and_others_supplemented(self):
         (self.p / 'install.sh').write_bytes(b'mine')
-        (self.p / '.project').mkdir()
+        (self.p / '.project').mkdir(exist_ok=True)
         (self.p / LOCK).write_text(json.dumps({'schema_version': 2, 'files': {'install.sh': raw_pair('b' * 64)}}))
         data = self.setup_ok()
         self.assertEqual(b'mine', (self.p / 'install.sh').read_bytes())
@@ -135,7 +140,7 @@ class LanguageTests(Base):
 
     def test_no_trailing_newline_and_rule_added_for_existing_preference(self):
         (self.p / '.gitignore').write_text('a')
-        (self.p / '.project').mkdir()
+        (self.p / '.project').mkdir(exist_ok=True)
         (self.p / '.project/operator.json').write_text('{"schema_version": 1, "operator_language": "de"}')
         self.setup_ok()
         self.assertEqual('a\n/.project/operator.json\n', (self.p / '.gitignore').read_text())
@@ -143,9 +148,7 @@ class LanguageTests(Base):
 
     def test_order_ignore_before_language(self):
         order = []
-        import importlib.util
-        spec = importlib.util.spec_from_file_location('ps', self.box.helper)
-        ps = importlib.util.module_from_spec(spec); spec.loader.exec_module(ps)
+        ps = load_module(self.box.helper, 'ps')
         real_ignore, real_load = ps.add_ignore_rule, ps.load_language_helper
         def ignore(*a):
             order.append('ignore'); return real_ignore(*a)
@@ -164,7 +167,7 @@ class LanguageTests(Base):
         self.assertFalse((self.p / '.gitignore').exists())
 
     def test_corrupt_language_blocks_all_writes(self):
-        (self.p / '.project').mkdir()
+        (self.p / '.project').mkdir(exist_ok=True)
         (self.p / '.project/operator.json').write_text('{broken')
         before = tree(self.p)
         code, data, _ = self.box.call('setup', '--language', 'de')
@@ -174,7 +177,7 @@ class LanguageTests(Base):
     def test_invalid_tag_and_conflicting_language_rejected_before_writes(self):
         before = tree(self.p)
         self.assertEqual(1, self.box.call('setup', '--language', 'Deutsch!')[0])
-        (self.p / '.project').mkdir()
+        (self.p / '.project').mkdir(exist_ok=True)
         (self.p / '.project/operator.json').write_text('{"schema_version": 1, "operator_language": "de"}')
         before = tree(self.p)
         self.assertEqual(1, self.box.call('setup', '--language', 'en')[0])
@@ -193,7 +196,7 @@ class ConflictTests(Base):
         return data
 
     def test_lock_problems(self):
-        (self.p / '.project').mkdir()
+        (self.p / '.project').mkdir(exist_ok=True)
         lock = self.p / LOCK
         for text in ('{bad', '{"schema_version": 3, "files": {}}', '{"schema_version": true, "files": {}}',
                      '{"schema_version": 1, "files": {"a": "ABC"}}', '{"schema_version": 1, "files": {"../x": "%s"}}' % ('a' * 64),
@@ -226,6 +229,7 @@ class ConflictTests(Base):
         (self.p / '.gitignore').symlink_to(self.p / 'x')
         self.assert_blocked()
         (self.p / '.gitignore').unlink()
+        shutil.rmtree(self.p / '.project')
         (self.p / '.project').symlink_to(self.box.base)
         self.assert_blocked()
 
@@ -236,7 +240,7 @@ class ConflictTests(Base):
         self.assert_blocked(reason='Cannot read')
 
     def test_invalid_template_source_or_base_is_a_conflict_not_a_removal(self):
-        base = self.box.manager / 'skills/_shared/templates/plugin'
+        base = self.box.manager / 'skills/_shared/templates/plugin/sync'
         (base / 'install.sh').unlink()
         (base / 'install.sh').symlink_to(self.box.base)  # a link is never "removed"
         self.assert_blocked(reason='Template')
@@ -248,7 +252,7 @@ class ConflictTests(Base):
         self.assert_blocked(reason='Template base')
 
     def test_non_targets(self):
-        for build, text in ((lambda: (self.p / 'marketplace.json').write_text('{}'), 'Marketplace'),
+        for build, text in ((lambda: (self.p / 'marketplace.json').write_text('{}'), 'marketplace.json'),
                             (lambda: (self.p / 'plugin.json').write_text('{"name": "Bad Name"}'), 'name'),
                             (lambda: (self.p / 'plugin.json').write_text('{"name": "a", "name": "b"}'), 'Invalid')):
             build()
@@ -267,9 +271,7 @@ class ConflictTests(Base):
         self.assertEqual(0, self.box.call('status')[0])
 
     def test_file_appearing_during_copy_is_not_overwritten(self):
-        import importlib.util
-        spec = importlib.util.spec_from_file_location('ps2', self.box.helper)
-        ps = importlib.util.module_from_spec(spec); spec.loader.exec_module(ps)
+        ps = load_module(self.box.helper, 'ps2')
         real = ps.copy_new
         def racing(path, data, executable):
             if path.name == 'run_tests.py':
@@ -282,9 +284,7 @@ class ConflictTests(Base):
         self.assertNotIn('scripts/run_tests.py', self.box.lock())
 
     def test_write_failure_reports_partial_changes_and_resume_works(self):
-        import importlib.util
-        spec = importlib.util.spec_from_file_location('ps3', self.box.helper)
-        ps = importlib.util.module_from_spec(spec); spec.loader.exec_module(ps)
+        ps = load_module(self.box.helper, 'ps3')
         real = ps.copy_new
         def failing(path, data, executable):
             if path.name == 'verify.py':
@@ -325,6 +325,7 @@ def load_module(path, name):
     import importlib.util
     spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    module.set_plugin(fx.PLUGIN)  # running plugin of the helper under test (R15), as --plugin does on the CLI
     return module
 
 
@@ -379,11 +380,11 @@ class RaceTests(Base):
         ps = self.module('race5')
         real, calls = ps.current_bytes, []
         def current(path):
-            if path.name == 'plugin.skeleton.lock.json' and not calls:
+            if path.name == 'skeleton.json' and not calls:
                 calls.append(1)
                 path.write_text(json.dumps({'schema_version': 2, 'files': {'late': raw_pair('d' * 64)}}))
             return real(path)
-        (self.p / '.project').mkdir()
+        (self.p / '.project').mkdir(exist_ok=True)
         (self.p / LOCK).write_text(json.dumps({'schema_version': 2, 'files': {}}))
         with mock.patch.object(ps, 'current_bytes', current):
             self.assertTrue(ps.setup(str(self.p), 'de')['ok'])
@@ -437,7 +438,7 @@ class SnapshotTests(Base):
     def test_lock_change_between_parse_and_raw_read_cannot_drop_entries(self):
         """Validated lock and expected bytes come from one read; a later change forces a retry."""
         ps = load_module(self.box.helper, 'snap1')
-        (self.p / '.project').mkdir()
+        (self.p / '.project').mkdir(exist_ok=True)
         (self.p / LOCK).write_text(json.dumps({'schema_version': 2, 'files': {}}))
         real, calls = ps.read_regular, []
         def reading(root, relative):
@@ -549,33 +550,36 @@ class TechnicalErrorTests(Base):
         self.assertIn('scripts/verify.py', resumed['different'])
 
     def test_language_save_failure_after_project_folder_creation_is_reported(self):
+        shutil.rmtree(self.p / '.project')  # unconfigured: only the language step writes here (R17)
         ps = self.module('t7')
         real = ps.load_language_helper
         def loader():
             helper = real(); original = helper.preference
             def preference(root, language=None):
                 if language:
-                    (Path(root) / '.project').mkdir()
+                    (Path(root) / '.project').mkdir(exist_ok=True)
                     raise OSError('disk full')
                 return original(root, language)
             helper.preference = preference
             return helper
         with mock.patch.object(ps, 'load_language_helper', loader):
-            data = ps.setup(str(self.p), 'de')
+            data = ps.language_only(str(self.p), 'de')
         self.assertFalse(data['ok'])
         self.assertIn('.project', data['created']['directories'])
         self.assertFalse(data['language']['saved'])
         self.assertTrue(data['gitignore']['changed'])  # ignore rule was written before the failed save
 
     def test_status_reports_missing_management_folder(self):
+        shutil.rmtree(self.p / '.project')  # no evidence yet: the management folder is missing
         _, data, _ = self.box.call('status')
         self.assertIn('.project', data['missing']['directories'])
-        self.setup_ok('--language', 'de')
+        self.language_ok('de')
         _, data, _ = self.box.call('status')
         self.assertNotIn('.project', data['missing']['directories'])
 
     def test_language_helper_created_folder_is_listed_on_success(self):
-        data = self.setup_ok('--language', 'de')
+        shutil.rmtree(self.p / '.project')
+        data = self.language_ok('de')
         self.assertIn('.project', data['created']['directories'])
 
     @unittest.skipIf(os.geteuid() == 0, 'root ignores permissions')
@@ -597,7 +601,7 @@ class TechnicalErrorTests(Base):
             import io, contextlib
             out = io.StringIO()
             with contextlib.redirect_stdout(out):
-                code = ps.main(['status', '--target', str(self.p)])
+                code = ps.main(['status', '--target', str(self.p), '--plugin', fx.PLUGIN])
         self.assertEqual(1, code)
         self.assertIn('Filesystem error', json.loads(out.getvalue())['conflicts'][0]['reason'])
 
@@ -605,7 +609,7 @@ class TechnicalErrorTests(Base):
 class TemplateAndIdentityTests(Base):
     def test_symlinked_template_parent_is_rejected_without_reading_linked_content(self):
         ps = load_module(self.box.helper, 'tpl1')
-        templates = self.box.manager / 'skills/_shared/templates/plugin'
+        templates = self.box.manager / 'skills/_shared/templates/plugin/sync'
         outside = self.box.base / 'linked-scripts'
         (templates / 'scripts').rename(outside)
         (templates / 'scripts').symlink_to(outside)

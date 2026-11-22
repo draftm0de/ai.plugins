@@ -6,6 +6,7 @@ literals and from hashlib, never from the production templates. The class at the
 generator integration test with the real generator and real templates."""
 import json
 import os
+import shutil
 import stat
 import unittest
 from unittest import mock
@@ -270,51 +271,65 @@ class StaleAndErrorTests(SyncBase):
 
 
 class ReportShapeTests(SyncBase):
-    def test_setup_reports_target_state_not_file_state_for_configured_and_unconfigured_targets(self):
+    def test_setup_reports_target_state_not_file_state_and_refuses_unconfigured_targets(self):
         self.assertEqual(0, self.box.call('language', '--language', 'de')[0])
-        code, data, _ = self.box.call('setup')  # plugin.json present
+        code, data, _ = self.box.call('setup')  # configured by evidence
         self.assertEqual((0, 'plugin', True, 'demo-plugin'), (code, data['state'], data['plugin_configured'], data['plugin']))
-        (self.p / 'plugin.json').unlink()  # same folder, now without plugin.json
-        code, data, _ = self.box.call('setup')
-        self.assertEqual((0, 'unconfigured', False, None), (code, data['state'], data['plugin_configured'], data['plugin']))
+        self.box.unconfigure()  # same folder, now without configuration evidence: no skeleton exists (R17)
+        (self.p / 'plugin.json').write_text('{"name": "demo-plugin"}')  # product only, never evidence
         (self.p / 'delta.md').write_bytes(b'mine')  # a deviation must not leak its file state either
-        data = self.box.call('setup')[1]
-        self.assertEqual(('unconfigured', False), (data['state'], data['plugin_configured']))
+        for operation in ('setup', 'sync'):
+            before = tree(self.p)
+            args = ('--decision', 'keep', '--path', 'delta.md', '--source-hash', 'a' * 64, '--local-hash', 'b' * 64) if operation == 'sync' else ()
+            code, data, _ = self.box.call(operation, *args)
+            self.assertEqual((1, False, 'stop', 'not_configured'), (code, data['ok'], data['next'], data['conflicts'][0]['code']), operation)
+            self.assertIn('Configure first', data['conflicts'][0]['reason'])
+            self.assertEqual(before, tree(self.p), operation)
+        status = self.status()
+        self.assertEqual(('unconfigured', False, False, [], False), (status['state'], status['plugin_configured'], status['matches_template'],
+                                                                      status['missing']['files'], status['skeleton']['open']))
 
-    def test_sync_reports_new_management_folder_exactly_once(self):
-        (self.p / TARGET).write_bytes(b'my version')  # deviating file, no .project and no lock yet
-        self.assertFalse((self.p / '.project').exists())
+    def test_sync_reports_no_new_folder_for_a_configured_workpackage(self):
+        # Evidence lives in the management folder, so a configured workpackage always has it: nothing is reported as created.
+        (self.p / TARGET).write_bytes(b'my version')  # deviating file
         item = next(d for d in self.status()['sync']['decisions'] if d['path'] == TARGET)
         code, data, _ = self.box.call('sync', '--decision', 'keep', '--path', TARGET,
                                       '--source-hash', item['source_hash'], '--local-hash', item['local_hash'])
-        self.assertEqual((0, True, ['.project']), (code, data['ok'], data['created']['directories']))
+        self.assertEqual((0, True, []), (code, data['ok'], data['created']['directories']))
         self.assertEqual(entry(ALPHA, b'my version'), self.lock()['files'][TARGET])
         self.assertEqual(b'my version', (self.p / TARGET).read_bytes())
 
 
 class RoutingTests(SyncBase):
-    def test_priority_language_then_skeleton_then_sync_then_configure(self):
-        (self.p / 'plugin.json').unlink()
+    def test_priority_language_then_configure_then_skeleton_then_sync_then_ready(self):
+        self.box.unconfigure()
+        (self.p / 'plugin.json').write_text('{"name": "demo-plugin"}')  # the generator's product; still no evidence
         (self.p / TARGET).write_bytes(b'mine')
         self.assertEqual('language', self.status()['next'])
         self.box.call('language', '--language', 'de')
+        self.assertEqual('configure', self.status()['next'])  # R17: configuration outranks skeleton and sync
+        self.box.configure()
         self.assertEqual('skeleton', self.status()['next'])  # missing files first
         self.box.call('setup')
         self.assertEqual('sync', self.status()['next'])
         self.decide('keep')
-        self.assertEqual('configure', self.status()['next'])
+        self.assertEqual('ready', self.status()['next'])
 
-    def test_full_sequence_without_plugin_json_git_or_origin_then_ready_with_plugin_json(self):
-        (self.p / 'plugin.json').unlink()
+    def test_full_sequence_without_git_or_origin_then_ready_with_evidence(self):
+        self.box.unconfigure()
         self.assertEqual('language', self.status()['next'])
         self.assertEqual(0, self.box.call('language', '--language', 'de')[0])
-        self.assertEqual('skeleton', self.status()['next'])
-        self.assertEqual(0, self.box.call('setup')[0])
+        self.assertEqual('configure', self.status()['next'])
+        self.assertEqual(1, self.box.call('setup')[0])  # no skeleton before the kind is known
         status = self.status()
         self.assertEqual(('configure', False, False), (status['next'], status['plugin_configured'], status['skeleton']['open']))
-        self.assertEqual(EXPECTED_LOCK, self.lock()['files'])
-        self.assertFalse((self.p / 'plugin.json').exists() or (self.p / '.git').exists())
+        self.assertFalse((self.p / LOCK).exists() or (self.p / 'plugin.json').exists() or (self.p / '.git').exists())
         (self.p / 'plugin.json').write_text('{"name": "demo-plugin"}')
+        self.assertEqual('configure', self.status()['next'])  # a root plugin.json is a product, never evidence
+        self.box.configure()
+        self.assertEqual('skeleton', self.status()['next'])
+        self.assertEqual(0, self.box.call('setup')[0])
+        self.assertEqual(EXPECTED_LOCK, self.lock()['files'])
         self.assertEqual('ready', self.status()['next'])
 
     def test_resume_after_missing_lock_or_file(self):
@@ -331,7 +346,7 @@ class RoutingTests(SyncBase):
         self.assertEqual('ref: refs/heads/main\n', (self.p / '.git/HEAD').read_text())
 
     def test_stored_language_with_missing_ignore_rule_routes_to_skeleton(self):
-        (self.p / '.project').mkdir()
+        (self.p / '.project').mkdir(exist_ok=True)
         (self.p / '.project/operator.json').write_text('{"schema_version": 1, "operator_language": "de"}')
         (self.p / '.gitignore').write_text('build/\n')
         data = self.status()
@@ -358,30 +373,42 @@ class GeneratorCooperationTests(WorkflowFixture, unittest.TestCase):
         self.ps = load_module(fx.SHARED / 'scripts/project_setup.py', 'sync_flow')
 
     def prepare(self):
-        self.assertTrue(self.ps.language_only(str(self.plugin), 'de')['ok'])
-        self.assertTrue(self.ps.setup(str(self.plugin))['ok'])
+        """A deviating common file exists before the generator runs (R17: the generator never judges it)."""
+        (self.plugin / 'scripts').mkdir()
         (self.plugin / REAL_TARGET).write_bytes(b'my own version')
+
+    def generate_and_record(self):
+        self.create()  # existing generator: creates the product and missing files, leaves the deviating one alone
+        self.assertTrue(self.ps.language_only(str(self.plugin), 'de')['ok'])
+        self.assertEqual('configure', self.ps.status(str(self.plugin))['next'])
+        self.assertTrue(self.ps.record(str(self.plugin), 'plugin', 'new-plugin')['ok'])
 
     def item(self):
         return self.ps.status(str(self.plugin))['sync']['decisions'][0]
 
-    def test_kept_deviation_blocks_generator_openly_and_changes_nothing(self):
+    def test_existing_deviating_common_file_does_not_block_the_generator_and_stays_open_for_sync(self):
         self.prepare()
+        market_before = tree(self.market)
+        self.generate_and_record()
+        self.assertEqual(b'my own version', (self.plugin / REAL_TARGET).read_bytes())  # byte-identical, not judged
+        self.assertNotEqual(market_before, tree(self.market))  # the marketplace association was written
+        status = self.ps.status(str(self.plugin))
+        self.assertEqual(('skeleton', True, [REAL_TARGET]), (status['next'], status['sync']['needed'], status['skeleton']['different']))
+        self.assertTrue(self.ps.setup(str(self.plugin))['ok'])  # skeleton evidence for the identical files only
+        self.assertEqual('sync', self.ps.status(str(self.plugin))['next'])
         item = self.item()
         self.assertTrue(self.ps.sync(str(self.plugin), 'keep', REAL_TARGET, item['source_hash'], item['local_hash'])['ok'])
-        plugin_before, market_before = tree(self.plugin), tree(self.market)
-        with self.assertRaises(ValueError):
-            self.create()
-        self.assertEqual((plugin_before, market_before), (tree(self.plugin), tree(self.market)))
         self.assertEqual(b'my own version', (self.plugin / REAL_TARGET).read_bytes())
-        self.assertEqual('configure', self.ps.status(str(self.plugin))['next'])
+        status = self.ps.status(str(self.plugin))
+        self.assertEqual(('ready', False), (status['next'], status['matches_template']))
 
-    def test_adopted_template_lets_generator_run_then_status_ready(self):
+    def test_adopted_template_after_generator_then_status_ready(self):
         self.prepare()
+        self.generate_and_record()
+        self.assertTrue(self.ps.setup(str(self.plugin))['ok'])
         item = self.item()
         self.assertTrue(self.ps.sync(str(self.plugin), 'adopt', REAL_TARGET, item['source_hash'], item['local_hash'])['ok'])
-        self.assertEqual('configure', self.ps.status(str(self.plugin))['next'])
-        self.create()
         status = self.ps.status(str(self.plugin))
         self.assertEqual(('ready', False), (status['next'], status['sync']['needed']))
+        self.assertEqual(fx.template(REAL_TARGET), (self.plugin / REAL_TARGET).read_bytes())
         self.assertTrue(self.ps.setup(str(self.plugin))['matches_template'])

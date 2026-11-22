@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "files": {
+    "CLAUDE.md": {
+      "sha256": "d50241a8f54f9b9dc16bcc0c741754b2f3b9017c0dd4e9358068c74f6a31a638",
+      "executable": false
+    },
+    "install.sh": {
+      "sha256": "27bb10b169fdc03ce763ea75c17ed37b64aaba0084a3c909fad64e05117c8a8f",
+      "executable": false
+    },
+    "scripts/plugin.py": {
+      "sha256": "70b2eb0d5ee4001a5938bbf9c648bcaf5a904d1b1f42bbc2aba1c4b5a3ebd385",
+      "executable": false
+    },
+    "scripts/run_tests.py": {
+      "sha256": "1e8c301250633b36ae4123f2b35454a5ce57e0792a746d910cf9afd3f882344c",
+      "executable": false
+    },
+    "scripts/verify.py": {
+      "sha256": "d0395dc314a9162b333e3a2520ede4062a67594bca191a0ae30f57ef294716a9",
+      "executable": false
+    },
+    "skills/_shared/flows/entry.md": {
+      "sha256": "b656a063fc23d3cd92ca4c941ac61c03a77c11492849d87848612124c7eec1a3",
+      "executable": false
+    },
+    "skills/_shared/flows/language.md": {
+      "sha256": "6a02936d710b4c61102dc5f2f1b507d3a8af851c0dd46ca0675ff82770283fad",
+      "executable": false
+    },
+    "skills/_shared/flows/skeleton.md": {
+      "sha256": "3cb457727b1f4f0707ed686e771c7fdb1a068a9a6a4131b52ff7ba09fe941619",
+      "executable": false
+    },
+    "skills/_shared/flows/sync.md": {
+      "sha256": "68f7ceb6e297a48721c2a4f4012eaf2dc6a91a555bc97a74fb4f7b3cd6d0e407",
+      "executable": false
+    },
+    "skills/_shared/references/operator-language.md": {
+      "sha256": "c3143b7fc8e58fc81a0891c06acef6fabd5410cc66c3e76a3920402f4aa98967",
+      "executable": false
+    },
+    "skills/_shared/scripts/operator_language.py": {
+      "sha256": "685c40f64f1588c7872e3895079227c948c8f2b09527d27e46b786fa7918ea30",
+      "executable": false
+    },
+    "skills/_shared/scripts/project_setup.py": {
+      "sha256": "fc11ecb3f56249bb8a448fc4e37ee32f6545307c95eb6791df8bb8fe75da7b8f",
+      "executable": false
+    }
+  },
+  "removed": [
+    "keep.md",
+    "remove.md"
+  ]
+}

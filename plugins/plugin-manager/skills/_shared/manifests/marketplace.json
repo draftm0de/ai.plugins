@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "product": "marketplace.json",
+  "derived": [
+    {
+      "path": ".claude-plugin/marketplace.json",
+      "generate": "python3 -B scripts/marketplace.py sync",
+      "check": "python3 -B scripts/marketplace.py check"
+    },
+    {
+      "path": ".agents/plugins/marketplace.json",
+      "generate": "python3 -B scripts/marketplace.py sync",
+      "check": "python3 -B scripts/marketplace.py check"
+    }
+  ]
+}

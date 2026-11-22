@@ -7,8 +7,8 @@ ROOT = next(p for p in Path(__file__).resolve().parents if (p / 'Makefile').is_f
 def attach(plugin):
     market = plugin.parent/(plugin.name+'-market')
     market.mkdir(exist_ok=True)
-    template = ROOT/'skills/_shared/templates/marketplace'
-    shutil.copytree(template, market, dirs_exist_ok=True)
+    for part in ('sync', 'seed'):  # the files kept in sync and the files created once
+        shutil.copytree(ROOT/'skills/_shared/templates/marketplace'/part, market, dirs_exist_ok=True)
     manifest = json.loads((plugin/'plugin.json').read_text())
     name = manifest['name']
     repository = manifest.setdefault('repository', 'https://github.com/example/'+name)

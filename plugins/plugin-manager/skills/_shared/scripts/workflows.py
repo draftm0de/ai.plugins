@@ -136,7 +136,7 @@ PLUGIN_ONLY_IGNORES = frozenset({'/.project/operator.json'})
 def ignore_file(root, new_plugin=False):
     path = safe_path(root/'.gitignore')
     text = path.read_text() if path.exists() else ''
-    for pattern in (SKILL/'templates/plugin/gitignore.txt').read_text().splitlines():
+    for pattern in (SKILL/'templates/plugin/seed/gitignore.txt').read_text().splitlines():
         if not pattern or pattern.startswith('#'):
             continue
         if pattern in PLUGIN_ONLY_IGNORES and not new_plugin:
@@ -166,13 +166,25 @@ def ignore_file(root, new_plugin=False):
 
 
 def catalog_files(root, config):
-    engine = module(SKILL/'templates/marketplace/scripts/marketplace.py', 'catalog_template')
+    engine = module(SKILL/'templates/marketplace/sync/scripts/marketplace.py', 'catalog_template')
     return {root/path: encode(data) for path, data in engine.expected(root, config).items()}
 
 
+def template_source(kind, relative):
+    """Template file of a kind: synced files live in sync/, files created once in seed/."""
+    for part in ('sync', 'seed'):
+        path = SKILL/'templates'/kind/part/relative
+        if path.is_file():
+            return path
+    raise FileNotFoundError(f'No template {relative} for kind {kind}')
+
+
 def template_files(kind, root):
-    folder = SKILL/'templates'/kind
-    return {root/p.relative_to(folder): p.read_bytes() for p in folder.rglob('*') if p.is_file() and '__pycache__' not in p.parts}
+    files = {}
+    for part in ('sync', 'seed'):
+        folder = SKILL/'templates'/kind/part
+        files.update({root/p.relative_to(folder): p.read_bytes() for p in folder.rglob('*') if p.is_file() and '__pycache__' not in p.parts})
+    return files
 
 
 def marketplace_create(root, name=None, display_name=None, owner=None, repository=None):
@@ -198,8 +210,8 @@ def marketplace_create(root, name=None, display_name=None, owner=None, repositor
         if not (root/filename).exists():
             text = (f'# {display_name}\n\nMarketplace `{name}`: {origin}\n\n' +
                 ('Plugin-Repositories werden in `marketplace.json` eingetragen. Lokale Pfade stehen ausschließlich in `.local/marketplace.json`.\n\n' if lang == 'de' else 'Plugin repositories are registered in `marketplace.json`. Local paths belong only in `.local/marketplace.json`.\n\n') +
-                '```sh\nmake verify\nmake check-marketplace\nmake install-local TARGET=claude\nmake update-local TARGET=codex\n```\n\n' +
-                ('Ein frischer Clone benötigt für lokale Installation zuerst Checkout-Zuordnungen über configure. local-marketplace.example.json ist nur eine optionale manuelle Kopiervorlage; nur .local/marketplace.json wird zur Laufzeit gelesen und bleibt uncommitted. Snapshots verwenden den aktuellen Checkout einschließlich uncommitteter Änderungen auf jedem Branch. Nach Änderungen oder Branchwechsel update-local und eine neue Host-Sitzung; kein Commit/Push/PR und kein Marketplace pro Branch. [Voraussetzungen](docs/prerequisites.md): Git und Python 3.10+, Make optional, Host-CLI nur für automatische lokale Installation. Strukturprüfung ist keine GitHub-/GUI-Abnahme.\n' if lang == 'de' else 'A fresh clone needs checkout associations through configure before local installation. local-marketplace.example.json is only an optional manual template; only .local/marketplace.json is read at runtime and stays uncommitted. Snapshots use the current checkout including uncommitted edits on any branch. After edits or branch switches run update-local and open a new host session; no commit/push/PR or per-branch marketplace. [Prerequisites](docs/prerequisites.md): Git and Python 3.10+, optional Make, host CLI only for automatic local installation. Structural verification is not GitHub/GUI acceptance.\n'))
+                '```sh\nmake verify\nmake check-marketplace\nmake install-local TARGET=claude\n```\n\n' +
+                ('Ein frischer Clone benötigt für lokale Installation zuerst Checkout-Zuordnungen über configure. local-marketplace.example.json ist nur eine optionale manuelle Kopiervorlage; nur .local/marketplace.json wird zur Laufzeit gelesen und bleibt uncommitted. Snapshots verwenden den aktuellen Checkout einschließlich uncommitteter Änderungen auf jedem Branch. Nach Änderungen oder Branchwechsel install-local und eine neue Host-Sitzung; kein Commit/Push/PR und kein Marketplace pro Branch. [Voraussetzungen](docs/prerequisites.md): Git und Python 3.10+, Make optional, Host-CLI nur für automatische lokale Installation. Strukturprüfung ist keine GitHub-/GUI-Abnahme.\n' if lang == 'de' else 'A fresh clone needs checkout associations through configure before local installation. local-marketplace.example.json is only an optional manual template; only .local/marketplace.json is read at runtime and stays uncommitted. Snapshots use the current checkout including uncommitted edits on any branch. After edits or branch switches run install-local and open a new host session; no commit/push/PR or per-branch marketplace. [Prerequisites](docs/prerequisites.md): Git and Python 3.10+, optional Make, host CLI only for automatic local installation. Structural verification is not GitHub/GUI acceptance.\n'))
             files[root/filename] = text.encode()
     ignore, content = ignore_file(root); files[ignore] = content
     return {'action': 'marketplace-create', 'changed': apply(files, [ignore]), 'repository': origin, 'published': False}
@@ -273,24 +285,24 @@ def configure(root, marketplace, repository=None):
         raise ValueError('Plugin manifest conflicts with Git origin')
     files = association_files(root, market, manifest)
     replace = list(files)
-    template = SKILL/'templates/plugin'
     # Add only missing developer entry points; existing tooling is not silently replaced.
+    template = lambda relative: template_source('plugin', relative)
     for relative in ('scripts/plugin.py', 'scripts/verify.py', 'install.sh'):
         path = safe_path(root/relative)
         if not path.exists():
-            files[path] = (template/relative).read_bytes()
+            files[path] = template(relative).read_bytes()
     if not (root/'Makefile').exists():
-        block = (template/'Makefile').read_text().split('# Local development and repository metadata', 1)[1]
+        block = template('Makefile').read_text().split('# Local development and repository metadata', 1)[1]
         files[root/'Makefile'] = ('export PYTHONDONTWRITEBYTECODE := 1\nPYTHON ?= python3\nTARGET ?= claude\nDRY_RUN ?= 0\nMARKETPLACE ?=\n# Local development and repository metadata' + block).encode()
     else:
         makefile = safe_path(root/'Makefile')
         text = makefile.read_text()
-        missing = [action for action in ('install-local', 'update-local')
+        missing = [action for action in ('install-local',)
                    if not re.search(r'^' + action + r'(?:\s+[^:\n]+)?\s*:', text, re.M)
                    and not re.search(r'^[^#\n:]*\b' + action + r'\b[^\n:]*:', text, re.M)]
         if missing:
             engine = root/'scripts/plugin.py'
-            if engine.exists() and engine.read_bytes() != (template/'scripts/plugin.py').read_bytes():
+            if engine.exists() and engine.read_bytes() != template('scripts/plugin.py').read_bytes():
                 raise ValueError('Existing plugin tooling needs a reviewed Makefile integration before configure')
             text += '\n# Local marketplace commands (Plugin Manager)\nPYTHON ?= python3\nTARGET ?= claude\nDRY_RUN ?= 0\nMARKETPLACE ?=\n'
             for action in missing:
@@ -300,22 +312,13 @@ def configure(root, marketplace, repository=None):
 
 
 def complete_skeleton_documentation(stage, title):
-    """Fill only newly staged pages; never rewrite existing user documentation."""
-    from documentation import language_policy, page_layout, validate
-    content = read(SKILL/'templates/skeleton-content.json')
-    for relative, (_, _, language) in page_layout(language_policy(stage)).items():
-        path = stage/relative
-        text = path.read_text()
-        page = content[language]
-        if relative.startswith('README'):
-            text = re.sub(r'^# .*', lambda _: '# ' + title, text, count=1)
-            text = text.replace('{{SUMMARY}}', page['summary'])
-            sections = page['root']
-        else:
-            sections = page[path.name]
-        for index, paragraph in enumerate(sections, 1):
-            text = text.replace('{{CONTENT_' + f'{index:02d}' + '}}', paragraph)
-        path.write_text(text)
+    """Replace the scaffold pages of a newly staged repository by the finished skeleton pages of
+    templates/skeleton-docs (real Markdown, same layout as templates/); never touches existing user documentation."""
+    from documentation import language_policy, page_layout, template_text, validate
+    policy = language_policy(stage)
+    for relative, (template, _, _) in page_layout(policy).items():
+        text = template_text(template, policy, base=SKILL/'templates/skeleton-docs')
+        (stage/relative).write_text(text.replace('{{TITLE}}', title), encoding='utf-8')
     errors = validate(stage)
     if errors:
         raise ValueError('Skeleton documentation validation failed: ' + '; '.join(errors))
@@ -385,7 +388,9 @@ def plugin_create(root, marketplace, *, name=None, display_name=None, descriptio
         stage = Path(directory).resolve()/'plugin'
         stub = Path(directory).resolve()/'source'/name
         stub.mkdir(parents=True)
-        (stub/"SKILL.md").write_text("---\nname: " + name + "\ndescription: Unimplemented plugin skeleton; no domain behavior is available.\n---\n\n# Plugin skeleton\n\nBefore any interaction, read and follow `../_shared/references/operator-language.md`.\n\n<!-- plugin-skeleton: unimplemented -->\n\nThis is a nonfunctional development skeleton. Do not perform domain actions or claim capabilities. Read SCOPE.md in the source repository and clarify requirements before implementing. Remove the skeleton marker only after implementing and reviewing the agreed behavior.\n")
+        (stub/"SKILL.md").write_text("---\nname: " + name + "\ndescription: Unimplemented plugin skeleton; no domain behavior is available.\n---\n\n# Plugin skeleton\n\nCentral entry of this plugin. Before any interaction, read and follow `../_shared/references/operator-language.md`, then follow `../_shared/flows/entry.md` with `plugin = " + name + "`; the configuration of this plugin is defined in `flows/configure.md`.\n\n<!-- plugin-skeleton: unimplemented -->\n\nThis is a nonfunctional development skeleton. Do not perform domain actions or claim capabilities. Read SCOPE.md in the source repository and clarify requirements before implementing. Remove the skeleton marker only after implementing and reviewing the agreed behavior.\n")
+        (stub/"flows").mkdir()
+        (stub/"flows/configure.md").write_text("# Flow: configuration of " + name + "\n\nThis file is reserved for the configuration dialogue of " + name + ": what has to be asked and decided before the plugin can be used in a workpackage. The common entry flow (`../../_shared/flows/entry.md`) opens it when no configuration evidence exists. It is intentionally empty of procedure; define it together with SCOPE.md before implementing.\n")
         scaffold_plugin(stub, stage, languages, default_language, origin, author, name)
         manifest = read(stage/'plugin.json')
         manifest['description'] = description
@@ -394,12 +399,22 @@ def plugin_create(root, marketplace, *, name=None, display_name=None, descriptio
             manifest['license'] = license_decision['identifier']
             (stage/license_decision['file']).write_bytes(license_decision['content'])
         (stage/'plugin.json').write_bytes(encode(manifest))
-        engine = module(SKILL/'templates/plugin/scripts/plugin.py', 'trusted_payload')
+        engine = module(SKILL/'templates/plugin/sync/scripts/plugin.py', 'trusted_payload')
         for path, data in engine.repository_files(manifest).items():
             (stage/path).write_bytes(encode(data))
+        (stage/'skills/_shared/manifests').mkdir(parents=True, exist_ok=True)  # custom: the one default kind of a generated plugin
+        (stage/'skills/_shared/manifests/default.json').write_bytes(encode({'schema_version': 1, 'product': None, 'derived': []}))
+        (stage/'skills/_shared/manifests/default.sync.json').write_bytes(encode({'schema_version': 1, 'files': {}, 'removed': []}))
         complete_skeleton_documentation(stage, display_name)
         document(stage, license_decision)
         files = {root/p.relative_to(stage): p.read_bytes() for p in stage.rglob('*') if p.is_file()}
+        # Managed skeleton files (common list of the kind manifest) belong to the skeleton and sync flows: an existing
+        # regular file is never judged or replaced here, a missing one is created.
+        common = json.loads((SKILL/'manifests/plugin.sync.json').read_text(encoding='utf-8'))['files']
+        for relative in common:
+            existing = root/relative
+            if existing.is_file() and not existing.is_symlink():
+                files.pop(existing, None)
         # Existing prose and licenses remain canonical; docs action can later merge them.
         for path in list(files):
             if (path.exists() and path not in (root/'docs/architecture.md', root/'docs/prerequisites.md', root/'docs/license.md')

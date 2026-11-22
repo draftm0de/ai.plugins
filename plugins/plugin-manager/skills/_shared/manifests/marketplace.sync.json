@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "files": {
+    "CLAUDE.md": {
+      "sha256": "d50241a8f54f9b9dc16bcc0c741754b2f3b9017c0dd4e9358068c74f6a31a638",
+      "executable": false
+    },
+    "scripts/local_plugins.py": {
+      "sha256": "6b52e1abd1c63b195bf69573cfc854cbbd6b3047bf7fecd61a8f569fb8a60277",
+      "executable": false
+    },
+    "scripts/marketplace.py": {
+      "sha256": "c6f1185671e5283318e13e819c0de9f9760b0700b484eed859e64bba0959b9ac",
+      "executable": false
+    },
+    "scripts/plugin_payload.py": {
+      "sha256": "70b2eb0d5ee4001a5938bbf9c648bcaf5a904d1b1f42bbc2aba1c4b5a3ebd385",
+      "executable": false
+    },
+    "scripts/run_tests.py": {
+      "sha256": "1e8c301250633b36ae4123f2b35454a5ce57e0792a746d910cf9afd3f882344c",
+      "executable": false
+    },
+    "scripts/verify.py": {
+      "sha256": "d0395dc314a9162b333e3a2520ede4062a67594bca191a0ae30f57ef294716a9",
+      "executable": false
+    }
+  },
+  "removed": []
+}

@@ -79,8 +79,8 @@ def page_layout(policy):
     return pages
 
 
-def template_text(template, policy):
-    text = (TEMPLATES / template).read_text(encoding='utf-8')
+def template_text(template, policy, base=None):
+    text = ((base or TEMPLATES) / template).read_text(encoding='utf-8')
     if len(policy['languages']) == 1:
         text = '\n'.join(line for line in text.split('\n') if not ('Deutsch' in line and 'English' in line and ' | ' in line))
     if policy['default_language'] == 'en':

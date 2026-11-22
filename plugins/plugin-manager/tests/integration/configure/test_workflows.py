@@ -73,7 +73,7 @@ class ConfigureWorkflowTests(WorkflowFixture, unittest.TestCase):
         manifest=json.loads((other/'plugin.json').read_text())
         manifest['name']='bare-plugin';manifest['repository']='https://github.com/example/bare-plugin'
         (other/'plugin.json').write_bytes(flow.encode(manifest))
-        engine=flow.module(flow.SKILL/'templates/plugin/scripts/plugin.py','fixture_engine')
+        engine=flow.module(flow.SKILL/'templates/plugin/sync/scripts/plugin.py','fixture_engine')
         for path,data in engine.repository_files(manifest).items(): (other/path).write_bytes(flow.encode(data))
         (other/'Makefile').write_text('custom-check:\n\t@echo preserved\n')
         flow.configure(other,self.market)
