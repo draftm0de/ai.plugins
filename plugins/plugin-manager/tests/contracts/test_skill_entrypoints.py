@@ -8,7 +8,7 @@ import unittest
 from tests.support.plugin_fixture import materialize
 
 ROOT = next(p for p in Path(__file__).resolve().parents if (p / 'Makefile').is_file())
-NAMES = {'marketplace-create', 'plugin-create', 'configure', 'verify', 'update', 'publish'}
+NAMES = {'plugin-manager', 'marketplace-create', 'plugin-create', 'configure', 'verify', 'update', 'publish'}
 
 
 class SkillEntrypointTests(unittest.TestCase):

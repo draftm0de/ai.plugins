@@ -33,7 +33,7 @@ cleanup; preserve unrelated host settings, private workspaces and test evidence.
 `templates/plugin/gitignore.txt` is the canonical initial `.gitignore`. Plugin creation
 copies it as `.gitignore`, with no verification step or empty work directories.
 It excludes `.DS_Store`, `.idea/`, `.tmp/`, `dist/`, Python caches/bytecode,
-`.venv/`, `node_modules/` and `.local/`. Existing projects merge these rules while retaining
+`.venv/`, `node_modules/`, `.local/` and, for new plugin repositories only, `/.project/operator.json`. Existing projects merge these rules while retaining
 project-specific entries; never overwrite unrelated rules. The internal template audit checks Git's
 actual ignore behavior (including nested rules) in an isolated temporary repo
 and reports tracked generated/local files. It never untracks or deletes them.

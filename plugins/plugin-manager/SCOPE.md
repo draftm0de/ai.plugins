@@ -88,3 +88,47 @@ Source: skills/_shared/templates/plugin/skills/_shared/references/operator-langu
 Source: skills/_shared/scripts/workflows.py
 Test: tests/integration/plugin_create/test_workflows.py
 Test: tests/behavior/operator_language_acceptance.md
+
+## R10: Manager copy and delivery of the operator-language building block
+
+Status: confirmed
+Acceptance: The generator template remains the canonical source of the operator-language helper and reference; the Manager ships byte-identical standalone copies under skills/_shared/ as a delivery requirement. Their only Manager use is the central setup entry, which is separately authorized by R11; no other workflow uses them. The plugin generator template ignores exactly /.project/operator.json (no blanket .project/ rule, no duplicates); only newly created plugin repositories receive it, while marketplace repositories and existing plugins configured later keep their .gitignore. plugin-create ships helper and reference, never runs the helper and stores no preference. The helper does not edit .gitignore. Entry-point use (only R11's setup entry), skeleton sync and adoption by other plugins are not part of this requirement.
+Source: skills/_shared/scripts/operator_language.py
+Source: skills/_shared/references/operator-language.md
+Source: skills/_shared/scripts/workflows.py
+Test: tests/unit/operator_language/test_validation.py
+Test: tests/integration/operator_language/test_cli.py
+Test: tests/integration/plugin_create/test_operator_language_delivery.py
+
+## R11: Central entry sets up operator language and missing shared development files
+
+Status: confirmed
+Acceptance: The central skill plugin-manager, for an explicitly selected standalone plugin repository (canonical plugin.json; never a marketplace or the embedded Manager), checks operator language and a closed list of shared development files without writes, stops on technical conflicts before any write, asks for a missing language, then adds only missing files/folders from the generator template, ensures the exact ignore rule /.project/operator.json before the first language write, stores the language through operator_language.py and records, per verified path, the pair {source_hash, local_hash} of full SHA-256 hashes in .project/plugin.skeleton.lock.json (schema_version 2, the only supported format: an older, unknown or invalid lock is rejected before writes and left unchanged, never migrated). The skeleton setup copies missing files and corrects missing or stale pairs of template-identical files; it never changes the bytes of an existing file. Existing files that differ are only changed by the explicit sync decision of R12; the only other files setup may modify are .gitignore (adding the exact rule) and .project/operator.json, each as specified. Technical errors (symlink, wrong type, unreadable, filesystem errors) are reported as such, never as content deviations, and stop further writes while actual partial changes stay listed. Concrete read-only requests only run the status. No Git, installation, network or target code. Other plugins and host activation by slash command are not part of this requirement; updating and removing existing files is governed only by R12.
+Source: skills/_shared/scripts/project_setup.py
+Source: skills/plugin-manager/SKILL.md
+Test: tests/integration/project_setup/test_setup.py
+Test: tests/contracts/test_plugin_manager_entry.py
+
+## R12: Central entry dispatches by state: language, skeleton, configuration
+
+Status: confirmed
+Acceptance: /plugin-manager:plugin-manager reads a write-free status of an explicitly selected folder and runs exactly the needed flow, re-checking after every successfully completed flow. Priority: technical conflict (stop), operator language missing (language flow), skeleton additions or lock evidence missing (skeleton flow), a managed file needing a keep/adopt decision (sync flow), plugin.json missing (configuration flow), otherwise ready. The skeleton is the fixed list of nine managed files with parent folders, the ignore rule and lock evidence; it needs no plugin.json, Git, origin or marketplace and invents no identity. A folder without plugin.json is accepted when it holds only .git/.idea (checked as directories, never opened), a regular UTF-8 .gitignore, valid .project metadata and skeleton paths, including the entry's own earlier output; other content, an invalid plugin.json, a marketplace or the embedded Manager stop before writes. Sync rules per managed file: missing locally, copy from a valid source and record both hashes after verification; source and local identical, correct a missing or stale pair without a dialogue; source and local differ and the stored pair equals the current pair (source_hash and local_hash both), the deviation is accepted without dialogue or writes; source or local changed since the accepted pair (or no pair, or no lock) while contents differ, a decision is required and nothing is overwritten automatically. Status reports path, hashes, reason and decision need structurally and asks nothing; the skill shows only the file path and the fact that differences exist, without file contents, text excerpts, diffs or content summaries, and explicitly asks for "keep local file" or "adopt template" in the operator language. Keep leaves the local bytes and records both current hashes; adopt replaces only the explicitly selected file (mode kept), verifies it and records both hashes. Cancellation, silence or a preselection is no decision and persists nothing; a decision holds only for the shown pair and a changed pair stops for a new check. Removal rules for a managed path whose source was removed in the parent template (a single missing source of a listed path, while the template base exists and holds at least one managed source; a missing or invalid base, symlinks, wrong types and read errors are technical conflicts, never removal): the file is deleted automatically only if the lock proves ownership and the current local hash equals the stored local_hash and the stored source_hash; a changed or accepted local file always requires an explicit "keep local file" or "delete local file" question (no content, excerpt, diff or summary is shown, only the path and that the source was removed); without lock evidence nothing is deleted; a locally missing owned file only loses its lock entry; keep records source_hash null with the current local_hash (a documented extension of lock schema_version 2, set only by this decision), so an unchanged repetition does not ask again and a later local change does; a returning source is classified normally again. After removal only empty parent folders of the removed file go, bottom-up with rmdir, never needed skeleton folders, the project root, .git, .idea or .project, and foreign files are never deleted. Status reports automatic removals, questions, kept files, unowned files and lock cleanup separately, writes nothing, and the skeleton flow executes the automatic part. Folders are not hashed or moved, extra local files are kept, AGENTS.md is not managed and new managed files need an entry in the fixed list; a removed source stays recognizable only while its path remains in that list. For the explicitly requested manual sync test, keep.md and remove.md are in that list. Accepted deviations cause no sync routing and never mean matches_template; ready is not product acceptance. Configuration runs after language and skeleton in the same call and folder through the existing plugin-create generator and its rules, with inputs, GitHub origin and marketplace asked or reported as external prerequisites, never invented, rolled back or changed without explicit selection; a generator collision with a deviating or deliberately kept skeleton file changes nothing and stops openly, to be resolved only by the sync flow. Read-only requests run one status only. Errors and missing progress stop with concrete reasons and actual partial changes; ready waits for input. Dialogue and flow text is instruction evidence, not model or host behavior; concurrent writers are organizationally excluded.
+Source: skills/_shared/scripts/project_setup.py
+Source: skills/plugin-manager/SKILL.md
+Source: skills/plugin-manager/flows/language.md
+Source: skills/plugin-manager/flows/skeleton.md
+Source: skills/plugin-manager/flows/configure.md
+Source: skills/plugin-manager/flows/sync.md
+Source: skills/plugin-manager/flows/skeleton.md
+Test: tests/integration/project_setup/test_fresh.py
+Test: tests/integration/project_setup/test_sync.py
+Test: tests/integration/project_setup/test_removal.py
+Test: tests/contracts/test_plugin_manager_entry.py
+
+## R13: Managed Claude compatibility file
+
+Status: confirmed
+Acceptance: The plugin generator and central skeleton setup share a CLAUDE.md template containing only an English compatibility comment and @AGENTS.md. All agent instructions belong in AGENTS.md. Missing CLAUDE.md is copied and its hash pair recorded in the skeleton lock, identical content is preserved and recorded, and existing different content is preserved until an explicit sync decision (R12) keeps or replaces it; it is never overwritten automatically. A fresh folder containing this skeleton file remains initializable. AGENTS.md is not added to skeleton management.
+Source: skills/_shared/templates/plugin/CLAUDE.md
+Source: skills/_shared/scripts/project_setup.py
+Test: tests/integration/project_setup/test_setup.py

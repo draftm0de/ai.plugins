@@ -129,11 +129,17 @@ def apply(files, replace=()):
     return [str(p) for p in changes]
 
 
-def ignore_file(root):
+# Rules of the plugin template that only newly generated plugin repositories receive.
+PLUGIN_ONLY_IGNORES = frozenset({'/.project/operator.json'})
+
+
+def ignore_file(root, new_plugin=False):
     path = safe_path(root/'.gitignore')
     text = path.read_text() if path.exists() else ''
     for pattern in (SKILL/'templates/plugin/gitignore.txt').read_text().splitlines():
         if not pattern or pattern.startswith('#'):
+            continue
+        if pattern in PLUGIN_ONLY_IGNORES and not new_plugin:
             continue
         if pattern not in text.splitlines():
             text = text.rstrip() + '\n' + pattern + '\n'
@@ -199,7 +205,7 @@ def marketplace_create(root, name=None, display_name=None, owner=None, repositor
     return {'action': 'marketplace-create', 'changed': apply(files, [ignore]), 'repository': origin, 'published': False}
 
 
-def association_files(plugin_root, market, manifest):
+def association_files(plugin_root, market, manifest, new_plugin=False):
     market = safe_path(market)
     git_repository(market)
     verifier = module(SKILL/'scripts/verify.py', 'trusted_verify')
@@ -251,7 +257,7 @@ def association_files(plugin_root, market, manifest):
              plugin_root/'.local/marketplace.json': encode(plugin_local)}
     files.update(catalog_files(market, config))
     for root in (market, plugin_root):
-        path, content = ignore_file(root); files[path] = content
+        path, content = ignore_file(root, new_plugin=new_plugin and root == plugin_root); files[path] = content
     return files
 
 
@@ -399,7 +405,7 @@ def plugin_create(root, marketplace, *, name=None, display_name=None, descriptio
             if (path.exists() and path not in (root/'docs/architecture.md', root/'docs/prerequisites.md', root/'docs/license.md')
                     and (path.name.startswith('README') or path.is_relative_to(root/'docs'))):
                 del files[path]
-        association = association_files(root, market, manifest)
+        association = association_files(root, market, manifest, new_plugin=True)
         files.update(association)
         changes = apply(files, association.keys())
     checks = creation_checks(root, market, license_decision)

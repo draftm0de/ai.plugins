@@ -14,6 +14,8 @@ def preference(root, language=None):
         raise ValueError('Operator preference path must not contain symlinks')
     if not root.is_dir():
         raise ValueError('Select an existing project directory')
+    if path.parent.exists() and not path.parent.is_dir():
+        raise ValueError('Path conflict: ' + str(path.parent) + ' exists but is not a directory')
     current = None
     if path.exists():
         data = json.loads(path.read_text(encoding='utf-8'))

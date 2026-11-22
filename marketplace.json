@@ -20,6 +20,12 @@
       "displayName": "Website Manager",
       "description": "Create, manage and maintain websites: guided setup of new or existing sites, brief and start page design, local preview, SEO and accessibility audits with reports and work list, editing of the start page. Publishing is not available yet.",
       "repository": "https://github.com/draftm0de/ai.plugin.website.git"
+    },
+    {
+      "name": "coding-manager",
+      "displayName": "Coding Manager",
+      "description": "Verwaltet Coding-Plugins: Setup, Verifizierung und Updates für Entwicklungsprojekte",
+      "repository": "https://github.com/draftm0de/ai.plugin.coding.git"
     }
   ]
 }

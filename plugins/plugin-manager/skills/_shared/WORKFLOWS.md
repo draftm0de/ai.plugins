@@ -2,7 +2,7 @@
 
 These shared rules apply when the user asks to manage a skill plugin: initialize its structure, document it, verify it, or prepare and execute an explicitly approved publication. Documentation actions do not publish or install the source. The separate publish action has its own explicit approval boundary. This remains one plugin with bundled capabilities.
 
-All paths in this document are relative to `skills/_shared/` unless explicitly rooted elsewhere. This directory has no `SKILL.md` and is not a public skill. The six entry points are siblings: marketplace-create, plugin-create, configure, verify, update, publish.
+All paths in this document are relative to `skills/_shared/` unless explicitly rooted elsewhere. This directory has no `SKILL.md` and is not a public skill. The entry points are siblings: plugin-manager (central setup entry, `scripts/project_setup.py`), marketplace-create, plugin-create, configure, verify, update, publish.
 
 ## Action routing
 
