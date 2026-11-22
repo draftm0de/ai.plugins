@@ -50,7 +50,7 @@ CI prüft Tests, Metadaten und Dokumentation und veröffentlicht nichts. [Publis
 
 ## Dokumentation pflegen
 
-Die Aktion update liest aktuelle Quellen und pflegt die gespeicherte Sprachauswahl. plugin-create erzeugt Vorlagen; der Agent vervollständigt diese anhand belegter Produktfunktionen. Kein erfundener Herausgeber, keine erfundene Lizenz und keine erfundenen Skill-Inhalte. init wird nicht unterstützt.
+Die Aktion update liest aktuelle Quellen und pflegt die gespeicherte Sprachauswahl. `create --kind plugin` erzeugt Vorlagen; der Agent vervollständigt diese anhand belegter Produktfunktionen. Kein erfundener Herausgeber, keine erfundene Lizenz und keine erfundenen Skill-Inhalte. init wird nicht unterstützt.
 
 [Create-/Configure-Aufrufe](../../skills/_shared/references/workflows.md)
 
@@ -62,6 +62,6 @@ Neue Plugin- und Marketplace-Vorlagen enthalten SCOPE.md sowie gemeinsame Entwic
 
 Im Manager-Verzeichnis ausdrücklich `make test-behavior CLI=claude` oder `CLI=codex` ausführen; `CASE=correct_consent` wählt einen Fall. [Szenarien, Auswertung und Grenzen](../../tests/behavior/README.md). Beide Modelle erhalten fiktive vollständige Dateien und dieselben Review-Regeln ohne erwartete Ergebnisse. Korrekte Implementierungen, echte Fehler, Testlücken, fehlende Source und eingeschleuste Erfolgsmeldungen werden geprüft. Die automatische Auswertung wird durch manuelle Sichtung ergänzt. Keine Modellaufrufe im normalen Testlauf; keine Installation oder Veröffentlichung.
 
-Formatprüfung vor Änderungen: Keine parallelen Host-Skill-Verzeichnisse und kein marketplace-Schlüssel in der Distribution. Unbekannte Katalogeintragsfelder werden vor associate abgelehnt, nicht verworfen. Dokumentations-Schema-Versionen müssen ganzzahlig sein. Abweichende vorhandene docs/architecture.md oder docs/prerequisites.md blockieren plugin-create, ohne Inhalte zu überschreiben.
+Formatprüfung vor Änderungen: Keine parallelen Host-Skill-Verzeichnisse und kein marketplace-Schlüssel in der Distribution. Unbekannte Katalogeintragsfelder werden vor associate abgelehnt, nicht verworfen. Dokumentations-Schema-Versionen müssen ganzzahlig sein. Abweichende vorhandene docs/architecture.md oder docs/prerequisites.md blockieren `create --kind plugin`, ohne Inhalte zu überschreiben.
 
-Auch plugin-create prüft alte Host-Verzeichnisse vor Änderungen. Skill-Import über plugin-create ist nicht unterstützt; Layout- und Dokumentationsmanifest-Prüfungen bleiben bestehen.
+Auch `create --kind plugin` prüft alte Host-Verzeichnisse vor Änderungen. Skill-Import über `create --kind plugin` ist nicht unterstützt; Layout- und Dokumentationsmanifest-Prüfungen bleiben bestehen.

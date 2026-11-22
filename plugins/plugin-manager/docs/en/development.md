@@ -50,7 +50,7 @@ CI validates tests, metadata and documentation and publishes nothing. [Publish](
 
 ## Maintain documentation
 
-The update action rereads current sources and preserves the configured languages. plugin-create generates templates; the agent completes them from evidenced product behavior. No invented publisher, license or skill instructions. init is unsupported.
+The update action rereads current sources and preserves the configured languages. `create --kind plugin` generates templates; the agent completes them from evidenced product behavior. No invented publisher, license or skill instructions. init is unsupported.
 
 [Create/associate commands](../../skills/_shared/references/workflows.md)
 
@@ -62,6 +62,6 @@ New plugin and marketplace templates include SCOPE.md and shared development rul
 
 From the Manager directory explicitly run `make test-behavior CLI=claude` or `CLI=codex`; `CASE=correct_consent` selects one case. [Scenarios, grading and limitations](../../tests/behavior/README.md). Both models receive complete fictional files and the same review rules, without expected answers. Tests cover correct implementations, real defects, test gaps, missing source and injected success claims. Automated grading is complemented by human review. No model calls in the normal suite; no installation or publication.
 
-Format checks precede changes: no parallel host skill directories or marketplace key in distribution metadata. Unknown catalog entry fields are rejected before associate, never discarded. Documentation schema versions must be integers. Conflicting existing docs/architecture.md or docs/prerequisites.md block plugin-create without overwriting content.
+Format checks precede changes: no parallel host skill directories or marketplace key in distribution metadata. Unknown catalog entry fields are rejected before associate, never discarded. Documentation schema versions must be integers. Conflicting existing docs/architecture.md or docs/prerequisites.md block `create --kind plugin` without overwriting content.
 
-plugin-create also rejects old host directories before changes. Skill import through plugin-create is unsupported; layout and documentation manifest checks remain in place.
+`create --kind plugin` also rejects old host directories before changes. Skill import through `create --kind plugin` is unsupported; layout and documentation manifest checks remain in place.

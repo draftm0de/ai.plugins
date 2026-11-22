@@ -1,28 +1,28 @@
 # Creation and association workflows
 
-Use `python3 <plugin-root>/skills/_shared/scripts/workflows.py ACTION --help`. Run helpers from the installed skill, never execute helpers from an inspected target during verify. Paths come from the current user project or explicit input, not this installation. See [prerequisites.md](prerequisites.md): Git and Python 3.10+, optional Make, selected host CLI only for automatic local installation. No automatic installation of missing tools.
+Use `python3 <plugin-root>/skills/_shared/scripts/workflows.py ACTION --help` (ACTION is `create --kind marketplace|plugin` or `associate`). Run helpers from the installed skill, never execute helpers from an inspected target during verify. Paths come from the current user project or explicit input, not this installation. See [prerequisites.md](prerequisites.md): Git and Python 3.10+, optional Make, selected host CLI only for automatic local installation. No automatic installation of missing tools.
 
 ## Inputs and boundaries
 
-Reuse confirmed session facts, existing manifests, documentation language policy and Git origin. Distinguish displayName from the lowercase kebab-case technical name. Do not infer publisher or license from a Git author. Never invent product instructions. plugin-create supports only explicit --skeleton; do not offer skill import. It creates only a nonfunctional, visibly marked entry point and pending SCOPE.md. Confirm domain requirements before implementing them. Never claim skeleton creation establishes a finished product.
+Reuse confirmed session facts, existing manifests, documentation language policy and Git origin. Distinguish displayName from the lowercase kebab-case technical name. Do not infer publisher or license from a Git author. Never invent product instructions. `create --kind plugin` supports only explicit --skeleton; do not offer skill import. It creates only a nonfunctional, visibly marked entry point and pending SCOPE.md. Confirm domain requirements before implementing them. Never claim skeleton creation establishes a finished product.
 
 Inspect existing files before any write. The helpers preflight collisions, preserve existing README/docs and licenses, and refuse differing owned-tool destinations. Configuration does not perform legacy migrations. Present conflicting files and resolve only within the user's authorized scope. Private content is never an input source. No action creates a GitHub repository, commits, pushes, installs or publishes implicitly.
 
-## marketplace-create (generator operation of the marketplace flow)
+## `create --kind marketplace` (generator operation of the marketplace flow)
 
 The procedure for the person is the flow `../../plugin-manager/flows/marketplace.md` of the central entry; there is no separate skill. This section is the technical reference of the helper operation. The GitHub repository must already exist and be cloned. Example with fictional inputs:
 
 ```sh
-python3 /path/to/installed/skills/_shared/scripts/workflows.py marketplace-create \
+python3 /path/to/installed/skills/_shared/scripts/workflows.py create --kind marketplace \
   --root /work/catalog --name example-plugins --display-name "Example Plugins" \
   --owner "Confirmed publisher"
 ```
 
 Origin supplies the repository URL; --repository can check an explicit URL against it. Existing marketplace metadata supplies omitted names/owner; unknown facts require clarification. The result contains canonical marketplace.json, both derived host catalogs, standalone scripts, Makefile, DE/EN starter instructions and local-marketplace.example.json. No embedded manager or plugin is created. Existing identity conflicts stop creation. Repeating the same operation is idempotent.
 
-## plugin-create (internal generator operation)
+## `create --kind plugin` (internal generator operation)
 
-The public entry is `plugin-manager`; there is no separate plugin-create skill or slash command. Its saved operator-language gate and state routing govern this internal creation flow. The Python operation and its creation checks remain unchanged.
+The public entry is `plugin-manager`; there is no separate plugin creation skill or slash command. Its saved operator-language gate and state routing govern this internal creation flow. The Python operation and its creation checks remain unchanged.
 
 ### Conversation language and licensing decisions
 
@@ -48,7 +48,7 @@ Implement a selected license instead of stopping at the decision. For MIT, pass 
 For an existing target license, use the confirmed identifier and that exact file as `--license-file`; preserve its bytes and name. Multiple license files or a differing selected text require review before writes. The helper creates the selected file when missing, writes the identifier to plugin.json and derived host metadata, and updates new documentation with the actual licensing state. Existing prose is preserved; missing decision links are reported for deliberate completion. Inspect `checks.licensing` and resolve errors before claiming licensing implementation is complete; deferred remains deferred, never implemented. No new approval is needed for the already confirmed license choice.
 
 ```sh
-python3 /path/to/installed/skills/_shared/scripts/workflows.py plugin-create \
+python3 /path/to/installed/skills/_shared/scripts/workflows.py create --kind plugin \
   --root /work/example-plugin --marketplace /work/catalog \
   --repository https://github.com/OWNER/EXISTING-REPO \
   --skeleton --name example-plugin --display-name "Example Plugin" \
@@ -83,7 +83,7 @@ All selected marketplace plugins need local checkouts before installation. Prefl
 
 ## Current entry points
 
-Only marketplace-create, plugin-create and associate are accepted. init is unsupported. No automatic choice, migration or creation.
+Only `create --kind marketplace|plugin` and `associate` are accepted. init is unsupported. No automatic choice, migration or creation.
 
 Before writing local associations, proposed root and `.local/.gitignore` rules are evaluated by real Git in an isolated repository. Global excludes cannot conceal unsafe repository rules. Negations that expose `.local/marketplace.json` or the plugin's `.project/plugins/plugin-manager/local.json` cause an actionable error before either repository is written; existing rules, mappings and content remain unchanged. Review conflicting rules explicitly, then retry. Creation never makes initial commits. For a repository without HEAD, use the explicitly approved initial-publication mode in [publish.md](publish.md), or use an existing remote PR base.
 
@@ -92,7 +92,7 @@ Snapshots read the current checkout including uncommitted changes, regardless of
 ## Skeleton first, implementation later
 
 ```sh
-python3 /path/to/plugin/skills/_shared/scripts/workflows.py plugin-create \
+python3 /path/to/plugin/skills/_shared/scripts/workflows.py create --kind plugin \
   --root /work/new-plugin --marketplace /work/catalog --skeleton \
   --name example-plugin --display-name "Example Plugin" --author "Confirmed publisher" \
   --languages de en --default-language de --license deferred
@@ -111,4 +111,4 @@ Confirm SCOPE with the user, implement under skills/, add relevant tests, then r
 verify with --review. The helper collects evidence; the agent compares actual source
 and test logic with confirmed criteria. No tests are run by verify.
 
-Creation rejects existing .claude/skills or .agents/skills before writing plugin files or associations. Skill import through plugin-create is unsupported; --source and --import are rejected before writes.
+Creation rejects existing .claude/skills or .agents/skills before writing plugin files or associations. Skill import through `create --kind plugin` is unsupported; --source and --import are rejected before writes.

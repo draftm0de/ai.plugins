@@ -14,7 +14,7 @@ Used when the person chose "marketplace" in `flows/configure.md` (the `kind` is 
 2. When all facts are answered, run the generator (`<shared>` is the shared directory `../../_shared`, resolved from this file):
 
    ```sh
-   python3 -B "<shared>/scripts/workflows.py" marketplace-create --root "<folder>" \
+   python3 -B "<shared>/scripts/workflows.py" create --kind marketplace --root "<folder>" \
      --name <technical-name> --display-name "<Display Name>" --owner "<Owner>" [--repository <url>]
    ```
 

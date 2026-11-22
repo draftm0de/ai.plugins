@@ -25,7 +25,7 @@ def snapshot(*roots):
 class AssociateBase(WorkflowFixture, unittest.TestCase):
     def second_market(self, name='second-market'):
         path = self.repo(name)
-        flow.marketplace_create(path, name, 'Second Fictional Market', 'Fictional Publisher')
+        flow.create_marketplace(path, name, 'Second Fictional Market', 'Fictional Publisher')
         return path
 
     def configured(self):
@@ -161,7 +161,7 @@ class AssociateTests(AssociateBase):
     def test_same_marketplace_name_with_another_repository_is_an_identity_conflict(self):
         self.configured()
         impostor = self.repo('impostor')
-        flow.marketplace_create(impostor, 'fictional-market', 'Fictional Market', 'Fictional Publisher')
+        flow.create_marketplace(impostor, 'fictional-market', 'Fictional Market', 'Fictional Publisher')
         before = snapshot(self.plugin, self.market, impostor)
         with self.assertRaisesRegex(ValueError, 'Marketplace identity conflicts'):
             flow.associate(self.plugin, impostor)

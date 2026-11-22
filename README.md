@@ -72,7 +72,7 @@ In Claude Code startest du den passenden Befehl, etwa `/plugin-manager:plugin-ma
 **Im Terminal** – aus dem `ai.plugins`-Checkout:
 
 ```sh
-python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py marketplace-create --root ../mein-marketplace --name mein-katalog --display-name "Mein Katalog" --owner "Bestätigter Herausgeber"
+python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py create --kind marketplace --root ../mein-marketplace --name mein-katalog --display-name "Mein Katalog" --owner "Bestätigter Herausgeber"
 ```
 
 Das erzeugt `marketplace.json`, die Host-Kataloge für Claude und Codex, eigenständige Werkzeuge, Makefile und ein Dokumentationsgerüst. Neue Marketplaces benötigen keinen eingebetteten Manager. Vorhandene Inhalte werden zuerst geprüft; abweichende Dateien werden nicht still überschrieben.
@@ -177,14 +177,14 @@ Beispiel für ein Skeleton in einem bereits geklonten Repository:
 
 ```sh
 # Im Stamm von ai.plugins:
-python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py plugin-create --root ../mein-plugin --marketplace . --skeleton --name mein-plugin --display-name "Mein Plugin" --author "Bestätigter Herausgeber" --languages de en --default-language de --license deferred
+python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py create --kind plugin --root ../mein-plugin --marketplace . --skeleton --name mein-plugin --display-name "Mein Plugin" --author "Bestätigter Herausgeber" --languages de en --default-language de --license deferred
 ```
 
 `--license deferred` setzt eine ausdrücklich vertagte Lizenzentscheidung voraus. Für MIT stattdessen `--license MIT --copyright-year "BESTÄTIGTES_JAHR" --copyright-holder "BESTÄTIGTER_RECHTEINHABER"` verwenden; andere Lizenzen benötigen `--license KENNUNG --license-file /pfad/zum/bestätigten-lizenztext`.
 
-Ein Skill-Import ist nicht unterstützt. `python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py plugin-create --help` zeigt alle Optionen.
+Ein Skill-Import ist nicht unterstützt. `python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py create --kind plugin --help` zeigt alle Optionen.
 
-`plugin-create` erzeugt Entwicklungswerkzeuge und Dokumentationsvorlagen, trägt das Plugin im Marketplace ein und richtet lokale Zuordnungen ein. Beim Skeleton anschließend das Zielbild in `SCOPE.md` bestätigen, die Skills implementieren und passende Tests ergänzen. Strukturprüfung allein bestätigt noch kein fertiges Produkt.
+`create --kind plugin` erzeugt Entwicklungswerkzeuge und Dokumentationsvorlagen, trägt das Plugin im Marketplace ein und richtet lokale Zuordnungen ein. Beim Skeleton anschließend das Zielbild in `SCOPE.md` bestätigen, die Skills implementieren und passende Tests ergänzen. Strukturprüfung allein bestätigt noch kein fertiges Produkt.
 
 Ein Plugin gehört zu genau einem Marketplace. Um seine Zuordnung neu einzurichten (frischer Clone, verschobener Checkout) oder es in einen anderen Marketplace zu verschieben, dient der Flow `associate` von `plugin-manager`.
 

@@ -4,7 +4,7 @@
 
 This plugin documents accessible local skills and plugins from source evidence. Documentation languages are chosen per repository: German only, English only or both. Use `plugin-manager` to set up a marketplace or create a separate plugin, `configure` for its association, `update` to refresh documentation, or `verify` for a read-only structure audit. The agent asks about material uncertainties. Passing structural checks does not establish production readiness. Nothing is published or installed without instruction.
 
-In Claude: `/plugin-manager:verify SOURCE_PATH`, with equivalent `:plugin-create` and `:update` commands. In ChatGPT request the action in natural language. The host must have access to the source; helpers require Python 3.10 or newer.
+In Claude: `/plugin-manager:verify SOURCE_PATH`, with the equivalent `/plugin-manager:plugin-manager` (setup, plugin or marketplace) and `:update` commands. In ChatGPT request the action in natural language. The host must have access to the source; helpers require Python 3.10 or newer.
 
 [Workflow and limitations](skills/_shared/WORKFLOWS.md)
 

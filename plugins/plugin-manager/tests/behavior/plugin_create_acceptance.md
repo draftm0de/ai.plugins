@@ -1,4 +1,4 @@
-# plugin-create interaction acceptance cases
+# `create --kind plugin` interaction acceptance cases
 
 Manual behavioral acceptance specification; not an executable suite and not evidence
 of passing tests. Run only as a separately authorized model/host test in disposable

@@ -62,7 +62,7 @@ class DeliveryTests(WorkflowFixture, unittest.TestCase):
         self.create()
         self.assertNotIn(RULE, self.lines(self.market))
         other = self.repo('second-market')
-        flow.marketplace_create(other, 'second-market', 'Second', 'Fictional Publisher')
+        flow.create_marketplace(other, 'second-market', 'Second', 'Fictional Publisher')
         self.assertNotIn(RULE, self.lines(other))
         self.assertFalse((other / 'skills/_shared/scripts/operator_language.py').exists())
 

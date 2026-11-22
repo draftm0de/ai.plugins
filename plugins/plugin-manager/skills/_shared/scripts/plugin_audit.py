@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only plugin structure audit and internal plugin-create builder."""
+"""Read-only plugin structure audit and internal `create --kind plugin` builder."""
 import argparse
 import importlib.util
 import json
@@ -150,7 +150,7 @@ def audit(root):
 
 
 def scaffold_plugin(source, output, languages=None, default_language=None, repository=None, author=None, plugin_name=None):
-    """Internal current plugin-create builder; not a compatibility entry point."""
+    """Internal current `create --kind plugin` builder; not a compatibility entry point."""
     from documentation import language_policy
     language_policy(Path(output).expanduser().resolve(), languages, default_language)
     info = inspect(source)

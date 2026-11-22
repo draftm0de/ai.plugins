@@ -68,7 +68,7 @@ In Claude Code, start the corresponding command, such as `/plugin-manager:plugin
 **In the terminal** — from the `ai.plugins` checkout:
 
 ```sh
-python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py marketplace-create --root ../my-marketplace --name my-catalog --display-name "My Catalog" --owner "Confirmed Publisher"
+python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py create --kind marketplace --root ../my-marketplace --name my-catalog --display-name "My Catalog" --owner "Confirmed Publisher"
 ```
 
 This creates `marketplace.json`, Claude and Codex host catalogs, standalone tools, a Makefile and documentation scaffolding. New marketplaces do not need an embedded Manager. Existing content is inspected first; differing files are not silently overwritten.
@@ -174,12 +174,12 @@ Example for a skeleton in an already cloned repository:
 
 ```sh
 # From the ai.plugins root:
-python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py plugin-create --root ../my-plugin --marketplace . --skeleton --name my-plugin --display-name "My Plugin" --author "Confirmed Publisher" --languages de en --default-language de
+python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py create --kind plugin --root ../my-plugin --marketplace . --skeleton --name my-plugin --display-name "My Plugin" --author "Confirmed Publisher" --languages de en --default-language de
 ```
 
-Skill import is unsupported. `python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py plugin-create --help` lists all options.
+Skill import is unsupported. `python3 -B plugins/plugin-manager/skills/_shared/scripts/workflows.py create --kind plugin --help` lists all options.
 
-`plugin-create` creates development tools and documentation templates, registers the plugin in the marketplace and sets up local mappings. For a skeleton, then confirm the scope in `SCOPE.md`, implement the skills and add relevant tests. Structural validity alone does not establish a finished product.
+`create --kind plugin` creates development tools and documentation templates, registers the plugin in the marketplace and sets up local mappings. For a skeleton, then confirm the scope in `SCOPE.md`, implement the skills and add relevant tests. Structural validity alone does not establish a finished product.
 
 A plugin belongs to exactly one marketplace. To set up its association again (fresh clone, moved checkout) or to move it to another marketplace, use the `associate` flow of `plugin-manager`.
 

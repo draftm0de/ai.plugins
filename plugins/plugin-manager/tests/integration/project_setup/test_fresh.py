@@ -169,7 +169,7 @@ class GuidedConfigurationTests(WorkflowFixture, unittest.TestCase):
         before = tree(self.plugin)
         import workflows as flow
         with self.assertRaises(ValueError):
-            flow.plugin_create(self.plugin, self.market, skeleton=True, name='new-plugin', display_name='Fictional Plugin',
+            flow.create_plugin(self.plugin, self.market, skeleton=True, name='new-plugin', display_name='Fictional Plugin',
                                description='d', author='a', languages=['de'], default_language='de')  # no license decision
         self.assertEqual(before, tree(self.plugin))
 

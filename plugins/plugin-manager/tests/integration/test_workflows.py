@@ -41,9 +41,9 @@ class IntegrationWorkflowTests(IntegrationWorkflowTestsFixture, unittest.TestCas
         installed=materialize(self.root/'installed')
         market=self.repo('installed-market')
         helper=installed/'skills/_shared/scripts/workflows.py'
-        subprocess.run([sys.executable,'-B',str(helper),'marketplace-create','--root',str(market),'--name','installed-market','--display-name','Fictional Installed Market','--owner','Fictional Publisher'],cwd=self.root,check=True,capture_output=True)
+        subprocess.run([sys.executable,'-B',str(helper),'create','--kind','marketplace','--root',str(market),'--name','installed-market','--display-name','Fictional Installed Market','--owner','Fictional Publisher'],cwd=self.root,check=True,capture_output=True)
         plugin=self.repo('installed-plugin')
-        subprocess.run([sys.executable,'-B',str(helper),'plugin-create', '--license', 'deferred','--root',str(plugin),'--marketplace',str(market),'--skeleton','--name','installed-plugin','--display-name','Fictional Plugin','--description','Fictional fixture','--author','Fictional Publisher','--languages','en'],cwd=self.root,check=True,capture_output=True)
+        subprocess.run([sys.executable,'-B',str(helper),'create','--kind','plugin', '--license', 'deferred','--root',str(plugin),'--marketplace',str(market),'--skeleton','--name','installed-plugin','--display-name','Fictional Plugin','--description','Fictional fixture','--author','Fictional Publisher','--languages','en'],cwd=self.root,check=True,capture_output=True)
         self.assertTrue(verify.verify(plugin)['valid'])
         self.assertFalse((market/'plugins/plugin-manager').exists())
         self.assertEqual('installed-market-dev',self.make(plugin,'install-local','codex')['marketplace'])

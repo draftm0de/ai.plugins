@@ -214,16 +214,28 @@ class EntryTextTests(unittest.TestCase):
 
     def test_marketplace_flow_is_complete_and_self_contained(self):  # R20
         text = self.flow('marketplace')
-        for needle in ('Guided dialogue (both kinds)', 'configure.md', 'marketplace-create --root', '--name', '--display-name', '--owner',
+        for needle in ('Guided dialogue (both kinds)', 'configure.md', 'create --kind marketplace --root', '--name', '--display-name', '--owner',
                        'record --target', '--kind marketplace', '--artifact', 'never taken from the Git author', 'a suggestion is never a selection',
                        'no `ok`', 'exit 0', 'idempotent', 'marketplace.json', 'local-marketplace.example.json', 'derived host catalogs',
                        'plugin repository', 'status', 'published'):
             self.assertIn(needle, text)
-        self.assertLess(text.index('marketplace-create --root'), text.index('record --target'))
+        self.assertLess(text.index('create --kind marketplace --root'), text.index('record --target'))
         self.assertNotIn('marketplace-create/SKILL.md', text)
         self.assertNotIn('skill `marketplace-create`', text)
         for gone in ('make verify', 'make check-marketplace'):
             self.assertNotIn(gone, text)
+
+    def test_flows_and_references_name_the_uniform_generator_operations(self):  # R22
+        paths = ('skills/plugin-manager/SKILL.md', 'skills/plugin-manager/flows/configure.md', 'skills/plugin-manager/flows/marketplace.md',
+                 'skills/plugin-manager/flows/associate.md', 'skills/_shared/WORKFLOWS.md', 'skills/_shared/references/workflows.md')
+        for path in paths:
+            text = (ROOT / path).read_text(encoding='utf-8')
+            with self.subTest(path=path):
+                for old in ('plugin-create', 'marketplace-create'):
+                    self.assertNotIn(old, text)
+        self.assertIn('create --kind marketplace', (ROOT / 'skills/plugin-manager/flows/marketplace.md').read_text(encoding='utf-8'))
+        self.assertIn('create --kind plugin', (ROOT / 'skills/plugin-manager/flows/configure.md').read_text(encoding='utf-8'))
+        self.assertIn('create --kind marketplace|plugin', (ROOT / 'skills/_shared/references/workflows.md').read_text(encoding='utf-8'))
 
     def test_marketplace_create_skill_and_command_are_gone(self):  # R20
         self.assertFalse((ROOT / 'skills/marketplace-create').exists())

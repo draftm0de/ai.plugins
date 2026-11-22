@@ -8,7 +8,7 @@ from tests.support.workflow_fixture import WorkflowFixture, flow
 
 class LicensingTests(WorkflowFixture, TestCase):
     def create_license(self, **options):
-        return flow.plugin_create(self.plugin, self.market, skeleton=True, name='new-plugin',
+        return flow.create_plugin(self.plugin, self.market, skeleton=True, name='new-plugin',
             display_name='Fictional Plugin', author='Not the copyright holder',
             languages=['de', 'en'], default_language='de', **options)
 
@@ -84,7 +84,7 @@ class LicensingTests(WorkflowFixture, TestCase):
         self.assertTrue(result['checks']['licensing']['valid'])
 
     def test_skeleton_receives_license_and_complete_doc_links(self):
-        result=flow.plugin_create(self.plugin,self.market,skeleton=True,name='new-plugin',display_name='Fixture',
+        result=flow.create_plugin(self.plugin,self.market,skeleton=True,name='new-plugin',display_name='Fixture',
             description='Fictional source',author='Fixture',languages=['en'],license='MIT',
             copyright_year='2026',copyright_holder='Fictional Holder')
         self.assertTrue((self.plugin/'LICENSE').is_file())
@@ -93,7 +93,7 @@ class LicensingTests(WorkflowFixture, TestCase):
         self.assertTrue(result['checks']['documentation']['valid'])
 
     def test_cli_accepts_explicit_mit_inputs(self):
-        result=subprocess.run([sys.executable,'-B',str(flow.SKILL/'scripts/workflows.py'),'plugin-create',
+        result=subprocess.run([sys.executable,'-B',str(flow.SKILL/'scripts/workflows.py'),'create','--kind','plugin',
             '--root',str(self.plugin),'--marketplace',str(self.market),'--skeleton','--name','new-plugin',
             '--display-name','Fixture','--author','Fixture','--languages','en','--license','MIT',
             '--copyright-year','2026','--copyright-holder','Fictional Holder'],capture_output=True,text=True)

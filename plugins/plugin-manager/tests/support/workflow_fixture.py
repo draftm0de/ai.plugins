@@ -21,7 +21,7 @@ class WorkflowFixture:
         self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()
         self.market = self.repo('market')
-        flow.marketplace_create(self.market, 'fictional-market', 'Fictional Market', 'Fictional Publisher')
+        flow.create_marketplace(self.market, 'fictional-market', 'Fictional Market', 'Fictional Publisher')
         self.source = self.root/'source'; self.source.mkdir()
         (self.source/'SKILL.md').write_text('---\nname: fictional-skill\ndescription: A fictional acceptance fixture.\n---\n# Fictional skill\nRepeat the supplied fictional greeting. Do not access personal data.\n')
         self.plugin = self.repo('new-plugin')
@@ -35,7 +35,7 @@ class WorkflowFixture:
 
 
     def create(self, root=None, **licensing):
-        return flow.plugin_create(root or self.plugin, self.market, skeleton=True, name=(root or self.plugin).name,
+        return flow.create_plugin(root or self.plugin, self.market, skeleton=True, name=(root or self.plugin).name,
             display_name='Fictional Plugin', description='Fictional acceptance capability', author='Fictional Publisher', languages=['de','en'], default_language='de', **({'license':'deferred'} | licensing))
 
 

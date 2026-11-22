@@ -58,7 +58,7 @@ class ConfigureWorkflowTests(WorkflowFixture, unittest.TestCase):
     def test_second_marketplace_requires_the_explicit_change(self):
         """R21: a plugin belongs to exactly one marketplace; association_files (creation) never adds a second one."""
         self.create()
-        second=self.repo('second-market');flow.marketplace_create(second,'second-market','Second Fictional Market','Fictional Publisher')
+        second=self.repo('second-market');flow.create_marketplace(second,'second-market','Second Fictional Market','Fictional Publisher')
         manifest=json.loads((self.plugin/'plugin.json').read_text())
         before={str(p):p.read_bytes() for base in (self.plugin,self.market,second) for p in base.rglob('*') if p.is_file() and '.git' not in p.relative_to(base).parts}
         with self.assertRaisesRegex(ValueError,'use associate to change'):

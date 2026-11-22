@@ -194,7 +194,7 @@ def template_files(kind, root):
     return files
 
 
-def marketplace_create(root, name=None, display_name=None, owner=None, repository=None):
+def create_marketplace(root, name=None, display_name=None, owner=None, repository=None):
     root = safe_path(root)
     origin = git_repository(root, repository)
     if (root/'plugin.json').exists():
@@ -228,7 +228,7 @@ def marketplace_create(root, name=None, display_name=None, owner=None, repositor
                 ('Ein frischer Clone benötigt für lokale Installation zuerst Checkout-Zuordnungen über die Plugin-Zuordnung von plugin-manager. local-marketplace.example.json ist nur eine optionale manuelle Kopiervorlage; nur .local/marketplace.json wird zur Laufzeit gelesen und bleibt uncommitted. Snapshots verwenden den aktuellen Checkout einschließlich uncommitteter Änderungen auf jedem Branch. Nach Änderungen oder Branchwechsel install-local und eine neue Host-Sitzung; kein Commit/Push/PR und kein Marketplace pro Branch. [Voraussetzungen](docs/prerequisites.md): Git und Python 3.10+, Make optional, Host-CLI nur für automatische lokale Installation. Strukturprüfung ist keine GitHub-/GUI-Abnahme.\n' if lang == 'de' else 'A fresh clone needs checkout associations through the plugin association of plugin-manager before local installation. local-marketplace.example.json is only an optional manual template; only .local/marketplace.json is read at runtime and stays uncommitted. Snapshots use the current checkout including uncommitted edits on any branch. After edits or branch switches run install-local and open a new host session; no commit/push/PR or per-branch marketplace. [Prerequisites](docs/prerequisites.md): Git and Python 3.10+, optional Make, host CLI only for automatic local installation. Structural verification is not GitHub/GUI acceptance.\n'))
             files[root/filename] = text.encode()
     ignore, content = ignore_file(root); files[ignore] = content
-    return {'action': 'marketplace-create', 'changed': apply(files, [ignore]), 'repository': origin, 'published': False}
+    return {'action': 'create-marketplace', 'changed': apply(files, [ignore]), 'repository': origin, 'published': False}
 
 
 def checkout_path(base, value):
@@ -442,12 +442,12 @@ def creation_checks(root, market, license_decision=None):
     return checks
 
 
-def plugin_create(root, marketplace, *, name=None, display_name=None, description=None, repository=None, author=None, languages=None, default_language=None, skeleton=False, license=None, license_file=None, copyright_year=None, copyright_holder=None):
+def create_plugin(root, marketplace, *, name=None, display_name=None, description=None, repository=None, author=None, languages=None, default_language=None, skeleton=False, license=None, license_file=None, copyright_year=None, copyright_holder=None):
     root = safe_path(root)
     if any((root/item).exists() or (root/item).is_symlink() for item in ('plugin.json', 'marketplace.json')):
         raise ValueError('Product already exists; an existing plugin is not created again (associate changes its marketplace)')
     if not skeleton:
-        raise ValueError('plugin-create supports only --skeleton; skill import is unsupported')
+        raise ValueError('create --kind plugin supports only --skeleton; skill import is unsupported')
     market = safe_path(marketplace)
     if root == market or root.is_relative_to(market) or market.is_relative_to(root):
         raise ValueError('Use separate plugin and marketplace repositories')
@@ -516,41 +516,58 @@ def plugin_create(root, marketplace, *, name=None, display_name=None, descriptio
     next_step = 'Confirm SCOPE.md, implement agreed behavior under skills/, add tests, then run verify --review. No functional acceptance is claimed.'
     if checks['status'] != 'passed':
         next_step = 'Resolve the reported creation checks before claiming completion. ' + next_step
-    return {'action': 'plugin-create', 'changed': changes, 'repository': origin, 'published': False,
+    return {'action': 'create-plugin', 'changed': changes, 'repository': origin, 'published': False,
             'implementation_status': 'skeleton', 'checks': checks, 'next': next_step}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, epilog='Requires Git and Python 3.10+; Make is optional. associate sets or changes the one marketplace of a plugin; the example JSON is only a manual template. No automatic tool installation.')
     sub = parser.add_subparsers(dest='action', required=True)
-    for action in ('marketplace-create', 'plugin-create', 'associate'):
-        command = sub.add_parser(action)
-        command.add_argument('--root', type=Path, default=Path.cwd(), help='User project root, never manager installation')
-        command.add_argument('--repository')
-        if action != 'associate':
-            command.add_argument('--name'); command.add_argument('--display-name')
-        if action == 'marketplace-create':
-            command.add_argument('--owner')
-        else:
-            command.add_argument('--marketplace', type=Path, required=True, help='Local checkout of the one marketplace the plugin belongs to')
-        if action == 'associate':
-            command.add_argument('--plugin', default=OWNER, help='Running plugin that owns the workpackage evidence')
-            command.add_argument('--drop-missing-old', action='store_true', help='Release only the local reference when the previous marketplace checkout is gone (its catalog entry then remains there)')
-        if action == 'plugin-create':
-            command.add_argument('--skeleton', action='store_true', help='Nonfunctional skeleton with pending SCOPE.md; no invented domain content')
-            command.add_argument('--description'); command.add_argument('--author')
-            command.add_argument('--languages', nargs='+', choices=['de','en'])
-            command.add_argument('--default-language', choices=['de','en'])
-            command.add_argument('--license', help='Required for new plugins: confirmed identifier, or deferred after explicit user choice')
-            command.add_argument('--license-file', type=Path, help='Confirmed complete license text; copied unchanged')
-            command.add_argument('--copyright-year', help='Confirmed MIT copyright year or year range')
-            command.add_argument('--copyright-holder', help='Confirmed MIT rights holder, never inferred from author')
+    create = sub.add_parser('create', help='Create a marketplace or a plugin skeleton (--kind)')
+    create.add_argument('--kind', required=True, choices=('marketplace', 'plugin'))
+    create.add_argument('--root', type=Path, default=Path.cwd(), help='User project root, never manager installation')
+    create.add_argument('--repository')
+    create.add_argument('--name'); create.add_argument('--display-name')
+    create.add_argument('--owner', help='kind marketplace only')
+    create.add_argument('--marketplace', type=Path, help='kind plugin only (required): local checkout of the one marketplace the plugin belongs to')
+    create.add_argument('--skeleton', action='store_true', help='kind plugin only: nonfunctional skeleton with pending SCOPE.md; no invented domain content')
+    create.add_argument('--description'); create.add_argument('--author')
+    create.add_argument('--languages', nargs='+', choices=['de','en'])
+    create.add_argument('--default-language', choices=['de','en'])
+    create.add_argument('--license', help='kind plugin only, required for new plugins: confirmed identifier, or deferred after explicit user choice')
+    create.add_argument('--license-file', type=Path, help='Confirmed complete license text; copied unchanged')
+    create.add_argument('--copyright-year', help='Confirmed MIT copyright year or year range')
+    create.add_argument('--copyright-holder', help='Confirmed MIT rights holder, never inferred from author')
+    associate_parser = sub.add_parser('associate', help='Set or change the one marketplace of a plugin')
+    associate_parser.add_argument('--root', type=Path, default=Path.cwd(), help='User project root, never manager installation')
+    associate_parser.add_argument('--repository')
+    associate_parser.add_argument('--marketplace', type=Path, required=True, help='Local checkout of the one marketplace the plugin belongs to')
+    associate_parser.add_argument('--plugin', default=OWNER, help='Running plugin that owns the workpackage evidence')
+    associate_parser.add_argument('--drop-missing-old', action='store_true', help='Release only the local reference when the previous marketplace checkout is gone (its catalog entry then remains there)')
     parsed, unknown = parser.parse_known_args()
     args = vars(parsed); action = args.pop('action')
     if unknown:
         parser.error('unrecognized arguments: ' + ' '.join(unknown))
+    if action == 'create':
+        kind = args.pop('kind')
+        plugin_only = ('marketplace', 'skeleton', 'description', 'author', 'languages', 'default_language', 'license',
+                       'license_file', 'copyright_year', 'copyright_holder')
+        if kind == 'marketplace':
+            misplaced = [key for key in plugin_only if args[key] not in (None, False)]
+            if misplaced:
+                parser.error('create --kind marketplace does not accept ' + ', '.join('--' + key.replace('_', '-') for key in misplaced))
+            for key in plugin_only:
+                del args[key]
+            action = 'create_marketplace'
+        else:
+            if args['owner'] is not None:
+                parser.error('create --kind plugin does not accept --owner')
+            if args['marketplace'] is None:
+                parser.error('create --kind plugin requires --marketplace')
+            del args['owner']
+            action = 'create_plugin'
     try:
-        result = globals()[action.replace('-', '_')](**args)
+        result = globals()[action](**args)
         print(json.dumps(result, ensure_ascii=False, indent=2)); return 0
     except (ValueError, OSError, KeyError, TypeError, subprocess.CalledProcessError) as exc:
         print('ERROR: ' + str(exc), file=sys.stderr); return 1

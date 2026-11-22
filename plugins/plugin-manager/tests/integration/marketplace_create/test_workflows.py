@@ -23,12 +23,12 @@ class MarketplaceCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         (self.market/'.claude-plugin/marketplace.json').write_text('{}')
         subprocess.run([sys.executable,'-B','scripts/marketplace.py','sync'],cwd=self.market,check=True,capture_output=True)
         config=json.loads((self.market/'marketplace.json').read_text())
-        result=flow.marketplace_create(self.market,config['name'],config['displayName'],config['owner']['name'])
+        result=flow.create_marketplace(self.market,config['name'],config['displayName'],config['owner']['name'])
         self.assertEqual(result['changed'],[])
 
     def test_no_embedded_new_plugins_or_automatic_init(self):
         with self.assertRaisesRegex(ValueError,'separate'):
-            flow.plugin_create(self.market/'plugins/new',self.market,skeleton=True, license='deferred')
+            flow.create_plugin(self.market/'plugins/new',self.market,skeleton=True, license='deferred')
         result=subprocess.run([sys.executable,'-B',str(flow.SKILL/'scripts/workflows.py'),'init'],cwd=self.root,capture_output=True,text=True,check=False)
         self.assertNotEqual(result.returncode, 0)
         self.assertFalse((self.root/'plugin.json').exists())
@@ -53,7 +53,7 @@ class MarketplaceFlowAcceptanceTests(unittest.TestCase):
         return result.returncode, json.loads(result.stdout)
 
     def create(self):
-        return flow.marketplace_create(self.market, 'fictional-market', 'Fictional Market', 'Fictional Publisher')
+        return flow.create_marketplace(self.market, 'fictional-market', 'Fictional Market', 'Fictional Publisher')
 
     def test_end_to_end_language_create_record_skeleton_ready(self):
         self.assertEqual('language', self.call('status')[1]['next'])
@@ -61,7 +61,7 @@ class MarketplaceFlowAcceptanceTests(unittest.TestCase):
         self.assertEqual('configure', self.call('status')[1]['next'])
         self.assertFalse((self.market/'marketplace.json').exists())
         result = self.create()
-        self.assertEqual((False, 'marketplace-create'), (result['published'], result['action']))
+        self.assertEqual((False, 'create-marketplace'), (result['published'], result['action']))
         self.assertNotIn('ok', result)
         self.assertEqual('configure', self.call('status')[1]['next'])  # a created product is no evidence
         code, recorded = self.call('record', '--kind', 'marketplace', '--artifact', 'fictional-market')
@@ -78,7 +78,7 @@ class MarketplaceFlowAcceptanceTests(unittest.TestCase):
         self.assertEqual([], self.create()['changed'])
         before = (self.market/'marketplace.json').read_bytes()
         with self.assertRaisesRegex(ValueError, 'identity conflicts'):
-            flow.marketplace_create(self.market, 'other-market', 'Fictional Market', 'Fictional Publisher')
+            flow.create_marketplace(self.market, 'other-market', 'Fictional Market', 'Fictional Publisher')
         self.assertEqual(before, (self.market/'marketplace.json').read_bytes())
 
     def test_plugin_repository_is_no_marketplace(self):
