@@ -32,7 +32,7 @@ Repository installation requires no plugin ZIPs or manifest versions. `make sync
 
 `make install-local TARGET=claude` or `TARGET=codex` creates filtered snapshots under `dist/local-development/` and installs all associated plugins as `<marketplace-id>-dev`. It needs no commit or push, and calling it again refreshes the snapshots. `DRY_RUN=1` writes snapshots without calling a host. Host caches are not directly edited; the CLI manages its installations.
 
-Local paths stay Git-ignored in `.local/marketplace.json`: `sources` in the marketplace; `marketplace` and `marketplaces` in a plugin. Explicit `MARKETPLACE=...` overrides the default for one invocation. All required checkouts must be available before installation.
+Local paths stay Git-ignored: `sources` in `.local/marketplace.json` of the marketplace, and `marketplace_path` in `.project/plugins/plugin-manager/local.json` of a plugin. A plugin belongs to exactly one marketplace; there is no per-call override. All required checkouts must be available before installation.
 
 Local snapshots read the current checkout including uncommitted changes, regardless of branch. After edits or branch switches run `install-local` and open a new host session. Local tests require no commit, push or PR. Keep one shared `<marketplace-id>-dev`, with no additional marketplaces per branch.
 

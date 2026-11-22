@@ -42,7 +42,7 @@ Update liest aktuelle Quellen erneut. Publish kann mit einem privaten Journal fo
 
 ## Spezialisierte Abläufe
 
-`make install-local TARGET=claude|codex` verwenden alle zugeordneten Plugins in einem gemeinsamen `<marketplace-id>-dev`. Im Plugin überschreibt `MARKETPLACE=/pfad/zum/katalog` den lokalen Standard nur für den Aufruf. Fehlende benötigte Checkouts stoppen vor Host-Änderungen. `DRY_RUN=1` erzeugt nur Snapshots.
+`make install-local TARGET=claude|codex` verwenden alle zugeordneten Plugins in einem gemeinsamen `<marketplace-id>-dev`. Im Plugin kommt der Marketplace ausschließlich aus der Zuordnung (`plugin-manager`, Flow `associate`); einen Override pro Aufruf gibt es nicht. Fehlende benötigte Checkouts stoppen vor Host-Änderungen. `DRY_RUN=1` erzeugt nur Snapshots.
 
 [Publish](publish.md) behandelt Plugin und Marketplace getrennt: bei neuen Einträgen zuerst Plugin, danach Marketplace. Branch → Commit → Push → PR → Prüfungen → Merge erfordern eine konkrete Freigabe. Keine Tags, Releases oder Plugin-ZIPs.
 

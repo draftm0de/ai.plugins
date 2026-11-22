@@ -44,7 +44,7 @@ Update reads current sources again. Publish can resume from a private journal af
 
 ## Specialized workflows
 
-`make install-local TARGET=claude|codex` use all associated plugins in a shared `<marketplace-id>-dev`. In a plugin, `MARKETPLACE=/path/to/catalog` overrides the local default only for that invocation. Missing required checkouts stop before host changes. `DRY_RUN=1` creates snapshots only.
+`make install-local TARGET=claude|codex` use all associated plugins in a shared `<marketplace-id>-dev`. In a plugin the marketplace comes only from its association (`plugin-manager`, flow `associate`); there is no per-call override. Missing required checkouts stop before host changes. `DRY_RUN=1` creates snapshots only.
 
 [Publish](publish.md) treats plugin and marketplace separately: for new entries, plugin first, marketplace second. Branch → commit → push → PR → checks → merge require concrete approval. No tags, releases or plugin ZIPs.
 

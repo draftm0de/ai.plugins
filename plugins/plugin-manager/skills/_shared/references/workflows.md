@@ -77,8 +77,6 @@ A plugin belongs to exactly one marketplace. Requires the configuration evidence
 make verify
 make install-local TARGET=claude
 make install-local TARGET=codex
-# From a plugin, override only this invocation:
-make install-local TARGET=codex MARKETPLACE=/work/another-catalog
 ```
 
 All selected marketplace plugins need local checkouts before installation. Preflight happens before snapshot replacement or host changes. No fallback to remote or one-plugin catalogs. Snapshots are filtered and generated under dist/local-development; DRY_RUN=1 still writes them. Never write host caches directly. Verify reports publishable structure independently from optional local completeness and never invokes repository code.

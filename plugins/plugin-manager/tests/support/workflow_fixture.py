@@ -53,7 +53,6 @@ class WorkflowFixture:
         self.record(root)
         return result
 
-    def make(self,root,action,host,market=None):
+    def make(self,root,action,host):
         args=['make','-s',action,'TARGET='+host,'DRY_RUN=1']
-        if market: args.append('MARKETPLACE='+str(market))
         return json.loads(subprocess.check_output(args,cwd=root,text=True))

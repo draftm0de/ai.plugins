@@ -2,7 +2,6 @@ export PYTHONDONTWRITEBYTECODE := 1
 PYTHON ?= python3
 TARGET ?= claude
 DRY_RUN ?= 0
-MARKETPLACE ?=
 .PHONY: help test
 help:
 	@echo 'Tests: test (unit + integration + contracts), test-unit, test-integration, test-contracts, test-native, test-behavior'
@@ -24,7 +23,7 @@ test-behavior:
 .SUFFIXES:
 .PHONY: install-local check-plugin sync-plugin
 install-local:
-	$(PYTHON) scripts/plugin.py install-local --target "$(TARGET)" $(if $(MARKETPLACE),--marketplace "$(MARKETPLACE)",) $(if $(filter 1,$(DRY_RUN)),--dry-run,)
+	$(PYTHON) scripts/plugin.py install-local --target "$(TARGET)" $(if $(filter 1,$(DRY_RUN)),--dry-run,)
 check-plugin:
 	$(PYTHON) scripts/plugin.py check
 sync-plugin:

@@ -98,9 +98,24 @@ class AssociateTests(AssociateBase):
             for path, data in flow.catalog_files(market, config).items():
                 self.assertEqual(data, path.read_bytes(), str(path))
         self.assertEqual('second-market-dev', self.make(self.plugin, 'install-local', 'codex')['marketplace'])
-        with self.assertRaises(subprocess.CalledProcessError):  # the old marketplace no longer lists the plugin
-            subprocess.check_output(['make', '-s', 'install-local', 'TARGET=codex', 'DRY_RUN=1', 'MARKETPLACE=' + str(self.market)],
-                                    cwd=self.plugin, text=True, stderr=subprocess.DEVNULL)
+
+    def test_install_local_has_no_marketplace_override(self):  # R21
+        self.configured()
+        second = self.second_market()
+        script = self.plugin / 'scripts/plugin.py'
+        run = subprocess.run([sys.executable, '-B', str(script), 'install-local', '--target', 'codex', '--dry-run',
+                              '--marketplace', str(second)], capture_output=True, text=True, cwd=self.plugin)
+        self.assertEqual(2, run.returncode)  # invalid invocation, no such option
+        self.assertIn('--marketplace', run.stderr)
+        # the former make variable is ignored: the marketplace comes only from local.json
+        out = json.loads(subprocess.check_output(['make', '-s', 'install-local', 'TARGET=codex', 'DRY_RUN=1',
+                                                  'MARKETPLACE=' + str(second)], cwd=self.plugin, text=True))
+        self.assertEqual('fictional-market-dev', out['marketplace'])
+        self.assertNotIn('MARKETPLACE', (self.plugin / 'Makefile').read_text())
+        for relative in ('scripts/plugin.py', 'scripts/plugin_payload.py'):
+            path = ROOT.parent.parent / relative if relative == 'scripts/plugin_payload.py' else self.plugin / relative
+            self.assertNotIn('marketplace_root', path.read_text(), relative)
+            self.assertNotIn('pass --marketplace PATH', path.read_text(), relative)
 
     def test_failed_write_rolls_back_all_three_repositories(self):
         self.configured()

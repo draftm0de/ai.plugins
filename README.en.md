@@ -11,21 +11,20 @@ Marketplace `draftmode-ai-plugins`, displayed as **Draftmode AI Plugins**. Repos
 
 ## Skills and their responsibilities
 
-`plugin-manager` is the plugin bundling six skills. Select the appropriate skill for your target repository. Shared rules, tools and templates live under [`skills/_shared/`](plugins/plugin-manager/skills/_shared/WORKFLOWS.md); there is no separate Manager skill.
+`plugin-manager` is the plugin bundling four skills. Select the appropriate skill for your target repository. Shared rules, tools and templates live under [`skills/_shared/`](plugins/plugin-manager/skills/_shared/WORKFLOWS.md); there is no separate Manager skill.
 
 | Skill | Responsibility |
 | --- | --- |
-| [marketplace-create](plugins/plugin-manager/skills/marketplace-create/SKILL.md) | Set up a marketplace in an existing local GitHub checkout: manifest, host catalogs, tools and documentation scaffold. |
-| [plugin-manager](plugins/plugin-manager/skills/plugin-manager/SKILL.md) | Set up language, synchronize the skeleton and configure a new plugin through the central entry. |
+| [plugin-manager](plugins/plugin-manager/skills/plugin-manager/SKILL.md) | Central entry: set up the language, configure a plugin or a marketplace, synchronize the skeleton and change the marketplace association of a plugin. |
 | [verify](plugins/plugin-manager/skills/verify/SKILL.md) | Detect repository type and inspect it read-only. Assess publishable structure separately from available local development configuration. |
 | [update](plugins/plugin-manager/skills/update/SKILL.md) | Maintain README and documentation from current sources and saved language settings. No installation or publication. |
 | [publish](plugins/plugin-manager/skills/publish/SKILL.md) | Plan publication for a plugin or marketplace. Execute through feature branch, commit, push, PR, checks and merge only after concrete approval. |
 
-`plugin-verify` and `marketplace-verify` remain explicit verification commands, not separate skills. `init` is not supported; use marketplace-create or plugin-manager explicitly.
+`plugin-verify` and `marketplace-verify` remain explicit verification commands, not separate skills. `init` is not supported; use plugin-manager explicitly.
 
 ### Usage and boundaries
 
-In Claude Code use, for example, `/plugin-manager:marketplace-create`, `/plugin-manager:plugin-manager`, `/plugin-manager:verify`, `/plugin-manager:update`, `/plugin-manager:publish`. In Codex select the currently named skill or describe the task and target repository. [Inputs and examples](plugins/plugin-manager/docs/en/usage.md).
+In Claude Code use, for example, `/plugin-manager:plugin-manager`, `/plugin-manager:verify`, `/plugin-manager:update`, `/plugin-manager:publish`. In Codex select the currently named skill or describe the task and target repository. [Inputs and examples](plugins/plugin-manager/docs/en/usage.md).
 
 `update` maintains documentation. `install-local` builds and refreshes local plugin snapshots including uncommitted changes. Metadata synchronization and documentation validation are tool functions, not additional skills. Create does not create a GitHub repository or invent domain skill content. Publish treats plugin and marketplace separately; explicitly approved bootstrap of completely empty repositories remains the documented exception to the PR workflow.
 
@@ -46,9 +45,9 @@ This handbook covers the path from a local checkout to publication. `ai.plugins`
 
 **Working in chat:** First add the marketplace and install **Plugin Manager**, making it available in the session. Use a local Claude/Codex environment with access to your project files and development tools. Create or open a project, select the repository folder as the working directory, and start a chat there. Project selection varies by host; what matters is the local target folder. Installing the plugin alone does not give a web-only chat access to your checkout.
 
-In Claude Code, start the corresponding command, such as `/plugin-manager:marketplace-create`; in Codex, select the skill or explicitly name it in your request. Provide any additional repository paths in chat. The target is your selected project or an explicitly specified folder, never automatically the Manager installation directory.
+In Claude Code, start the corresponding command, such as `/plugin-manager:plugin-manager`; in Codex, select the skill or explicitly name it in your request. Provide any additional repository paths in chat. The target is your selected project or an explicitly specified folder, never automatically the Manager installation directory.
 
-**Working in the terminal:** The Create and Configure Make examples require a local `ai.plugins` checkout and run from its root. Installing the Manager alone does not provide that Makefile in your project. Other commands run in the repository indicated. Replace placeholders such as `../my-plugin` and publisher details with your own values. Chat workflows use the same tools and require the same technical prerequisites.
+**Working in the terminal:** The Create examples require a local `ai.plugins` checkout and run from its root. Installing the Manager alone does not provide that Makefile in your project. Other commands run in the repository indicated. Replace placeholders such as `../my-plugin` and publisher details with your own values. Chat workflows use the same tools and require the same technical prerequisites.
 
 ### Marketplace
 
@@ -61,10 +60,10 @@ In Claude Code, start the corresponding command, such as `/plugin-manager:market
 1. Create a GitHub repository and clone it locally.
 2. Create or open a Claude/Codex project for that checkout and select its folder.
 3. Start a new chat with Plugin Manager available.
-4. Select `marketplace-create` or run `/plugin-manager:marketplace-create` in Claude Code.
+4. Select `plugin-manager` or run `/plugin-manager:plugin-manager` in Claude Code and choose “marketplace” as the kind.
 5. Supply the technical identifier, display name and publisher. Known project details and Git origin are reused; missing or conflicting details are clarified.
 
-> Run marketplace-create in the selected project folder. Use my-catalog as the identifier, “My Catalog” as the display name and “Confirmed Publisher” as the publisher. Set up the marketplace and verify its structure afterward.
+> Run plugin-manager as a marketplace in the selected project folder. Use my-catalog as the identifier, “My Catalog” as the display name and “Confirmed Publisher” as the publisher. Set up the marketplace and verify its structure afterward.
 
 **In the terminal** — from the `ai.plugins` checkout:
 
@@ -91,9 +90,9 @@ To work on **this** marketplace, do not run Create again. Associate existing plu
 **In the terminal** — from the relevant marketplace root:
 
 ```sh
-make sync-marketplace
-make check-marketplace
-make verify
+python3 -B scripts/marketplace.py sync
+python3 -B scripts/marketplace.py check
+python3 -B scripts/verify.py --source .
 make test
 ```
 
@@ -240,7 +239,6 @@ Then open a new host session and activate the intended development copy. Snapsho
 | Option | Effect |
 | --- | --- |
 | `DRY_RUN=1` | Writes snapshots and shows commands without calling the host. |
-| `MARKETPLACE=../another-catalog` | Overrides the local default for one invocation from a plugin. |
 
 Earlier `plugin-manager-dev` installations are not removed automatically. Disable or remove old copies after successful verification. CLI installation does not establish automatic synchronization with a desktop/web account interface.
 

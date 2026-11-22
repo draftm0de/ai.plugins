@@ -242,25 +242,24 @@ def codex_payload(portable):
 LOCAL_ASSOCIATION = '.project/plugins/plugin-manager/local.json'
 
 
-def install_local(target, dry_run=False, marketplace_root=None):
-    """Resolve the selected development marketplace; never fall back to a private catalog."""
+def install_local(target, dry_run=False):
+    """Resolve the one marketplace of this plugin from its local association; no override, no fallback."""
     if target not in ('claude', 'codex'):
         raise ValueError('Local development supports claude or codex')
-    selected = marketplace_root
-    if not selected:
-        path = source_path(ROOT, LOCAL_ASSOCIATION)
-        if path.exists():
-            local = strict_json(read_file(path))
-            if (not isinstance(local, dict) or set(local) != {'schema_version', 'marketplace_path'} or type(local['schema_version']) is not int
-                    or local['schema_version'] != 1 or not isinstance(local['marketplace_path'], str) or not local['marketplace_path'].strip()):
-                raise ValueError('Unsupported ' + LOCAL_ASSOCIATION + '; run plugin-manager (associate) to write it again')
-            selected = local['marketplace_path']
+    selected = None
+    path = source_path(ROOT, LOCAL_ASSOCIATION)
+    if path.exists():
+        local = strict_json(read_file(path))
+        if (not isinstance(local, dict) or set(local) != {'schema_version', 'marketplace_path'} or type(local['schema_version']) is not int
+                or local['schema_version'] != 1 or not isinstance(local['marketplace_path'], str) or not local['marketplace_path'].strip()):
+            raise ValueError('Unsupported ' + LOCAL_ASSOCIATION + '; run plugin-manager (associate) to write it again')
+        selected = local['marketplace_path']
     if selected:
         selected = Path(selected).expanduser()
         if not selected.is_absolute():
             selected = ROOT / selected
     if not selected:
-        raise ValueError('Local marketplace unavailable; run plugin-manager (associate) or pass --marketplace PATH')
+        raise ValueError('Local marketplace unavailable; run plugin-manager (associate)')
     selected = Path(selected).resolve()
     helper = selected / 'scripts/local_plugins.py'
     if not helper.is_file() or helper.is_symlink():
@@ -292,7 +291,6 @@ def main(argv=None):
         action = sub.add_parser(command)
         action.add_argument('--target', choices=('claude', 'codex'), default='claude')
         action.add_argument('--dry-run', action='store_true')
-        action.add_argument('--marketplace', type=Path)
     check = sub.add_parser('check')
     sub.add_parser('sync')
     args = parser.parse_args(argv)
@@ -300,7 +298,7 @@ def main(argv=None):
         if args.command in ('check', 'sync'):
             result = repository_metadata(check=args.command == 'check')
         else:
-            result = install_local(args.target, args.dry_run, args.marketplace)
+            result = install_local(args.target, args.dry_run)
         print(json.dumps(result, indent=2))
         return 0
     except (OSError, ValueError, KeyError, subprocess.CalledProcessError) as exc:

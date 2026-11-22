@@ -32,7 +32,7 @@ Repository-Installation benötigt keine Plugin-ZIPs oder Manifest-Versionen. `ma
 
 `make install-local TARGET=claude` beziehungsweise `TARGET=codex` erstellt gefilterte Snapshots unter `dist/local-development/` und installiert alle zugeordneten Plugins als `<marketplace-id>-dev`. Der Aufruf braucht weder Commit noch Push, und ein erneuter Aufruf erneuert die Snapshots. `DRY_RUN=1` schreibt Snapshots ohne Host-Aufruf. Persönliche Host-Caches werden nicht direkt verändert. Die CLI verwaltet ihre eigenen Installationen.
 
-Lokale Pfade stehen Git-ignoriert in `.local/marketplace.json`: im Marketplace unter `sources`, im Plugin unter `marketplace` und `marketplaces`. Ein explizites `MARKETPLACE=...` überschreibt den Standard für den Aufruf. Alle benötigten Checkouts müssen vor Installation verfügbar sein.
+Lokale Pfade stehen Git-ignoriert: im Marketplace in `.local/marketplace.json` unter `sources`, im Plugin in `.project/plugins/plugin-manager/local.json` (`marketplace_path`). Ein Plugin gehört zu genau einem Marketplace; einen Override pro Aufruf gibt es nicht. Alle benötigten Checkouts müssen vor Installation verfügbar sein.
 
 Lokale Snapshots lesen den aktuellen Checkout einschließlich uncommitteter Änderungen, unabhängig vom Branch. Nach Änderungen oder Branchwechsel `install-local` ausführen und eine neue Host-Sitzung öffnen. Kein Commit, Push oder PR ist für lokale Tests erforderlich. Es bleibt bei einem gemeinsamen `<marketplace-id>-dev`, ohne zusätzliche Marketplaces pro Branch.
 

@@ -14,7 +14,7 @@
       "executable": false
     },
     "scripts/plugin_payload.py": {
-      "sha256": "25137b954c9555933d6370b7e30623d36db0bd444dc275665fbdf7031c89ba99",
+      "sha256": "c9023a6afbce46cd67c0c422911aa515deb639f24f25f8ae6abf591964ab9661",
       "executable": false
     },
     "scripts/run_tests.py": {
