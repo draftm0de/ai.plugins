@@ -311,7 +311,7 @@ class BoundaryTests(Base):
         for name, data in owned.items():
             self.assertEqual(data, (self.p / name).read_bytes())
         self.assertEqual(manifest, (self.p / 'plugin.json').read_bytes())
-        self.assertFalse((self.p / 'tests').exists())
+        self.assertEqual(['tests/behavior/run_cases.py'], sorted(str(p.relative_to(self.p)) for p in (self.p / 'tests').rglob('*') if p.is_file()))  # only the managed runner
 
     def test_runs_from_complete_isolated_manager_copy_with_no_bytecode_and_no_network_modules(self):
         manager = tree(self.box.manager)

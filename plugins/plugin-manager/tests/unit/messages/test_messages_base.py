@@ -77,6 +77,29 @@ class MessagesBaseTests(unittest.TestCase):
             self.assertNotIn('Traceback', result.stderr)
             self.assertFalse((Path(directory) / '.project').exists())
 
+    def test_the_command_frame_prints_finished_messages_and_never_raw_errors(self):
+        import io
+        base = self.base
+        def configure(parser):
+            parser.add_argument('--name', required=True)
+        def body(args, language, out):
+            if args.name == 'bad':
+                raise base.Failure('LANGUAGE_TAG_INVALID')
+            if args.name == 'boom':
+                raise RuntimeError('raw internal text 17')
+            out.write('ok ' + args.name + ' ' + language + '\\n')
+        for argv, status, in_out, in_err in ((['--name', 'a', '--language', 'de'], 0, 'ok a de', ''),
+                                             (['--name', 'bad', '--language', 'de'], 1, '', 'weil das Sprachkürzel nicht gültig ist'),
+                                             (['--name', 'boom'], 1, '', 'because the cause is not known'),
+                                             (['--language', 'de'], 1, '', 'weil der Aufruf unvollständig ist'),
+                                             (['--unknown'], 1, '', 'because the call is incomplete')):
+            out, err = io.StringIO(), io.StringIO()
+            self.assertEqual(status, base.run('count', argv, 'demo', out, err, configure, body), argv)
+            self.assertIn(in_out, out.getvalue())
+            self.assertIn(in_err, err.getvalue())
+            self.assertNotIn('raw internal text', err.getvalue())
+            self.assertNotIn('Traceback', err.getvalue())
+
     def test_the_manager_ships_byte_identical_copies(self):
         for name in ('messages_base.py', 'operator_language.py'):
             self.assertEqual((SYNC / name).read_bytes(), (ROOT / 'skills/_shared/scripts' / name).read_bytes(), name)

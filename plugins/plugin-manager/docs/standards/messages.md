@@ -31,7 +31,8 @@ Please <the way to fix it>. Then call /<plugin>:<skill> again.
 - The layout lives once, in the managed `skills/_shared/scripts/messages_base.py` (`render_failure`); a plugin never builds
   it again. The wording lives in a catalogue keyed by a code, in each supported language: the plugin extends the
   `BASE_CATALOGUE` of `messages_base.py` with the entries of its own failures, in its own module.
-- Scripts raise failures (`messages_base.Failure`) with a code and facts (path, address); the command prints the finished message. The model
+- Scripts raise failures (`messages_base.Failure`) with a code and facts (path, address); the command frame
+  `messages_base.run` prints the finished message, so that no script handles its own errors. The model
   writes that message unchanged and never composes, translates, shortens or extends it.
 - A new cause is a new catalogue entry with a code, never a sentence in a skill or flow.
 - A failure without a code, an error of the host or a crash gets the same layout with "the cause is not known (an

@@ -34,6 +34,8 @@ directories that are needed, and add `__init__.py` to every discovered directory
 
 ## Model tests
 
+- The runner is the managed `tests/behavior/run_cases.py` (`make test-behavior CLI=claude|codex`); the cases are the plugin's own
+  `tests/fixtures/skills/cases.json`. Without cases it reports `NOT RUN`.
 - A case holds the real skill texts, the output of the commands the skill starts with, the conversation so far and a
   deterministic expectation (language, required and forbidden text, forbidden commands, next step). The model has no
   tools; grading is deterministic.

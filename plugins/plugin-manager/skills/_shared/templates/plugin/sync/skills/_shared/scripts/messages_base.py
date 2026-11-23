@@ -2,6 +2,7 @@
 
 This module is the only place that builds the layout of a failure message (standards/messages.md). A plugin extends
 BASE_CATALOGUE with the entries of its own failures and calls render_failure; it never builds the layout itself."""
+import argparse
 import json
 from pathlib import Path
 
@@ -116,3 +117,38 @@ def render_failure(catalogue, code, language, plugin, skill, changed=None, stopp
 class _Facts(dict):
     def __missing__(self, key):
         return '{' + key + '}'
+
+
+class _Parser(argparse.ArgumentParser):
+    def error(self, message):
+        raise Failure('ARGS_INVALID')
+
+
+def language_in(argv):
+    """The message language named by --language in an argument list, before the arguments are parsed."""
+    for index, item in enumerate(argv[:-1]):
+        if item == '--language':
+            return pick_language(argv[index + 1])
+    return DEFAULT_LANGUAGE
+
+
+def run(skill, argv, plugin, out, err, configure, body, catalogue=None):
+    """The command frame every skill script uses: parse the arguments (a bad call is ARGS_INVALID), run
+    body(args, language, out) and print a failure as its finished message on `err`. Returns the exit status (0 or 1).
+    Anything that is not a Failure is reported as not known; no raw error text or traceback reaches the person."""
+    catalogue = catalogue or BASE_CATALOGUE
+    language = language_in(argv)
+    try:
+        parser = _Parser(prog=skill, add_help=False)
+        parser.add_argument('--language')
+        configure(parser)
+        args = parser.parse_args(argv)
+        language = pick_language(args.language)
+        body(args, language, out)
+        return 0
+    except Failure as failure:
+        code, facts = failure.code, failure.facts
+    except Exception:
+        code, facts = 'UNKNOWN', {}
+    err.write(render_failure(catalogue, code, language, plugin, skill, **facts) + '\n')
+    return 1

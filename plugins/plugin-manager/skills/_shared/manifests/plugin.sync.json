@@ -14,7 +14,7 @@
       "executable": false
     },
     "docs/standards/messages.md": {
-      "sha256": "f88bf4d5eb4f9ba8228953e35261190dcf3478f7b2ff316a49bf70f9cef2c313",
+      "sha256": "d6f9d37b8505c96710c20823efa41e16cc4ced1839952895da85bcca90877031",
       "executable": false
     },
     "docs/standards/skills.md": {
@@ -22,7 +22,7 @@
       "executable": false
     },
     "docs/standards/testing.md": {
-      "sha256": "771c288745f66e7da6b1fd1bf7768ccb962bad69fbfd969b5906bd1aa4f33079",
+      "sha256": "38607d703a424055cc878df0efd281af2e59eb7d8a846311cb98a324022198f5",
       "executable": false
     },
     "scripts/plugin.py": {
@@ -42,11 +42,15 @@
       "executable": false
     },
     "skills/_shared/scripts/messages_base.py": {
-      "sha256": "ec39f130aa982d0f04422c8d1c7a29c4a31293e94065d5825d1d451452da073d",
+      "sha256": "92be65e2deeca54371e0e38d51f6800eadd141c15842ddd280a3908186a560d7",
       "executable": false
     },
     "skills/_shared/scripts/operator_language.py": {
       "sha256": "3660c928e59a241bc4e3250ca63d39c76eb3a52e7c33bf0d9602121b030aba5e",
+      "executable": false
+    },
+    "tests/behavior/run_cases.py": {
+      "sha256": "fdab0bfa72f51c6fe367598b14457f9edc5235d5f0a1c31ba37c1fa42049e73f",
       "executable": false
     }
   },

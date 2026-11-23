@@ -15,8 +15,9 @@ TEST_GROUP ?=
 .PHONY: test test-unit test-integration test-contracts test-native test-behavior
 test test-unit test-integration test-contracts test-native:
 	$(PYTHON) -B scripts/run_tests.py --kind $(if $(filter test,$@),deterministic,$(patsubst test-%,%,$@)) $(if $(TEST_GROUP),--group "$(TEST_GROUP)",)
+CLI ?= claude
 test-behavior:
-	@echo "NOT RUN: no model behavior suite configured"
+	$(PYTHON) -B tests/behavior/run_cases.py --cli $(CLI)
 
 # Local development and repository metadata
 # Disable implicit shell-script rules (for example install.sh -> install).
