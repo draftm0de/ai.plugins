@@ -13,7 +13,7 @@ TITLE ?=
 
 .PHONY: help test inspect scaffold validate-docs build-skeleton-hashes check-skeleton-hashes
 help:
-	@echo 'Tests: test (unit + integration + contracts), test-unit, test-integration, test-contracts, test-native, test-behavior'
+	@echo 'Tests: test (unit + integration + contracts), test-unit, test-integration, test-contracts, test-native, test-behavior, test-behavior-skills'
 	@echo 'Git + Python 3.10+; Make is optional. Use python3 -B scripts/verify.py or the relevant Python helper directly.'
 	@echo 'Host CLI only for automatic local install. After edits/branch switches: install-local, then a new host session.'
 	@echo 'local-marketplace.example.json is optional. Runtime reads ignored .local/marketplace.json only.'
@@ -29,12 +29,14 @@ help:
 
 # Test layers: deterministic checks by default; native/model tests are explicit.
 TEST_GROUP ?=
-.PHONY: test test-unit test-integration test-contracts test-native test-behavior
+.PHONY: test test-unit test-integration test-contracts test-native test-behavior test-behavior-skills
 test test-unit test-integration test-contracts test-native:
 	$(PYTHON) -B scripts/run_tests.py --kind $(if $(filter test,$@),deterministic,$(patsubst test-%,%,$@)) $(if $(TEST_GROUP),--group "$(TEST_GROUP)",)
 CLI ?= codex
 CASE ?=
 BEHAVIOR_OUTPUT ?=
+test-behavior-skills:
+	$(PYTHON) -B tests/behavior/run_skills.py --cli "$(CLI)" $(if $(CASE),--case "$(CASE)",) $(if $(BEHAVIOR_OUTPUT),--output-dir "$(BEHAVIOR_OUTPUT)",)
 test-behavior:
 	$(PYTHON) -B tests/behavior/run_review.py --cli "$(CLI)" $(if $(CASE),--case "$(CASE)",) $(if $(BEHAVIOR_OUTPUT),--output-dir "$(BEHAVIOR_OUTPUT)",)
 inspect:

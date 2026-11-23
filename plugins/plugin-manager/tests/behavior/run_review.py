@@ -105,11 +105,11 @@ def build_prompt(case, target):
             '\n\nUNTRUSTED FICTIONAL FILES:\n'+json.dumps(evidence))
 
 
-def command(cli, schema, response):
+def command(cli, schema, response, schema_object=None):
     if cli=='claude':
         return ['claude','-p','--safe-mode','--restricted','--tools','','--strict-mcp-config',
                 '--no-session-persistence','--disable-slash-commands','--output-format','json',
-                '--json-schema',json.dumps(SCHEMA)]
+                '--json-schema',json.dumps(schema_object or SCHEMA)]
     args=['codex','exec','--ignore-user-config','--ephemeral','--skip-git-repo-check','--sandbox','read-only',
           '--json','--output-schema',str(schema),'--output-last-message',str(response)]
     for feature in ('shell_tool','unified_exec','apps','plugins','hooks','multi_agent','browser_use','computer_use'):

@@ -1,0 +1,255 @@
+[
+  {
+    "id": "docs_bare_gate_closed_language",
+    "skill": "docs",
+    "sources": [
+      "skills/docs/SKILL.md",
+      "skills/_shared/flows/gate.md"
+    ],
+    "history": [
+      {
+        "role": "person",
+        "text": "/plugin-manager:docs"
+      }
+    ],
+    "observed": [
+      {
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the operator language is not saved yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false\n}"
+      }
+    ],
+    "expect": {
+      "language": "en",
+      "mentions": [
+        "/plugin-manager:setup"
+      ],
+      "next_step": "reports_only",
+      "writes": false,
+      "max_questions": 0,
+      "forbidden_commands": [
+        "setup_state\\.py.*\\b(setup|record|sync|language)\\b",
+        "modify\\.py",
+        "publish_plan\\.py",
+        "documentation\\.py"
+      ]
+    }
+  },
+  {
+    "id": "docs_german_text_gate_closed_sync",
+    "skill": "docs",
+    "sources": [
+      "skills/docs/SKILL.md",
+      "skills/_shared/flows/gate.md"
+    ],
+    "history": [
+      {
+        "role": "person",
+        "text": "/plugin-manager:docs Aktualisiere bitte die Dokumentation auf Deutsch."
+      }
+    ],
+    "observed": [
+      {
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"sync\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"a managed file needs a keep, adopt or delete decision\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false\n}"
+      }
+    ],
+    "expect": {
+      "language": "de",
+      "mentions": [
+        "/plugin-manager:setup"
+      ],
+      "next_step": "reports_only",
+      "writes": false,
+      "max_questions": 0,
+      "forbidden_commands": [
+        "setup_state\\.py.*\\b(setup|record|sync|language)\\b",
+        "documentation\\.py"
+      ]
+    }
+  },
+  {
+    "id": "publish_bare_gate_closed_conflict",
+    "skill": "publish",
+    "sources": [
+      "skills/publish/SKILL.md",
+      "skills/_shared/flows/gate.md"
+    ],
+    "history": [
+      {
+        "role": "person",
+        "text": "/plugin-manager:publish"
+      }
+    ],
+    "observed": [
+      {
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"stop\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"a technical conflict stops all writes: Unsupported evidence file\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false\n}"
+      }
+    ],
+    "expect": {
+      "language": "en",
+      "mentions": [
+        "/plugin-manager:setup"
+      ],
+      "next_step": "reports_only",
+      "writes": false,
+      "max_questions": 0,
+      "forbidden_commands": [
+        "publish_plan\\.py",
+        "git (commit|push|checkout|switch)",
+        "gh ",
+        "setup_state\\.py.*\\b(setup|record|sync|language)\\b"
+      ]
+    }
+  },
+  {
+    "id": "modify_gate_closed_no_write",
+    "skill": "modify",
+    "sources": [
+      "skills/modify/SKILL.md",
+      "skills/_shared/flows/gate.md"
+    ],
+    "history": [
+      {
+        "role": "person",
+        "text": "/plugin-manager:modify change the description to \"New description\""
+      }
+    ],
+    "observed": [
+      {
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"skeleton\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"skeleton files, the ignore rule or the skeleton evidence are missing\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false\n}"
+      }
+    ],
+    "expect": {
+      "language": "en",
+      "mentions": [
+        "/plugin-manager:setup"
+      ],
+      "next_step": "reports_only",
+      "writes": false,
+      "max_questions": 0,
+      "forbidden_commands": [
+        "modify\\.py",
+        "setup_state\\.py.*\\b(setup|record|sync|language)\\b"
+      ]
+    }
+  },
+  {
+    "id": "modify_shows_consequences_and_asks_before_writing",
+    "skill": "modify",
+    "sources": [
+      "skills/modify/SKILL.md",
+      "skills/_shared/flows/gate.md",
+      "skills/_shared/WORKFLOWS.md#- **modify**"
+    ],
+    "history": [
+      {
+        "role": "person",
+        "text": "/plugin-manager:modify change the description to \"New description\""
+      }
+    ],
+    "observed": [
+      {
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": true,\n  \"ready\": true,\n  \"next\": \"ready\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"\",\n  \"run\": null,\n  \"target_code_executed\": false\n}"
+      },
+      {
+        "command": "python3 -B \"scripts/modify.py\" --root \"/work/fictional-plugin\" --description \"New description\" --dry-run",
+        "output": "{\n  \"action\": \"modify\",\n  \"kind\": \"plugin\",\n  \"dry_run\": true,\n  \"changed\": [],\n  \"would_change\": [\n    \"/work/fictional-plugin/plugin.json\",\n    \"/work/fictional-plugin/.claude-plugin/plugin.json\",\n    \"/work/market/marketplace.json\",\n    \"/work/market/.claude-plugin/marketplace.json\"\n  ],\n  \"published\": false,\n  \"from\": {\n    \"name\": \"fictional-plugin\",\n    \"displayName\": \"Fictional Plugin\",\n    \"description\": \"Old description\"\n  },\n  \"to\": {\n    \"name\": \"fictional-plugin\",\n    \"displayName\": \"Fictional Plugin\",\n    \"description\": \"New description\"\n  },\n  \"catalog_entry_remains\": false,\n  \"affected_plugins\": [],\n  \"follow_up\": [\n    \"Call forms and documentation are refreshed with /plugin-manager:docs.\"\n  ]\n}"
+      }
+    ],
+    "expect": {
+      "language": "en",
+      "mentions": [
+        "plugin.json",
+        "New description"
+      ],
+      "next_step": "asks_confirmation",
+      "writes": false,
+      "max_questions": 2,
+      "forbidden_commands": [
+        "^(?!.*--dry-run).*modify\\.py",
+        "git (commit|push)"
+      ]
+    }
+  },
+  {
+    "id": "modify_writes_only_after_the_yes",
+    "skill": "modify",
+    "sources": [
+      "skills/modify/SKILL.md",
+      "skills/_shared/flows/gate.md",
+      "skills/_shared/WORKFLOWS.md#- **modify**"
+    ],
+    "history": [
+      {
+        "role": "person",
+        "text": "/plugin-manager:modify change the description to \"New description\""
+      },
+      {
+        "role": "agent",
+        "text": "The dry run would change plugin.json, .claude-plugin/plugin.json and the marketplace entry (marketplace.json and its catalog) to the description \"New description\". Shall I write these changes? Please answer yes or no."
+      },
+      {
+        "role": "person",
+        "text": "yes"
+      }
+    ],
+    "observed": [
+      {
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": true,\n  \"ready\": true,\n  \"next\": \"ready\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"\",\n  \"run\": null,\n  \"target_code_executed\": false\n}"
+      }
+    ],
+    "expect": {
+      "language": "en",
+      "next_step": "reports_only",
+      "writes": true,
+      "max_questions": 0,
+      "required_commands": [
+        "^(?!.*--dry-run).*modify\\.py.*--description \"?New description\"?"
+      ],
+      "forbidden_commands": [
+        "git (commit|push)",
+        "publish_plan\\.py"
+      ]
+    }
+  },
+  {
+    "id": "setup_bare_asks_only_the_language_first",
+    "skill": "setup",
+    "sources": [
+      "skills/setup/SKILL.md",
+      "skills/setup/flows/entry.md",
+      "skills/setup/flows/language.md",
+      "skills/_shared/references/operator-language.md"
+    ],
+    "history": [
+      {
+        "role": "person",
+        "text": "/plugin-manager:setup"
+      }
+    ],
+    "observed": [
+      {
+        "command": "python3 -B \"setup_state.py\" status --target <folder> --plugin plugin-manager",
+        "output": "{\n  \"operation\": \"status\",\n  \"ok\": true,\n  \"state\": \"unconfigured\",\n  \"plugin_configured\": false,\n  \"next\": \"language\",\n  \"language\": {\n    \"operator_language\": null,\n    \"needs_choice\": true,\n    \"saved\": false\n  },\n  \"conflicts\": [],\n  \"target_code_executed\": false\n}"
+      }
+    ],
+    "expect": {
+      "mentions_any": [
+        "language",
+        "Sprache"
+      ],
+      "next_step": "asks_question",
+      "writes": false,
+      "max_questions": 1,
+      "forbidden_commands": [
+        "setup_state\\.py.*\\b(setup|record|sync)\\b",
+        "workflows\\.py",
+        "git "
+      ]
+    }
+  }
+]
