@@ -25,7 +25,7 @@ def setup(ctx, target, requested_language=None):
     preference = plan['preference']
     chosen = preference['operator_language'] or requested_language
     created_files, created_dirs, unverified, errors, conflicts = [], [], [], [], []
-    removed_files, removed_dirs = [], []
+    removed_files, removed_dirs, updated_files = [], [], []
     ignore = {'rule_present': preferences.has_rule(plan['ignore_text']), 'changed': False}
     saved = lock_changed = False
     project_existed = os.path.lexists(root / '.project')
@@ -55,6 +55,20 @@ def setup(ctx, target, requested_language=None):
                 files[relative] = 'conflict'
                 fsafe.check_chain(root, relative, 'file')
                 files[relative] = skeleton_lock.classify(fsafe.read_regular(root, relative), data, plan['lock'].get(relative))[0]
+        for relative in plan['updates']:  # an unchanged exact copy of the old source: take the new source
+            files[relative] = 'conflict'  # stays so if the verification below fails
+            fsafe.check_chain(root, relative, 'file')
+            local = fsafe.read_regular(root, relative)
+            if fsafe.sha256(local) != plan['lock'][relative]['local_hash']:
+                raise Conflict(relative, 'File changed since it was checked; check status again', 'stale_decision')
+            data = templates[relative][0]
+            mode = stat.S_IMODE(os.lstat(root / relative).st_mode)  # modes of existing files are not changed
+            if not fsafe.replace_if_unchanged(root / relative, data, mode, local):
+                raise OSError(relative + ' changed while updating; nothing was replaced')
+            if (root / relative).read_bytes() != data:
+                raise OSError('Replaced content does not match template: ' + relative)
+            files[relative] = 'identical'
+            updated_files.append(relative)
         for relative, file_state in files.items():  # content may have changed since classification
             if file_state != 'identical':
                 continue
@@ -81,7 +95,7 @@ def setup(ctx, target, requested_language=None):
         created_dirs.append(root / '.project')  # also when only the language helper created it
     plan = dict(plan, files=files, preference=preference)
     return reporting.report(ctx, 'setup', root, name, plan, created_files, [str(Path(d).relative_to(root)) for d in created_dirs],
-                  lock_changed, ignore, saved, errors, conflicts, unverified, state, removed_files, removed_dirs)
+                  lock_changed, ignore, saved, errors, conflicts, unverified, state, removed_files, removed_dirs, updated_files)
 
 
 def remove_managed_file(root, relative, expected_hash, needed_dirs, done_files, done_dirs):

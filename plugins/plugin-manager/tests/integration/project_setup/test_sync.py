@@ -173,6 +173,33 @@ class DecisionTests(SyncBase):
         self.assertEqual(entry(new), self.lock()['files'][TARGET])
         self.assertEqual('ready', self.status()['next'])
 
+    def test_an_untouched_exact_copy_takes_a_changed_source_without_a_question(self):  # R16 (update of managed files)
+        self.setup_all()
+        (self.p / TARGET).chmod(0o640)
+        new = ALPHA + b'# new template line\n'
+        self.box.set_template(TARGET, new)
+        status = self.status()
+        self.assertEqual(('skeleton', [], [TARGET]), (status['next'], status['sync']['decisions'], status['outdated']))
+        data = self.box.call('setup')[1]
+        self.assertEqual(([TARGET], True), (data['updated'], data['ok']))
+        self.assertEqual(new, (self.p / TARGET).read_bytes())
+        self.assertEqual(0o640, stat.S_IMODE((self.p / TARGET).stat().st_mode))  # an existing mode is kept
+        self.assertEqual(entry(new), self.lock()['files'][TARGET])
+        status = self.status()
+        self.assertEqual(('ready', [], True), (status['next'], status['outdated'], status['matches_template']))
+        before = tree(self.p)
+        self.box.call('setup')
+        self.assertEqual(before, tree(self.p))  # repetition writes nothing
+
+    def test_a_copy_that_was_edited_or_deliberately_kept_is_never_updated_silently(self):
+        self.setup_all()
+        self.box.set_template(TARGET, ALPHA + b'# new\n')
+        self.deviate(b'my edit of the old copy')  # was in sync, then edited: both changed
+        self.assertEqual(('sync', 'both_changed'), (self.status()['next'], self.status()['sync']['decisions'][0]['reason']))
+        self.box.call('setup')
+        self.assertEqual(b'my edit of the old copy', (self.p / TARGET).read_bytes())
+        self.assertEqual(entry(ALPHA), self.lock()['files'][TARGET])
+
     def test_local_change_asks_again(self):
         self.setup_all(); self.deviate(); self.decide('keep')
         self.deviate(b'my version, edited again')

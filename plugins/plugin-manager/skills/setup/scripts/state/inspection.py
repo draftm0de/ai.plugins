@@ -25,7 +25,7 @@ def inspect(ctx, root, requested_language):
                        + '; changing it is not part of setup')
     lock, lock_exists, _ = skeleton_lock.read_lock(ctx, root)
     ignore_text = preferences.read_ignore(root)
-    files, directories, decisions = {}, [], []
+    files, directories, decisions, updates = {}, [], [], []
     removals = {'auto': [], 'decisions': [], 'kept': [], 'unowned': [], 'lock_cleanup': []}
     needed_dirs = set()
     for relative, entry in templates.items():
@@ -68,6 +68,9 @@ def inspect(ctx, root, requested_language):
         else:
             local = fsafe.read_regular(root, relative)
             files[relative], reason = skeleton_lock.classify(local, template, accepted)
+            if reason == 'source_changed' and accepted['source_hash'] == accepted['local_hash']:
+                files[relative], reason = 'auto_update', None  # was an exact copy and is untouched: the new source is taken without a question
+                updates.append(relative)
             if reason:
                 current = skeleton_lock.pair(fsafe.sha256(template), fsafe.sha256(local))
                 decisions.append({
@@ -86,6 +89,6 @@ def inspect(ctx, root, requested_language):
                if state in ('missing', 'identical') and lock.get(r) != skeleton_lock.pair(fsafe.sha256(templates[r][0]), fsafe.sha256(templates[r][0]))]
     return {'language': language, 'preference': preference, 'templates': templates, 'lock': lock,
             'lock_exists': lock_exists, 'ignore_text': ignore_text, 'files': files,
-            'directories': directories, 'pending': pending, 'decisions': decisions, 'removals': removals,
+            'directories': directories, 'pending': pending, 'decisions': decisions, 'updates': updates, 'removals': removals,
             'needed_dirs': needed_dirs,
             'rule_pending': preference['operator_language'] is not None and not preferences.has_rule(ignore_text)}

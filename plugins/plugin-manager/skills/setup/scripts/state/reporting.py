@@ -21,7 +21,7 @@ def next_flow(operation, failed, needs_choice, plan, missing, state):
     if state == 'unconfigured':
         return 'configure'
     removals = plan['removals']
-    if missing or plan['pending'] or plan['rule_pending'] or removals['auto'] or removals['lock_cleanup']:
+    if missing or plan['pending'] or plan['updates'] or plan['rule_pending'] or removals['auto'] or removals['lock_cleanup']:
         return 'skeleton'
     if plan['decisions'] or removals['decisions']:
         return 'sync'
@@ -29,7 +29,7 @@ def next_flow(operation, failed, needs_choice, plan, missing, state):
 
 
 def report(ctx, operation, root, name, plan, created_files=(), created_dirs=(), lock_changed=False,
-           ignore=None, saved=False, errors=(), conflicts=(), unverified=(), state='plugin', removed_files=(), removed_dirs=()):
+           ignore=None, saved=False, errors=(), conflicts=(), unverified=(), state='plugin', removed_files=(), removed_dirs=(), updated_files=()):
     files = plan['files']
     preference = plan['preference']
     different = sorted(r for r, s in files.items() if s in ('accepted', 'decision_needed'))
@@ -45,7 +45,8 @@ def report(ctx, operation, root, name, plan, created_files=(), created_dirs=(), 
         'configuration': {'plugin': ctx.plugin, 'configured': state != 'unconfigured',
                           'kind': state if state in ctx.kinds else None},
         'next': next_flow(operation, failed, preference['needs_choice'], plan, missing, state),
-        'skeleton': {'open': bool(missing or plan['pending'] or plan['rule_pending'] or plan['removals']['auto']
+        'updated': list(updated_files), 'outdated': list(plan['updates']),
+        'skeleton': {'open': bool(missing or plan['pending'] or plan['updates'] or plan['rule_pending'] or plan['removals']['auto']
                                   or plan['removals']['lock_cleanup']) if operation == 'status' else failed,
                      'missing_files': missing, 'lock_pending': list(plan['pending']) if operation == 'status' else [],
                      'ignore_rule_pending': plan['rule_pending'] if operation == 'status' else False,

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "files": {
     "AGENTS.md": {
-      "sha256": "a8111fe4a0458a8c82704bf9d6feb694e0fa15eaa09211583f1223da7113d5d0",
+      "sha256": "daeafd3413d937865b1ecd7702fa5cfff0941a9d8d8ed83dbc6ce257d501746e",
       "executable": false
     },
     "CLAUDE.md": {

@@ -1,3 +1,10 @@
+<!--
+This file comes from the plugin manager and is managed by it: do not edit it here, changes are overwritten or reported.
+Write your plugin's own instructions in CUSTOM.AGENTS.md.
+Diese Datei stammt vom Plugin-Manager und wird von ihm verwaltet: hier nicht ändern, Änderungen werden überschrieben oder gemeldet.
+Eigene Anweisungen gehören in CUSTOM.AGENTS.md.
+-->
+
 # Development rules / Entwicklungsregeln
 
 Read SCOPE.md and docs/architecture.md before implementation. Clarify missing or

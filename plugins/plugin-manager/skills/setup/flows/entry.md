@@ -14,7 +14,7 @@ Specialised actions stay in their own skills. Helper: `../scripts/setup_state.py
 | `stop` (`state: conflict`, exit 1) | technical conflict | Write the `message` of the answer unchanged (`../../_shared/references/messages.md`), change nothing, wait. Other project content is named, never adopted. |
 | `language` | operator language missing | follow `language.md` |
 | `configure` | no valid configuration evidence of this plugin in the workpackage | follow `../../setup/flows/configure.md` (the plugin's own configuration dialogue) |
-| `skeleton` | skeleton files of the configured kind, ignore rule or skeleton evidence missing | follow `skeleton.md` |
+| `skeleton` | skeleton files of the configured kind, ignore rule or skeleton evidence missing, or an untouched managed file outdated (its source changed) | follow `skeleton.md` |
 | `sync` | a managed file differs from the template, or its source was removed and its local file is changed or accepted, and needs a decision | follow `sync.md` |
 | `ready` | configured and in sync, no automatic flow open | output exactly one line and wait (see below) |
 
@@ -25,7 +25,7 @@ Specialised actions stay in their own skills. Helper: `../scripts/setup_state.py
 
 ## Ready output
 
-On `ready` write exactly one line in the operator language and nothing else (no greeting, no list of skeleton deviations unless the person asks): English `Plugin <plugin> Status: fully configured`, German `Plugin <plugin> Status: vollständig konfiguriert`; for another language translate only the status words. Then wait for input.
+On `ready` write exactly one line in the operator language and nothing else (no greeting, no list of skeleton deviations unless the person asks): English `Plugin <name> Status: fully configured`, German `Plugin <name> Status: vollständig konfiguriert`; for another language translate only the status words. `<name>` is the field `plugin` of the status answer, the name of the configured plugin or marketplace repository (never the name of the running Manager unless the Manager itself is the target). Add no remark, note or explanation about this line or the rules behind it. Then wait for input.
 
 ## Read-only requests
 

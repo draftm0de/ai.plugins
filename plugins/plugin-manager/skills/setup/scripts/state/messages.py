@@ -125,10 +125,10 @@ CONFLICT_CODES = {'not_fresh': 'other_content', 'config_format': 'unsupported_fo
 # the gate: why a writing skill stops (the reason follows "only partly (...)")
 GATE_REASONS = {
     'en': {'stop': 'something in this folder blocks the setup', 'language': 'the language is not set yet',
-           'configure': 'this folder is not configured yet', 'skeleton': 'some required files or settings are missing',
+           'configure': 'this folder is not configured yet', 'skeleton': 'some required files or settings are missing or outdated',
            'sync': 'a managed file needs your decision'},
     'de': {'stop': 'etwas in diesem Ordner blockiert die Einrichtung', 'language': 'die Sprache ist noch nicht gesetzt',
-           'configure': 'dieser Ordner ist noch nicht konfiguriert', 'skeleton': 'einige benötigte Dateien oder Einstellungen fehlen',
+           'configure': 'dieser Ordner ist noch nicht konfiguriert', 'skeleton': 'einige benötigte Dateien oder Einstellungen fehlen oder sind veraltet',
            'sync': 'eine verwaltete Datei braucht deine Entscheidung'},
 }
 GATE_CAUSE = {'en': 'this folder is not set up yet, or only partly ({reason})',
