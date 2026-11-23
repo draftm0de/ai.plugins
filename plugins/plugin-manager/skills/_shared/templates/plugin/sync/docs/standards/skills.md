@@ -11,12 +11,15 @@ Managed by the plugin manager and identical in every plugin. Do not edit it here
 
 ## Boundaries as structure
 
-- A read-only skill has no path that writes. A skill that changes something shows the consequences first and writes
-  only after an explicit yes. Publishing never acts without a concrete approval and never commits on its own.
-- A skill that writes asks a shared gate first. The gate is one read-only script and one flow text that every writing
-  skill follows. When the gate is closed the skill stops, writes nothing and points to the one skill that sets up.
-- Exactly one skill brings the repository into the configured state and may be called repeatedly. It runs the open step
-  and nothing else.
+- A read-only skill has no path that writes. Publishing never acts without a concrete approval and never commits on its own.
+- A skill that changes something shows the consequences first and writes only after an explicit yes, in every plugin.
+- A gate and a setup skill belong only to a plugin whose writing skills depend on a state of the person's project
+  (a configuration, a prepared folder). Without such a state the plugin has neither; do not invent one.
+- With such a state, a writing skill asks a shared gate first. The gate is one read-only script and one flow text that
+  every writing skill follows. When the gate is closed the skill stops, writes nothing and points to the one skill that
+  sets up.
+- That setup skill is exactly one per plugin, brings the project into the configured state, may be called
+  repeatedly and runs the open step and nothing else.
 - The kind of a repository is never a call argument; it comes from the state of the folder.
 
 ## Text
