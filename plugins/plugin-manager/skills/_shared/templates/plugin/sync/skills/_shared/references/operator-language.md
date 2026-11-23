@@ -3,7 +3,7 @@
 Before any domain/setup questions or actions, resolve the operator preference in the
 explicitly selected project root, never the installed plugin or a global profile.
 Use the loaded skill's sibling `../_shared/scripts/operator_language.py` with
-`python3 -B "<absolute helper path>" --root "<selected project root>"`.
+`python3 -B "<absolute helper path>" --root "<selected project root>" --skill <name of the calling skill> --message-language <language of the person's text>`.
 Resolve paths from the actually loaded SKILL.md; never search host caches. If the
 project is ambiguous, ask only which project to use first.
 
@@ -42,10 +42,10 @@ Once the operator language is known, every visible text you write yourself uses 
 
 The canonical source is this generator template; the Plugin Manager and every newly
 generated plugin ship their own byte-identical copy. The helper needs Python 3.10+ and
-the standard library only; it runs from any copy without a Manager checkout, Git
+the standard library only (plus its managed sibling `messages_base.py`, imported only to print a failure message); it runs from any copy without a Manager checkout, Git
 repository or `PYTHONPATH`, and starts no external program or network access.
 
-CLI: `operator_language.py --root <project> [--set <language-tag>]`.
+CLI: `operator_language.py --root <project> [--set <language-tag>] [--skill <skill>] [--message-language <de|en>]`. `--skill` and `--message-language` only shape a failure message.
 
 - Without `--set` it only reads. Missing file: exit 0 with
   `{"operator_language": null, "needs_choice": true}`; nothing is created.
@@ -59,7 +59,7 @@ CLI: `operator_language.py --root <project> [--set <language-tag>]`.
 - Every operation error with exit 1 (invalid tag, corrupt JSON, unsupported `schema_version`, wrong types,
   extra keys, symlink in the managed path, file/directory conflict (including a regular
   file named `.project`, also when reading), missing project,
-  read or write failure) writes a message to stderr and nothing to stdout. Such states
+  read or write failure) writes the finished failure message (layout and wording of `messages_base.py`; a failure without a code is reported as not known) to stderr and nothing to stdout. Write it to the person unchanged. Such states
   are never reported as missing and existing data is never overwritten.
 
 The caller is responsible for the explicit user choice and the dialogue; the helper

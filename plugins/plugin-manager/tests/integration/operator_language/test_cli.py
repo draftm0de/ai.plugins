@@ -111,8 +111,9 @@ class CliTests(unittest.TestCase):
         before = tree(self.project)
         result = self.call()
         self.assertEqual((1, ''), (result.returncode, result.stdout))
-        self.assertIn('Path conflict', result.stderr)
+        self.assertIn('is not a folder', result.stderr)  # a finished message of the catalogue (R26 standards), not raw text
         self.assertIn('.project', result.stderr)
+        self.assertNotIn('Traceback', result.stderr)
         self.assertEqual(before, tree(self.project))
 
     def test_file_and_directory_conflicts_on_write_keep_state(self):
@@ -170,7 +171,7 @@ class CliTests(unittest.TestCase):
         tree_ = ast.parse((GENERATOR / HELPER).read_text())
         imported = {n.names[0].name.split('.')[0] for n in ast.walk(tree_) if isinstance(n, ast.Import)}
         imported |= {n.module.split('.')[0] for n in ast.walk(tree_) if isinstance(n, ast.ImportFrom)}
-        self.assertEqual({'argparse', 'json', 'os', 'pathlib', 're', 'tempfile'}, imported)
+        self.assertEqual({'argparse', 'json', 'os', 'pathlib', 're', 'sys', 'tempfile', 'messages_base'}, imported)  # the managed sibling only for failure messages
         source = (GENERATOR / HELPER).read_text()
         for forbidden in ('subprocess', 'socket', 'urllib', 'os.system', 'shell=True', '/Users/', 'scripts/'):
             self.assertNotIn(forbidden, source)

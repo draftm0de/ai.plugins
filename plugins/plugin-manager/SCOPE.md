@@ -319,3 +319,16 @@ Source: skills/_shared/WORKFLOWS.md
 Source: skills/_shared/references/source-of-truth.md
 Test: tests/integration/update/test_documentation.py
 Test: tests/contracts/test_skill_entrypoints.py
+
+## R30: Shared failure messages for plugins
+
+Status: confirmed
+Acceptance: Every plugin receives, as managed files, the module `skills/_shared/scripts/messages_base.py` and a language helper whose failures carry codes. `messages_base.py` is the only place that builds the layout of a failure message (R25/R26) and holds the layout in German and English, the failure class with a code and facts, the language choice (anything but German or English falls back to English), the name of the running plugin read from its `plugin.json` (never a constant) and a base catalogue with the failures every plugin has: the failures of the language helper (invalid tag, missing project folder, a link in the path, a path that is no folder, an unsupported saved setting), invalid call arguments and the "not known" failure. A plugin extends the base catalogue with its own entries in its own module and never builds the layout again. `operator_language.py` raises failures with the codes of that catalogue and its command line prints the finished message (options `--skill` and `--message-language`), never raw error text or a traceback; its other behavior is unchanged. The Manager ships byte-identical copies of both files. The standards (`coding.md`, `messages.md`) state these rules; whether a plugin follows them beyond what `verify` can read is a task of `verify --review`.
+Source: skills/_shared/templates/plugin/sync/skills/_shared/scripts/messages_base.py
+Source: skills/_shared/templates/plugin/sync/skills/_shared/scripts/operator_language.py
+Source: skills/_shared/templates/plugin/sync/docs/standards/coding.md
+Source: skills/_shared/templates/plugin/sync/docs/standards/messages.md
+Source: skills/_shared/templates/plugin/sync/skills/_shared/references/operator-language.md
+Test: tests/unit/messages/test_messages_base.py
+Test: tests/integration/operator_language/test_cli.py
+Test: tests/unit/operator_language/test_validation.py

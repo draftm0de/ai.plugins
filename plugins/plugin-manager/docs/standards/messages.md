@@ -28,9 +28,10 @@ Please <the way to fix it>. Then call /<plugin>:<skill> again.
 
 ## One catalogue, built in code
 
-- Layout and wording of every message live in one module of the plugin, as a catalogue keyed by a code, in each
-  supported language. No other place builds the layout.
-- Scripts raise failures with a code and facts (path, address); the command prints the finished message. The model
+- The layout lives once, in the managed `skills/_shared/scripts/messages_base.py` (`render_failure`); a plugin never builds
+  it again. The wording lives in a catalogue keyed by a code, in each supported language: the plugin extends the
+  `BASE_CATALOGUE` of `messages_base.py` with the entries of its own failures, in its own module.
+- Scripts raise failures (`messages_base.Failure`) with a code and facts (path, address); the command prints the finished message. The model
   writes that message unchanged and never composes, translates, shortens or extends it.
 - A new cause is a new catalogue entry with a code, never a sentence in a skill or flow.
 - A failure without a code, an error of the host or a crash gets the same layout with "the cause is not known (an

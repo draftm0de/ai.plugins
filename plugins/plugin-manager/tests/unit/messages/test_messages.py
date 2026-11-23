@@ -63,7 +63,7 @@ class MessagesTests(unittest.TestCase):
         self.assertTrue(codes)
         self.assertLessEqual(codes, set(self.messages.CATALOGUE))
         for path in (ROOT / 'skills').rglob('*.py'):  # no second place builds the layout
-            if path.name != 'messages.py':
+            if path.name not in ('messages.py', 'messages_base.py'):  # the Manager's catalogue module and the managed layout of the plugins
                 self.assertNotIn('could not be completed, because', path.read_text(), path)
                 self.assertNotIn('was stopped, because', path.read_text(), path)
 

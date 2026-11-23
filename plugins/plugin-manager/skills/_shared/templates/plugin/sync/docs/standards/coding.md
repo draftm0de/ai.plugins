@@ -17,7 +17,10 @@ Managed by the plugin manager and identical in every plugin. Do not edit it here
   (manifests, templates) and the name of the running plugin come in as one explicit context parameter.
 - Production uses the default context. Code callers, tests included, pass other data. The shipped command line has no
   option for the context.
-- The one allowed use of `__file__` is the entry file locating its own scripts folder to import from.
+- The one allowed use of `__file__` is the entry file locating its own scripts folder to import from and, for the default
+  context, the plugin root where `plugin.json` lies. The name of the plugin is read from `plugin.json` there
+  (`plugin_name_from` of the managed `messages_base.py`); it is never a constant in the code, so that renaming the plugin
+  changes nothing else.
 - Shared scripts are code, never part of the context.
 
 ## Data and formats
@@ -33,4 +36,6 @@ Managed by the plugin manager and identical in every plugin. Do not edit it here
 
 - A failure a person can reach carries a catalogue code and the facts of its wording (see `messages.md`). Never raise a
   free text for a person; a failure without a code is reported as "cause not known".
+- The managed helpers raise failures with a code too (`operator_language.py`: `LANGUAGE_*`). The plugin's catalogue extends
+  the `BASE_CATALOGUE` of the managed `messages_base.py`, which already holds these codes.
 - Never run a repair command, retry silently or guess a cause.

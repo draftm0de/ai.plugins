@@ -37,6 +37,7 @@ def isolated_helper(directory):
     target = Path(directory) / 'installed plugin copy/skills/_shared/scripts'
     target.mkdir(parents=True)
     shutil.copy2(GENERATOR / HELPER, target / 'operator_language.py')
+    shutil.copy2(GENERATOR / 'scripts/messages_base.py', target / 'messages_base.py')  # its managed sibling for failure messages
     return target / 'operator_language.py'
 
 
