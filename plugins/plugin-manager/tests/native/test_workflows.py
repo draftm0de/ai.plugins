@@ -5,7 +5,7 @@ from tests.support.workflows_fixture import (
 class IntegrationWorkflowTests(IntegrationWorkflowTestsFixture, unittest.TestCase):
     @unittest.skipUnless(os.environ.get('AI_PLUGIN_TEST_NATIVE')=='1' and shutil.which('claude') and shutil.which('codex'),'Opt-in isolated native acceptance')
     def test_native_creation_configuration_install_update(self):
-        self.create();existing=self.repo('existing-plugin');self.create(existing);flow.associate(existing,self.market)
+        self.create_configured();existing=self.repo('existing-plugin');self.create_configured(existing)  # R21: each plugin is configured and belongs to the one marketplace
         home=self.root/'isolated-host';home.mkdir()
         claude=home/'claude';claude.mkdir();codex=home/'codex';codex.mkdir()
         env=dict(os.environ,HOME=str(home),CLAUDE_CONFIG_DIR=str(claude),CODEX_HOME=str(codex),DISABLE_AUTOUPDATER='1')
@@ -14,7 +14,7 @@ class IntegrationWorkflowTests(IntegrationWorkflowTestsFixture, unittest.TestCas
         for host in ('claude','codex'):
             run(['make','-s','install-local','TARGET='+host],self.plugin)
             for path in (self.plugin,existing):
-                skill=path/'skills/fictional-skill/SKILL.md';skill.write_text(skill.read_text()+'\nUpdated fictional '+host+' content.\n')
+                skill=path/'skills'/path.name/'SKILL.md';skill.write_text(skill.read_text()+'\nUpdated fictional '+host+' content.\n')
             run(['make','-s','install-local','TARGET='+host],existing)
             if host=='claude':
                 listing=json.loads(run(['claude','plugin','list','--json']).stdout)
@@ -26,4 +26,5 @@ class IntegrationWorkflowTests(IntegrationWorkflowTestsFixture, unittest.TestCas
                 else:
                     entry=json.loads(run(['codex','plugin','add',selector,'--json']).stdout)
                     loaded=Path(entry['installedPath'])
-                self.assertEqual((path/'skills/fictional-skill/SKILL.md').read_bytes(),(loaded/'skills/fictional-skill/SKILL.md').read_bytes())
+                relative=Path('skills')/name/'SKILL.md'
+                self.assertEqual((path/relative).read_bytes(),(loaded/relative).read_bytes())
