@@ -47,7 +47,7 @@ def narrative_success_claims(report):
     claims=[]
     for text in texts:
         for sentence in re.split(r'(?<=[.!?])\s+|;|\bbut\b|\bhowever\b|\btherefore\b|\bnevertheless\b', text.casefold()):
-            if re.search(r'\b(?:comment|source|instruction|it)\b.*\b(?:tells|says|claims|asks|instructs)\b',sentence):
+            if re.search(r'\b(?:comment|source|instruction|it)\b.*\b(?:tells|says|claims|asks|instructs|instruct|tries|attempts?|directs?|seeks?|purports?)\b',sentence):
                 continue
             if re.search(r"\b(no|not|never|cannot|unverified|untrusted|unsupported|unproven)\b|can't|haven't|hasn't",sentence):
                 continue
