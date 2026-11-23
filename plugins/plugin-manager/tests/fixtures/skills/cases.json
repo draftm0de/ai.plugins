@@ -557,5 +557,84 @@
         "setup_state\\.py.*\\b(setup|record|sync)\\b"
       ]
     }
+  },
+  {
+    "id": "setup_missing_git_uses_the_catalogue_message_before_other_questions",
+    "skill": "setup",
+    "sources": [
+      "skills/setup/SKILL.md",
+      "skills/setup/flows/configure.md",
+      "skills/_shared/references/messages.md"
+    ],
+    "history": [
+      {
+        "role": "person",
+        "text": "/plugin-manager:setup"
+      },
+      {
+        "role": "agent",
+        "text": "Welche Sprache soll ich für dieses Projekt verwenden? Deutsch oder English?"
+      },
+      {
+        "role": "person",
+        "text": "Deutsch"
+      },
+      {
+        "role": "agent",
+        "text": "Plugin oder Marketplace?"
+      },
+      {
+        "role": "person",
+        "text": "Plugin"
+      }
+    ],
+    "observed": [
+      {
+        "command": "python3 -B \"setup_state.py\" status --target /Users/demo/tests/demo.plugin.a --plugin plugin-manager",
+        "output": "{\"operation\":\"status\",\"ok\":true,\"state\":\"unconfigured\",\"next\":\"configure\",\"language\":{\"operator_language\":\"de\",\"needs_choice\":false},\"conflicts\":[]}"
+      },
+      {
+        "command": "git -C /Users/demo/tests/demo.plugin.a rev-parse --show-toplevel",
+        "output": "fatal: not a git repository (or any of the parent directories): .git"
+      }
+    ],
+    "expect": {
+      "language": "de",
+      "mentions": [
+        "git init",
+        "weil"
+      ],
+      "next_step": "reports_only",
+      "writes": false,
+      "max_questions": 0,
+      "forbidden_text": [
+        "\\bexit\\b",
+        "\\bchecks?\\b",
+        "\\bjson\\b",
+        "stderr",
+        "conflicts",
+        "traceback",
+        "schema",
+        "evidence",
+        "non-zero",
+        "generator",
+        "\\bok\\b",
+        "status code",
+        "\\b(Öffnen|Führen|Rufen|Prüfen|Starten|Wählen|Verwenden|Geben|Nutzen|Legen|Setzen) Sie\\b",
+        "\\b(Ihr|Ihre|Ihrem|Ihren|Ihrer|Ihnen)\\b",
+        "\\bcheckout\\b",
+        "\\borigin\\b",
+        "Nichts habe ich"
+      ],
+      "forbidden_commands": [
+        "workflows\\.py",
+        "setup_state\\.py.*\\b(setup|record|sync)\\b"
+      ],
+      "in_order": [
+        "konnte nicht abgeschlossen werden, weil",
+        "git init",
+        "/plugin-manager:setup"
+      ]
+    }
   }
 ]

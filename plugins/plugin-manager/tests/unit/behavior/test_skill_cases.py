@@ -89,6 +89,15 @@ class GradingTests(unittest.TestCase):
         self.assertIn('technical wording', errors)
         self.assertIn('reply is not in de', ' '.join(run_skills.grade(case, answer('The folder is not a Git repository. Run `git init` in it.'))))
 
+    def test_missing_git_must_use_the_catalogue_wording_not_a_free_one(self):
+        case = CASES['setup_missing_git_uses_the_catalogue_message_before_other_questions']
+        good = answer('Das Setup konnte nicht abgeschlossen werden, weil der Ordner /Users/demo/tests/demo.plugin.a nicht als Git-Repository erkannt wird. Die Sprache wurde gespeichert.\n\nBitte initialisiere es entweder in einer IDE (zum Beispiel VS Code) oder führe in einem Terminal in diesem Ordner `git init` aus. Rufe danach /plugin-manager:setup erneut auf.')
+        self.assertEqual([], run_skills.grade(case, good))
+        free = answer('Die Konfiguration kann noch nicht weitergehen, weil der Ordner kein Git-Checkout ist und es keinen GitHub-origin gibt. Bitte initialisiere ein Repository und rufe /plugin-manager:setup erneut auf.')
+        errors = ' '.join(run_skills.grade(case, free))
+        self.assertIn('technical wording', errors)
+        self.assertIn('git init', errors)
+
     def test_a_german_message_uses_du_not_sie(self):
         case = CASES['setup_failure_is_explained_in_plain_words']
         formal = answer('Das Setup konnte nicht abgeschlossen werden, weil der Ordner kein Git-Repository ist.\n\nFühren Sie `git init` aus und rufen Sie /plugin-manager:setup erneut auf.')
