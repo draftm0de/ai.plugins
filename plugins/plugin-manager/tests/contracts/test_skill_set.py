@@ -4,10 +4,10 @@ import re
 import unittest
 
 ROOT = next(p for p in Path(__file__).resolve().parents if (p / 'Makefile').is_file())
-SKILLS = {'setup', 'docs', 'verify', 'publish'}
+SKILLS = {'setup', 'docs', 'modify', 'verify', 'publish'}
 REMOVED_SKILLS = ('plugin-manager', 'update')
 REMOVED_COMMANDS = ('plugin-manager', 'update', 'plugin-verify', 'marketplace-verify')
-GATED = ('docs', 'publish')  # stop with a pointer to setup when `next` is not ready
+GATED = ('docs', 'modify', 'publish')  # stop with a pointer to setup when `next` is not ready
 
 
 def text(relative):
@@ -15,7 +15,7 @@ def text(relative):
 
 
 class SkillSetTests(unittest.TestCase):
-    def test_exactly_four_public_skills_each_named_like_its_folder(self):
+    def test_exactly_five_public_skills_each_named_like_its_folder(self):
         entries = sorted((ROOT / 'skills').glob('*/SKILL.md'))
         self.assertEqual(SKILLS, {p.parent.name for p in entries})
         for path in entries:
@@ -35,7 +35,7 @@ class SkillSetTests(unittest.TestCase):
             self.assertIn('never the installed plugin directory', text('commands/%s.md' % name))
 
     def test_the_kind_is_never_a_call_argument(self):
-        for name in ('setup', 'docs', 'publish'):
+        for name in ('setup', 'docs', 'modify', 'publish'):
             head = text('commands/%s.md' % name).split('---')[1]
             self.assertNotIn('kind', head.lower(), name)
         verify = text('skills/verify/SKILL.md')
@@ -67,7 +67,7 @@ class SkillSetTests(unittest.TestCase):
             self.assertNotIn(writer, verify)
 
     def test_only_setup_writes_configuration_skeleton_and_sync(self):
-        for name in ('docs', 'verify', 'publish'):
+        for name in ('docs', 'modify', 'verify', 'publish'):
             skill = text('skills/%s/SKILL.md' % name)
             for writer in ('setup_state.py" setup', 'setup_state.py" record', 'setup_state.py" sync'):
                 self.assertNotIn(writer, skill, name)

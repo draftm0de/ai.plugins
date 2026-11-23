@@ -8,7 +8,7 @@
 
 ## Kanonische Quelle
 
-Die vier öffentlichen Einstiegspunkte liegen unter `skills/<aktionsname>/SKILL.md`. Gemeinsame Regeln liegen in `skills/_shared/WORKFLOWS.md`, Helfer in `skills/_shared/scripts/` und Vorlagen in `skills/_shared/templates/`. `_shared` hat keine SKILL.md und wird nicht als zusätzlicher Skill angeboten. `docs/documentation.json` verweist auf `skills/update` und führt die gemeinsamen Quellen sowie übrigen Skills unter `extra_sources` auf.
+Die fünf öffentlichen Einstiegspunkte liegen unter `skills/<aktionsname>/SKILL.md`. Gemeinsame Regeln liegen in `skills/_shared/WORKFLOWS.md`, Helfer in `skills/_shared/scripts/` und Vorlagen in `skills/_shared/templates/`. `_shared` hat keine SKILL.md und wird nicht als zusätzlicher Skill angeboten. `docs/documentation.json` verweist auf `skills/update` und führt die gemeinsamen Quellen sowie übrigen Skills unter `extra_sources` auf.
 
 `skills/` ist die hostneutrale Quelle. `plugin.json` steuert Plugin-Metadaten, `marketplace.json` im separaten Marketplace steuert die Kataloge. Nur der bestehende Manager in `ai.plugins/plugins/plugin-manager` bleibt eingebettet. Neue Marketplaces benötigen keinen Manager-Checkout. Kanonische Vorlagen stehen unter `skills/_shared/templates/plugin/` und `templates/marketplace/`, jeweils geteilt in `sync/` (gesynct, gehasht) und `seed/` (einmal angelegt). `make build-skeleton-hashes` schreibt die Hash-Dateien `skills/_shared/manifests/<art>.sync.json`; `make check-skeleton-hashes` prüft sie und läuft in der CI mit Exit 1 bei Abweichung.
 

@@ -24,6 +24,14 @@ Vor der Erstellung klärt der Agent die Lizenzentscheidung. Eine eindeutige vorh
 | setup (Art Plugin) | Separater Checkout/Pfad, bestehende GitHub-URL, Marketplace, Name, Kennung, Beschreibung, Herausgeber, Skeleton-Modus, Sprachen | Plugin-Struktur ohne eigene Kataloge, Zuordnung und Dokumentationsvorlagen |
 | associate | Plugin (Art plugin) und gewählter Marketplace | Katalogeintrag, Identität in `config.json` und lokaler Pfad; ein Plugin gehört genau zu einem Marketplace |
 
+### Namen und Beschreibung ändern
+
+`/plugin-manager:modify` ändert Namen, Anzeigenamen und Beschreibung eines Plugins sowie Namen und Anzeigenamen eines Marketplace (ein Marketplace hat keine Beschreibung). Die Art kommt aus dem Konfigurationsnachweis. Der Skill startet nur bei bereitem Arbeitspaket, fragt, was geändert werden soll, zeigt vorab die betroffenen Dateien (`--dry-run`) und schreibt erst nach deinem Ja. Bei einem Plugin folgen `plugin.json`, die Host-Manifeste, `artifact` in `config.json` und der Eintrag im Marketplace in einer Transaktion; ist der Marketplace-Checkout nicht erreichbar, meldet die Antwort `catalog_entry_remains`. Bei einem Marketplace werden die betroffenen Plugin-Checkouts nur aufgelistet; jedes Plugin übernimmt den neuen Namen über den Flow `associate` von `setup`. Aufrufformen und Dokumentation zieht `/plugin-manager:docs` nach, die Dateien veröffentlicht `/plugin-manager:publish`.
+
+```sh
+python3 -B skills/modify/scripts/modify.py --root <Ordner> [--name N] [--display-name D] [--description T] [--dry-run]
+```
+
 ### Dokumentation aktualisieren
 
 Nutze `docs` beziehungsweise in Claude Code `/plugin-manager:docs PFAD`. Der Skill startet nur, wenn `setup_state.py gate` bereit meldet; sonst nennt er den Grund und verweist auf `/plugin-manager:setup`. Die Aktion liest die aktuellen Produktquellen und die gespeicherte Sprachwahl neu, aktualisiert README und Anleitungen und prüft sie anschließend. Sie installiert nichts und veröffentlicht nichts. `install-local` ist der getrennte Befehl zum Erneuern lokaler Plugin-Snapshots.

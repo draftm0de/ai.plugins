@@ -2,9 +2,9 @@
 
 **Deutsch** | [English](README.en.md)
 
-Dieses Plugin dokumentiert zugängliche lokale Skills und Plugins anhand ihrer Quellen. Die Dokumentationssprachen werden pro Repository festgelegt: nur Deutsch, nur Englisch oder beide. Nutze `setup`, um einen Marketplace einzurichten oder ein separates Plugin zu erstellen und zuzuordnen, `docs` zur Erneuerung der Dokumentation oder `verify` zur lesenden Strukturprüfung. Der Agent fragt bei wesentlichen Unklarheiten nach. Eine erfolgreiche Strukturprüfung bestätigt noch keine Produktionsreife. Das Plugin veröffentlicht und installiert nichts ohne Auftrag.
+Dieses Plugin dokumentiert zugängliche lokale Skills und Plugins anhand ihrer Quellen. Die Dokumentationssprachen werden pro Repository festgelegt: nur Deutsch, nur Englisch oder beide. Nutze `setup`, um einen Marketplace einzurichten oder ein separates Plugin zu erstellen und zuzuordnen, `docs` zur Erneuerung der Dokumentation, `modify` für Name und Beschreibung oder `verify` zur lesenden Strukturprüfung. Der Agent fragt bei wesentlichen Unklarheiten nach. Eine erfolgreiche Strukturprüfung bestätigt noch keine Produktionsreife. Das Plugin veröffentlicht und installiert nichts ohne Auftrag.
 
-In Claude: `/plugin-manager:verify QUELLPFAD`, entsprechend `/plugin-manager:setup` (Einrichtung, Plugin oder Marketplace) oder `:docs`. In ChatGPT fordere die Aktion in natürlicher Sprache an. Die Quelle muss dem Host zugänglich sein; die Helfer benötigen Python 3.10 oder neuer.
+In Claude: `/plugin-manager:verify QUELLPFAD`, entsprechend `/plugin-manager:setup` (Einrichtung, Plugin oder Marketplace), `:docs` oder `:modify`. In ChatGPT fordere die Aktion in natürlicher Sprache an. Die Quelle muss dem Host zugänglich sein; die Helfer benötigen Python 3.10 oder neuer.
 
 [Workflow und Grenzen](skills/_shared/WORKFLOWS.md)
 
@@ -22,4 +22,4 @@ Die lokale Zuordnung eines Plugins zu seinem einen Marketplace richtet `plugin-m
 
 ## Skills
 
-`setup`, `docs`, `verify` und `publish`; die Marketplace-Zuordnung eines Plugins ist ein Flow von setup. Gemeinsame Regeln: `skills/_shared/WORKFLOWS.md`.
+`setup`, `docs`, `modify`, `verify` und `publish`; die Marketplace-Zuordnung eines Plugins ist ein Flow von setup. Gemeinsame Regeln: `skills/_shared/WORKFLOWS.md`.

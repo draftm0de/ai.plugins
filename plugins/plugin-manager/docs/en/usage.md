@@ -26,6 +26,14 @@ Before creation, the agent resolves the licensing decision. It reuses an unambig
 | setup (kind plugin) | Separate checkout/path, existing GitHub URL, marketplace, display name, identifier, description, publisher, skeleton mode, languages | Plugin structure without catalogs, association and documentation templates |
 | associate | Plugin (kind plugin) and chosen marketplace | Catalog entry, identity in `config.json` and local path; a plugin belongs to exactly one marketplace |
 
+### Change name and description
+
+`/plugin-manager:modify` changes the name, display name and description of a plugin and the name and display name of a marketplace (a marketplace has no description). The kind comes from the configuration evidence. The skill starts only when the workpackage is ready, asks what to change, shows the affected files first (`--dry-run`) and writes only after your yes. For a plugin, `plugin.json`, the host manifests, `artifact` in `config.json` and the marketplace entry follow in one transaction; when the marketplace checkout is not available the answer reports `catalog_entry_remains`. For a marketplace the affected plugin checkouts are only listed; each plugin takes the new name through the `associate` flow of `setup`. `/plugin-manager:docs` refreshes call forms and documentation, `/plugin-manager:publish` publishes the files.
+
+```sh
+python3 -B skills/modify/scripts/modify.py --root <folder> [--name N] [--display-name D] [--description T] [--dry-run]
+```
+
 ### Update documentation
 
 Use `docs`, or `/plugin-manager:docs PATH` in Claude Code. The skill starts only when `setup_state.py gate` reports ready; otherwise it names the reason and points to `/plugin-manager:setup`. The action rereads current product sources and saved language settings, updates README and guides, then validates them. It installs and publishes nothing. `install-local` is the separate command for refreshing local plugin snapshots.

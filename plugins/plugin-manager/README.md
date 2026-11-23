@@ -14,9 +14,9 @@ Für Entwickler und Teams, die Skills als installierbare Plugins pflegen. Der Ma
 
 ## Funktionen und Modi
 
-**setup** (`/plugin-manager:setup`) richtet einen geklonten Marketplace ein oder erstellt ein separates Plugin und ordnet es zu, als geführte Abläufe; der Skill prüft den Zustand, führt genau den nötigen Flow aus und darf wiederholt aufgerufen werden. Die Marketplace-Zuordnung eines Plugins (genau ein Marketplace) ändert er auf Anfrage im Flow `associate`. **verify** prüft ausschließlich lesend und erkennt selbst, ob ein Plugin oder ein Marketplace vorliegt. **docs** pflegt Dokumentation und **publish** bereitet getrennte, freigabepflichtige Veröffentlichungen vor; beide starten nur, wenn das Arbeitspaket bereit ist, sonst verweisen sie auf `setup`. `init` wird nicht unterstützt. [Abläufe](docs/de/usage.md).
+**setup** (`/plugin-manager:setup`) richtet einen geklonten Marketplace ein oder erstellt ein separates Plugin und ordnet es zu, als geführte Abläufe; der Skill prüft den Zustand, führt genau den nötigen Flow aus und darf wiederholt aufgerufen werden. Die Marketplace-Zuordnung eines Plugins (genau ein Marketplace) ändert er auf Anfrage im Flow `associate`. **verify** prüft ausschließlich lesend und erkennt selbst, ob ein Plugin oder ein Marketplace vorliegt. **docs** pflegt Dokumentation, **modify** ändert Namen, Anzeigenamen und Beschreibung eines Plugins oder Marketplace (erst Folgen zeigen, dann nach deinem Ja schreiben) und **publish** bereitet getrennte, freigabepflichtige Veröffentlichungen vor; alle drei starten nur, wenn das Arbeitspaket bereit ist, sonst verweisen sie auf `setup`. `init` wird nicht unterstützt. [Abläufe](docs/de/usage.md).
 
-Die vier Skills heißen `setup`, `docs`, `verify` und `publish`. Gemeinsame Regeln und Werkzeuge liegen in [`skills/_shared/`](skills/_shared/WORKFLOWS.md). Die Art (Plugin oder Marketplace) ist nie ein Aufrufargument; init wird nicht unterstützt.
+Die fünf Skills heißen `setup`, `docs`, `modify`, `verify` und `publish`. Gemeinsame Regeln und Werkzeuge liegen in [`skills/_shared/`](skills/_shared/WORKFLOWS.md). Die Art (Plugin oder Marketplace) ist nie ein Aufrufargument; init wird nicht unterstützt.
 
 ## Schnellstart
 

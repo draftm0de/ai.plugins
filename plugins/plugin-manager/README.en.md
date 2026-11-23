@@ -14,9 +14,9 @@ For developers and teams maintaining skills as installable plugins. The Manager 
 
 ## Capabilities and modes
 
-**setup** (`/plugin-manager:setup`) configures a cloned marketplace or creates and associates a separate plugin, as guided flows; the skill checks the state, runs exactly the needed flow and may be called repeatedly. It changes the marketplace association of a plugin (exactly one marketplace) on request in the `associate` flow. **verify** is read-only and detects itself whether a plugin or a marketplace is present. **docs** maintains documentation and **publish** prepares separate approval-gated publications; both start only when the workpackage is ready and otherwise point to `setup`. `init` is unsupported. [Workflows](docs/en/usage.md).
+**setup** (`/plugin-manager:setup`) configures a cloned marketplace or creates and associates a separate plugin, as guided flows; the skill checks the state, runs exactly the needed flow and may be called repeatedly. It changes the marketplace association of a plugin (exactly one marketplace) on request in the `associate` flow. **verify** is read-only and detects itself whether a plugin or a marketplace is present. **docs** maintains documentation, **modify** changes the name, display name and description of a plugin or marketplace (consequences first, written only after your yes) and **publish** prepares separate approval-gated publications; all three start only when the workpackage is ready and otherwise point to `setup`. `init` is unsupported. [Workflows](docs/en/usage.md).
 
-The four skills are `setup`, `docs`, `verify` and `publish`. Shared rules and tools live in [`skills/_shared/`](skills/_shared/WORKFLOWS.md). The kind (plugin or marketplace) is never a call argument; init is unsupported.
+The five skills are `setup`, `docs`, `modify`, `verify` and `publish`. Shared rules and tools live in [`skills/_shared/`](skills/_shared/WORKFLOWS.md). The kind (plugin or marketplace) is never a call argument; init is unsupported.
 
 ## Quick start
 

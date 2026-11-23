@@ -390,26 +390,35 @@ def associate(root, marketplace, repository=None, drop_missing_old=False, plugin
         raise ValueError('Marketplace identity conflicts: ' + declared['name'] + ' is bound to another repository in the configuration')
     previous = plugin_local_association(root)
     old = None
-    if not same:  # the plugin leaves its marketplace: the old catalog entry has to go with it
-        if previous:
-            candidate = checkout_path(root, previous)
-            if (candidate/'marketplace.json').is_file() and market_identity(candidate)['name'] == declared['name']:
-                old = candidate
-        if old is None and not drop_missing_old:
-            raise ValueError('The previous marketplace ' + declared['name'] + ' is not available locally, so its catalog entry cannot be removed; '
-                             'restore its checkout at ' + (previous or '(no local path recorded)') + ', or confirm --drop-missing-old to release only the local reference')
-        if old is not None and (old.resolve() == root.resolve() or old.resolve().is_relative_to(root.resolve())):
-            raise ValueError('Use separate plugin and marketplace repositories')
-    files = association_files(root, market, manifest, allow_change=True)
-    if old is not None:
-        files.update(release_old_marketplace(old, root, manifest))
+    renamed = (not same) and same_repository(target['repository'], declared['repository'])
+    if renamed:  # the same marketplace under a new name (R24): only the identity in config.json follows, no catalog change
+        url = repository_url(manifest['repository'])
+        verifier.marketplace(market)
+        if not any(e.get('name') == manifest['name'] and e.get('repository') and repository_url(e['repository']) == url
+                   for e in read(market/'marketplace.json')['plugins']):
+            raise ValueError('The renamed marketplace does not list this plugin (name and repository); it has to be listed there first')
+        files = {root/LOCAL_FILE: encode({'schema_version': 1, 'marketplace_path': os.path.relpath(market, root)})}
+    else:
+        if not same:  # the plugin leaves its marketplace: the old catalog entry has to go with it
+            if previous:
+                candidate = checkout_path(root, previous)
+                if (candidate/'marketplace.json').is_file() and market_identity(candidate)['name'] == declared['name']:
+                    old = candidate
+            if old is None and not drop_missing_old:
+                raise ValueError('The previous marketplace ' + declared['name'] + ' is not available locally, so its catalog entry cannot be removed; '
+                                 'restore its checkout at ' + (previous or '(no local path recorded)') + ', or confirm --drop-missing-old to release only the local reference')
+            if old is not None and (old.resolve() == root.resolve() or old.resolve().is_relative_to(root.resolve())):
+                raise ValueError('Use separate plugin and marketplace repositories')
+        files = association_files(root, market, manifest, allow_change=True)
+        if old is not None:
+            files.update(release_old_marketplace(old, root, manifest))
     updated = dict(evidence); updated['marketplace'] = target
     files[root/EVIDENCE_FILE.format(plugin=plugin)] = encode(updated)
     changed = apply(files, list(files))
     return {'action': 'associate', 'changed': changed, 'published': False,
             'from': {'name': declared['name'], 'path': previous},
             'to': {'name': target['name'], 'path': os.path.relpath(market, root)},
-            'old_catalog_entry_remains': (not same) and old is None,
+            'old_catalog_entry_remains': (not same) and (not renamed) and old is None, 'renamed': renamed,
             'next': 'Committed files changed and are unversioned: config.json of the plugin, marketplace.json and the host catalogs of the marketplaces involved. '
                     'Review them in their repositories and publish them through publish. Nothing was committed, pushed, installed or published.'}
 
