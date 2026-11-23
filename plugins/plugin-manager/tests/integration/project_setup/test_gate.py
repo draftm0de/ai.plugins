@@ -13,6 +13,7 @@ class GateTests(SyncBase):
         self.assertEqual(1, code, result.stderr + result.stdout)
         self.assertEqual((False, 'language'), (data['ready'], data['next']))
         self.assertTrue(data['reason'])
+        self.assertEqual('The requested action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.', data['message'])
         self.assertEqual(before, tree(self.box.project))
 
     def test_gate_names_the_open_flow_for_every_state_before_ready(self):
@@ -24,6 +25,7 @@ class GateTests(SyncBase):
         self.setup_all()
         code, data, result = self.box.call('gate')
         self.assertEqual((0, True, 'ready'), (code, data['ready'], data['next']), result.stderr + result.stdout)
+        self.assertIsNone(data['message'])  # nothing to report when the gate is open
 
     def test_gate_stays_closed_while_a_sync_decision_is_open(self):
         self.setup_all()
@@ -34,11 +36,22 @@ class GateTests(SyncBase):
         self.assertEqual((1, False, 'sync'), (code, data['ready'], data['next']))
         self.assertEqual(before, tree(self.p))
 
+    def test_the_message_names_the_gated_skill_and_is_the_same_sentence_for_every_cause(self):
+        sentences = set()
+        for action in ('docs', 'modify', 'publish'):
+            code, data, _ = self.box.call('gate', '--action', action)
+            self.assertEqual(1, code)
+            self.assertIn('The ' + action + ' action was stopped', data['message'])
+            sentences.add(data['message'].replace(action, '<action>'))
+        self.assertEqual(1, len(sentences))
+        self.assertEqual(2, self.box.call('gate', '--action', 'verify')[0])  # only gated skills are known
+
     def test_gate_reports_conflicts_as_closed(self):
         self.setup_all()
         (self.p / '.project/plugins/plugin-manager/config.json').write_text('{bad')
         code, data, _ = self.box.call('gate')
         self.assertEqual((1, False, 'stop'), (code, data['ready'], data['next']))
+        self.assertIn('was stopped because this folder is not set up yet, or only partly', data['message'])
 
 
 if __name__ == '__main__':

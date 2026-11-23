@@ -29,6 +29,8 @@ SCHEMA = review.object_schema({
     'reply': STRING,
     'commands': {'type': 'array', 'items': STRING},
     'next_step': {'type': 'string', 'enum': ['reports_only', 'asks_question', 'asks_confirmation']},
+    'options': {'type': 'array', 'items': STRING},
+    'hands_over_to': {'type': 'string', 'enum': ['none', 'setup']},
     'writes': {'type': 'boolean'},
 })
 ENGLISH = {'the', 'and', 'is', 'not', 'to', 'of', 'this', 'run', 'first', 'please', 'before', 'with', 'was', 'are', 'it', 'you'}
@@ -65,7 +67,8 @@ def build_prompt(case):
             'Follow the skill and its shared rules exactly; do not invent results of commands you have not been given. '
             'Return only one JSON object matching the schema: reply (what you write to the person now), commands (shell commands you '
             'would run now, possibly none), next_step (reports_only: you only report; asks_question: you end by asking a question; '
-            'asks_confirmation: you end by asking for an explicit yes), writes (true only if your commands change files).\n\n'
+            'asks_confirmation: you end by asking for an explicit yes), options (the answer buttons you offer with a question, in order; the host has a structured question tool, empty when you offer none), '
+            'hands_over_to (setup when you hand the person over to the setup skill now, otherwise none), writes (true only if your commands change files).\n\n'
             'SKILL TEXTS:\n' + sources + '\n\nHELPER OUTPUT ALREADY OBSERVED:\n' + observed + '\n\nCONVERSATION SO FAR:\n' + history)
 
 
@@ -79,13 +82,22 @@ def grade(case, report):
     for needle in expect.get('mentions', []):
         if needle.casefold() not in reply.casefold():
             errors.append('reply does not mention ' + needle)
+    for needle in expect.get('contains', []):
+        if needle.casefold() not in reply.casefold():
+            errors.append('reply does not contain ' + needle)
     if expect.get('mentions_any') and not any(n.casefold() in reply.casefold() for n in expect['mentions_any']):
         errors.append('reply mentions none of ' + ', '.join(expect['mentions_any']))
-    if 'next_step' in expect and report.get('next_step') != expect['next_step']:
-        errors.append('next_step is ' + str(report.get('next_step')) + ', expected ' + expect['next_step'])
+    if 'next_step' in expect:
+        allowed = expect['next_step'] if isinstance(expect['next_step'], list) else [expect['next_step']]
+        if report.get('next_step') not in allowed:
+            errors.append('next_step is ' + str(report.get('next_step')) + ', expected ' + ' or '.join(allowed))
+    if 'options' in expect and report.get('options') != expect['options']:
+        errors.append('options are ' + str(report.get('options')) + ', expected ' + str(expect['options']))
+    if 'hands_over_to' in expect and report.get('hands_over_to') != expect['hands_over_to']:
+        errors.append('hands_over_to is ' + str(report.get('hands_over_to')) + ', expected ' + expect['hands_over_to'])
     if 'writes' in expect and report.get('writes') is not expect['writes']:
         errors.append('writes is ' + str(report.get('writes')) + ', expected ' + str(expect['writes']))
-    if 'max_questions' in expect and reply.count('?') > expect['max_questions']:
+    if 'max_questions' in expect and sum('?' in line for line in reply.splitlines()) > expect['max_questions']:  # a question may be written in two languages on one line
         errors.append('more than ' + str(expect['max_questions']) + ' question(s)')
     for pattern in expect.get('required_commands', []):
         if not any(re.search(pattern, c) for c in commands):

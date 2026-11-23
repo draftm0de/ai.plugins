@@ -102,7 +102,10 @@ GATE_REASONS = {
 }
 
 
-def gate(ctx, target):
+STOP_MESSAGE = 'The {action} action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.'  # the one sentence every gated skill reports; translated, never reworded
+
+
+def gate(ctx, target, action=None):
     """Write-free answer to: may a writing skill other than setup (docs, publish) start? Open means the
     state is not ready; the caller stops and points to /plugin-manager:setup. Never writes and runs no flow."""
     try:
@@ -110,10 +113,11 @@ def gate(ctx, target):
     except Conflict as conflict:
         return {'operation': 'gate', 'ok': False, 'ready': False, 'next': 'stop', 'target': str(target),
                 'reason': GATE_REASONS['stop'] + ': ' + str(conflict.reason), 'run': '/plugin-manager:setup',
-                'target_code_executed': False}
+                'message': STOP_MESSAGE.format(action=action or 'requested'), 'target_code_executed': False}
     ready = bool(data['ok']) and data['next'] == 'ready'
     reason = '' if ready else GATE_REASONS.get(data['next'], 'the state is not ready')
     if data['conflicts']:
         reason += ': ' + '; '.join(str(c.get('reason', '')) for c in data['conflicts'])
     return {'operation': 'gate', 'ok': ready, 'ready': ready, 'next': data['next'], 'target': data['target'],
-            'reason': reason, 'run': None if ready else '/plugin-manager:setup', 'target_code_executed': False}
+            'reason': reason, 'run': None if ready else '/plugin-manager:setup',
+            'message': None if ready else STOP_MESSAGE.format(action=action or 'requested'), 'target_code_executed': False}

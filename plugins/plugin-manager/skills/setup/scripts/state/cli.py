@@ -22,6 +22,7 @@ def main(argv=None, source_root=None, manager_root=None):
     mark.add_argument('--kind', required=True, help='Configured kind (a directory with a manifest under templates/, for the Manager plugin or marketplace)')
     mark.add_argument('--artifact', required=True, help='Name of the created plugin or marketplace')
     closed = commands.add_parser('gate', help='Write-free: is the workpackage ready for a writing skill other than setup (exit 1 if not)')
+    closed.add_argument('--action', choices=('docs', 'modify', 'publish'), help='The gated skill; names it in the stop message')
     decide = commands.add_parser('sync', help='Apply one explicit keep/adopt decision for a deviating managed file')
     decide.add_argument('--decision', required=True, choices=('keep', 'adopt', 'delete'), help='keep: keep local file; adopt: take template (content question); delete: remove the file (removal question)')
     decide.add_argument('--path', required=True, help='Managed file path from status sync.decisions')
@@ -34,7 +35,7 @@ def main(argv=None, source_root=None, manager_root=None):
     args = parser.parse_args(argv)
     try:
         ctx = Context(args.plugin, source_root, manager_root)
-        result = {'status': lambda: reporting.status(ctx, args.target), 'gate': lambda: reporting.gate(ctx, args.target), 'record': lambda: recording.record(ctx, args.target, args.kind, args.artifact), 'setup': lambda: skeleton.setup(ctx, args.target, args.language),
+        result = {'status': lambda: reporting.status(ctx, args.target), 'gate': lambda: reporting.gate(ctx, args.target, args.action), 'record': lambda: recording.record(ctx, args.target, args.kind, args.artifact), 'setup': lambda: skeleton.setup(ctx, args.target, args.language),
                   'language': lambda: preferences.language_only(ctx, args.target, args.language),
                   'sync': lambda: syncing.sync(ctx, args.target, args.decision, args.path, args.source_hash, args.local_hash)}[args.operation]()
     except Conflict as conflict:

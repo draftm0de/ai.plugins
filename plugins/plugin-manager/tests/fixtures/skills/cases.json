@@ -14,8 +14,8 @@
     ],
     "observed": [
       {
-        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the operator language is not saved yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false\n}"
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action docs",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the operator language is not saved yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\"\n}"
       }
     ],
     "expect": {
@@ -23,15 +23,27 @@
       "mentions": [
         "/plugin-manager:setup"
       ],
-      "next_step": "reports_only",
+      "next_step": [
+        "asks_question",
+        "asks_confirmation"
+      ],
       "writes": false,
-      "max_questions": 0,
+      "max_questions": 1,
       "forbidden_commands": [
         "setup_state\\.py.*\\b(setup|record|sync|language)\\b",
         "modify\\.py",
         "publish_plan\\.py",
         "documentation\\.py"
-      ]
+      ],
+      "contains": [
+        "The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.",
+        "Reason:"
+      ],
+      "options": [
+        "Yes, run it",
+        "No, stop"
+      ],
+      "hands_over_to": "none"
     }
   },
   {
@@ -49,8 +61,8 @@
     ],
     "observed": [
       {
-        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"sync\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"a managed file needs a keep, adopt or delete decision\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false\n}"
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action docs",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"sync\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"a managed file needs a keep, adopt or delete decision\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\"\n}"
       }
     ],
     "expect": {
@@ -58,11 +70,103 @@
       "mentions": [
         "/plugin-manager:setup"
       ],
+      "next_step": [
+        "asks_question",
+        "asks_confirmation"
+      ],
+      "writes": false,
+      "max_questions": 1,
+      "forbidden_commands": [
+        "setup_state\\.py.*\\b(setup|record|sync|language)\\b",
+        "documentation\\.py"
+      ],
+      "contains": [
+        "Die Aktion docs wurde abgebrochen, weil dieser Ordner noch nicht oder nur teilweise eingerichtet ist. Bitte zuerst /plugin-manager:setup ausführen.",
+        "Grund:"
+      ],
+      "options": [
+        "Ja, ausführen",
+        "Nein, abbrechen"
+      ],
+      "hands_over_to": "none"
+    }
+  },
+  {
+    "id": "docs_gate_closed_yes_hands_over_to_setup",
+    "skill": "docs",
+    "sources": [
+      "skills/docs/SKILL.md",
+      "skills/_shared/flows/gate.md"
+    ],
+    "history": [
+      {
+        "role": "person",
+        "text": "/plugin-manager:docs"
+      },
+      {
+        "role": "agent",
+        "text": "The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\nReason: the operator language is not saved yet.\nQuestion: Run /plugin-manager:setup now? [Yes, run it] [No, stop]"
+      },
+      {
+        "role": "person",
+        "text": "Yes, run it"
+      }
+    ],
+    "observed": [
+      {
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action docs",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the operator language is not saved yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\"\n}"
+      }
+    ],
+    "expect": {
       "next_step": "reports_only",
+      "hands_over_to": "setup",
       "writes": false,
       "max_questions": 0,
       "forbidden_commands": [
         "setup_state\\.py.*\\b(setup|record|sync|language)\\b",
+        "modify\\.py",
+        "publish_plan\\.py",
+        "documentation\\.py"
+      ]
+    }
+  },
+  {
+    "id": "docs_gate_closed_no_ends_without_a_step",
+    "skill": "docs",
+    "sources": [
+      "skills/docs/SKILL.md",
+      "skills/_shared/flows/gate.md"
+    ],
+    "history": [
+      {
+        "role": "person",
+        "text": "/plugin-manager:docs"
+      },
+      {
+        "role": "agent",
+        "text": "The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\nReason: the operator language is not saved yet.\nQuestion: Run /plugin-manager:setup now? [Yes, run it] [No, stop]"
+      },
+      {
+        "role": "person",
+        "text": "No, stop"
+      }
+    ],
+    "observed": [
+      {
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action docs",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the operator language is not saved yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\"\n}"
+      }
+    ],
+    "expect": {
+      "next_step": "reports_only",
+      "hands_over_to": "none",
+      "writes": false,
+      "max_questions": 0,
+      "forbidden_commands": [
+        "setup_state\\.py.*\\b(setup|record|sync|language)\\b",
+        "modify\\.py",
+        "publish_plan\\.py",
         "documentation\\.py"
       ]
     }
@@ -82,8 +186,8 @@
     ],
     "observed": [
       {
-        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"stop\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"a technical conflict stops all writes: Unsupported evidence file\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false\n}"
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action publish",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"stop\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"a technical conflict stops all writes: Unsupported evidence file\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The publish action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\"\n}"
       }
     ],
     "expect": {
@@ -91,15 +195,27 @@
       "mentions": [
         "/plugin-manager:setup"
       ],
-      "next_step": "reports_only",
+      "next_step": [
+        "asks_question",
+        "asks_confirmation"
+      ],
       "writes": false,
-      "max_questions": 0,
+      "max_questions": 1,
       "forbidden_commands": [
         "publish_plan\\.py",
         "git (commit|push|checkout|switch)",
         "gh ",
         "setup_state\\.py.*\\b(setup|record|sync|language)\\b"
-      ]
+      ],
+      "contains": [
+        "The publish action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.",
+        "Reason:"
+      ],
+      "options": [
+        "Yes, run it",
+        "No, stop"
+      ],
+      "hands_over_to": "none"
     }
   },
   {
@@ -117,8 +233,8 @@
     ],
     "observed": [
       {
-        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"skeleton\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"skeleton files, the ignore rule or the skeleton evidence are missing\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false\n}"
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action modify",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"skeleton\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"skeleton files, the ignore rule or the skeleton evidence are missing\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The modify action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\"\n}"
       }
     ],
     "expect": {
@@ -126,13 +242,25 @@
       "mentions": [
         "/plugin-manager:setup"
       ],
-      "next_step": "reports_only",
+      "next_step": [
+        "asks_question",
+        "asks_confirmation"
+      ],
       "writes": false,
-      "max_questions": 0,
+      "max_questions": 1,
       "forbidden_commands": [
         "modify\\.py",
         "setup_state\\.py.*\\b(setup|record|sync|language)\\b"
-      ]
+      ],
+      "contains": [
+        "The modify action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.",
+        "Reason:"
+      ],
+      "options": [
+        "Yes, run it",
+        "No, stop"
+      ],
+      "hands_over_to": "none"
     }
   },
   {
@@ -151,8 +279,8 @@
     ],
     "observed": [
       {
-        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": true,\n  \"ready\": true,\n  \"next\": \"ready\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"\",\n  \"run\": null,\n  \"target_code_executed\": false\n}"
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action modify",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": true,\n  \"ready\": true,\n  \"next\": \"ready\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"\",\n  \"run\": null,\n  \"target_code_executed\": false,\n  \"message\": null\n}"
       },
       {
         "command": "python3 -B \"scripts/modify.py\" --root \"/work/fictional-plugin\" --description \"New description\" --dry-run",
@@ -198,8 +326,8 @@
     ],
     "observed": [
       {
-        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": true,\n  \"ready\": true,\n  \"next\": \"ready\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"\",\n  \"run\": null,\n  \"target_code_executed\": false\n}"
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action modify",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": true,\n  \"ready\": true,\n  \"next\": \"ready\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"\",\n  \"run\": null,\n  \"target_code_executed\": false,\n  \"message\": null\n}"
       }
     ],
     "expect": {

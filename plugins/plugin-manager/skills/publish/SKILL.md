@@ -13,4 +13,4 @@ Regular publication: prepare → concrete approval → approved descriptive feat
 
 ## State gate
 
-Before preparing a plan follow `../_shared/flows/gate.md` (`setup_state.py gate`). When the gate is closed, stop with the reason and a pointer to `/plugin-manager:setup`; no plan, journal, branch or commit is created and publish writes nothing then.
+Before preparing a plan follow `../_shared/flows/gate.md` (`setup_state.py gate --action publish`). When the gate is closed, stop as that flow says: the two lines (the fixed sentence and the reason), then the question whether to run `/plugin-manager:setup`; no plan, journal, branch or commit is created and publish writes nothing then.

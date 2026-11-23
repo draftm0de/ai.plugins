@@ -56,7 +56,7 @@ class SkillSetTests(unittest.TestCase):
                 self.assertIn('writes nothing', skill)
         self.assertTrue((ROOT / 'skills/_shared/flows/gate.md').is_file())
         gate = text('skills/_shared/flows/gate.md')
-        for needle in ('setup_state.py', 'gate --target', '`ready`', '/plugin-manager:setup', 'writes nothing', 'in English', 'never guess a language'):
+        for needle in ('setup_state.py', 'gate --target', '`ready`', '/plugin-manager:setup', 'writes nothing', 'in English', 'never guess a language', '--action', 'Die Aktion', 'two lines', 'Yes, run it', 'No, stop', 'Ja, ausführen', 'hand over to the skill `setup`'):
             self.assertIn(needle, gate)
 
     def test_verify_stays_read_only_and_reports_pending_setup_as_finding(self):

@@ -11,4 +11,4 @@ Read `../_shared/WORKFLOWS.md` and follow its **docs** action. This is a thin pl
 
 ## State gate
 
-Before reading sources or writing documentation follow `../_shared/flows/gate.md` (`setup_state.py gate`). When the gate is closed, stop with the reason and a pointer to `/plugin-manager:setup`; this skill writes nothing then. Only `setup` changes configuration, skeleton files or sync decisions.
+Before reading sources or writing documentation follow `../_shared/flows/gate.md` (`setup_state.py gate --action docs`). When the gate is closed, stop as that flow says: the two lines (the fixed sentence and the reason), then the question whether to run `/plugin-manager:setup`; this skill writes nothing then. Only `setup` changes configuration, skeleton files or sync decisions.
