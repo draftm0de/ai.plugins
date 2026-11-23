@@ -10,7 +10,7 @@ Inspect existing files before any write. The helpers preflight collisions, prese
 
 ## `create --kind marketplace` (generator operation of the marketplace flow)
 
-The procedure for the person is the flow `../../plugin-manager/flows/marketplace.md` of the central entry; there is no separate skill. This section is the technical reference of the helper operation. The GitHub repository must already exist and be cloned. Example with fictional inputs:
+The procedure for the person is the flow `../../setup/flows/marketplace.md` of the setup skill; there is no separate skill. This section is the technical reference of the helper operation. The GitHub repository must already exist and be cloned. Example with fictional inputs:
 
 ```sh
 python3 /path/to/installed/skills/_shared/scripts/workflows.py create --kind marketplace \
@@ -30,7 +30,7 @@ The public entry is `plugin-manager`; there is no separate plugin creation skill
 
 Use a structured question tool when the current host exposes one (such as Claude's `AskUserQuestion`). Call the available tool according to its actual schema and limits; do not merely print its name or a numbered questionnaire. When no question tool is available in the current mode, state that briefly and ask one short question at a time in chat. Do not switch host modes, install tools or claim a dialog was displayed when it was not.
 
-1. Use the saved operator language resolved by the central entry before configuration. Do not ask again or infer it from documentation settings or English instruction text. All questions, labels and reports use that language; technical identifiers stay unchanged. The central state check handles existing plugins without restarting creation. The internal generator independently rejects an existing product before license validation.
+1. Use the saved operator language resolved by the setup skill before configuration. Do not ask again or infer it from documentation settings or English instruction text. All questions, labels and reports use that language; technical identifiers stay unchanged. The central state check handles existing plugins without restarting creation. The internal generator independently rejects an existing product before license validation.
 
 2. Create a skeleton only; do not ask for a creation mode or source skill path. Clarify a missing marketplace path. Translate choices to the resolved language. Reuse already confirmed paths and inspect only the authorized target and selected sources; do not explore unrelated sibling repositories to supply defaults.
 3. Clarify missing identity fields, then documentation languages and their default. Suggestions from the target name must be labelled as suggestions requiring selection; do not infer publisher, language or license from neighboring repositories. Keep questions small and coherent rather than bundling all missing inputs into one form or message. Do not ask again for confirmed facts.
@@ -62,7 +62,7 @@ The agent must complete missing documentation from the actual source, preserving
 
 ## associate
 
-The operation of `skills/plugin-manager/flows/associate.md`; there is no separate configure skill or operation.
+The operation of `skills/setup/flows/associate.md`; there is no separate configure skill or operation.
 
 ```sh
 python3 /path/to/installed/skills/_shared/scripts/workflows.py associate \

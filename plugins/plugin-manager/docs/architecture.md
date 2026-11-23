@@ -3,6 +3,7 @@
 - `SCOPE.md`: confirmed goals, non-goals and acceptance criteria; draft until agreed.
 - `skills/<name>/SKILL.md`: public skill entry points for plugins.
 - `skills/<name>/scripts/`: distributed runtime; no imports from a developer checkout.
+- `skills/setup/scripts/`: the setup state helper, entry `setup_state.py` and package `state/` (public API in `state/__init__.py`).
 - `skills/_shared/`: optional shared runtime/rules, no extra SKILL.md.
 - `scripts/`: development, validation and distribution helpers only.
 - `tests/unit/`, `tests/integration/`, `tests/contracts/`: deterministic tests.
@@ -14,6 +15,12 @@
 Plugin repositories have plugin.json and derived host manifests, never marketplace
 catalogs. Marketplace repositories have marketplace.json and derived host catalogs,
 never new embedded plugins. GitHub repository creation is outside these tools.
+
+Runtime scripts take no location or state from module globals or `__file__`. What a script reads from
+the parent (manifests, templates) and the running plugin come in as an explicit context parameter
+(`Context` in `skills/setup/scripts/state/context.py`). Production uses the defaults; code callers, tests
+included, pass other data. Shared scripts are code, never part of the context, and the shipped command
+line has no option for it. New scripts follow this; existing scripts change when they are next modified.
 
 Root scripts are not shipped runtime. Keep runtime dependencies inside the plugin
 payload. Do not store user state in the installed plugin. Use only needed directories.

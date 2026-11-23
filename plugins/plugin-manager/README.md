@@ -14,9 +14,9 @@ Für Entwickler und Teams, die Skills als installierbare Plugins pflegen. Der Ma
 
 ## Funktionen und Modi
 
-**plugin-manager** richtet einen geklonten Marketplace ein oder erstellt ein separates Plugin und ordnet es zu, beides als geführte Abläufe des zentralen Einstiegs. Die Marketplace-Zuordnung eines Plugins (genau ein Marketplace) ändert er auf Anfrage im Flow `associate`. **plugin-verify**, **marketplace-verify** und **verify** prüfen ausschließlich lesend. **update** pflegt Dokumentation und **publish** bereitet getrennte, freigabepflichtige Veröffentlichungen vor. `init` wird nicht unterstützt. [Abläufe](docs/de/usage.md).
+**setup** (`/plugin-manager:setup`) richtet einen geklonten Marketplace ein oder erstellt ein separates Plugin und ordnet es zu, als geführte Abläufe; der Skill prüft den Zustand, führt genau den nötigen Flow aus und darf wiederholt aufgerufen werden. Die Marketplace-Zuordnung eines Plugins (genau ein Marketplace) ändert er auf Anfrage im Flow `associate`. **verify** prüft ausschließlich lesend und erkennt selbst, ob ein Plugin oder ein Marketplace vorliegt. **docs** pflegt Dokumentation und **publish** bereitet getrennte, freigabepflichtige Veröffentlichungen vor; beide starten nur, wenn das Arbeitspaket bereit ist, sonst verweisen sie auf `setup`. `init` wird nicht unterstützt. [Abläufe](docs/de/usage.md).
 
-Die vier Skills heißen `plugin-manager`, `verify`, `update` und `publish`. Gemeinsame Regeln und Werkzeuge liegen in [`skills/_shared/`](skills/_shared/WORKFLOWS.md), mit plugin-manager als zentralem Einstieg. Explizite Prüfvarianten bleiben Befehle; init wird nicht unterstützt.
+Die vier Skills heißen `setup`, `docs`, `verify` und `publish`. Gemeinsame Regeln und Werkzeuge liegen in [`skills/_shared/`](skills/_shared/WORKFLOWS.md). Die Art (Plugin oder Marketplace) ist nie ein Aufrufargument; init wird nicht unterstützt.
 
 ## Schnellstart
 
@@ -26,7 +26,7 @@ Füge `https://github.com/draftm0de/ai.plugins` in der Plugin-Verwaltung als Mar
 
 Wähle das Plugin und sage: „Prüfe dieses Repository mit verify.“ Für Dokumentation: „Aktualisiere die Dokumentation auf Deutsch und Englisch.“ In Claude Code sind auch `/plugin-manager:verify PFAD` und die weiteren Aktionskommandos verfügbar. [Nutzung](docs/de/usage.md).
 
-`update` ist der Skill-Einstieg für die Aktion **update**. Er aktualisiert gepflegtes Markdown anhand aktueller Quellen und Vorlagen; README wird nicht bei jedem Build automatisch erzeugt. [Dokumentation pflegen](docs/de/development.md#dokumentation-pflegen).
+`docs` ist der Skill-Einstieg für die Aktion **docs** (`/plugin-manager:docs`). Er aktualisiert gepflegtes Markdown anhand aktueller Quellen und Vorlagen; README wird nicht bei jedem Build automatisch erzeugt. [Dokumentation pflegen](docs/de/development.md#dokumentation-pflegen).
 
 ## Speicherung und Datenschutz
 
@@ -34,7 +34,7 @@ Der Manager schreibt Dokumentationsdateien und bei `create --kind plugin` ein se
 
 ## Projektstatus
 
-Laut Nutzer sind Manager und Coach im veröffentlichten Marketplace vorhanden. Die früher bestätigten Claude-/GPT-Importe betreffen den damaligen Stand; die aktuellen Manager-Erweiterungen liegen noch lokal vor. Isolierte CLI-Tests sind separat dokumentiert. Das bestätigt weder sämtliche Funktionen noch automatische Updates oder den vollständigen Publish-Ablauf. Lizenz: [MIT](LICENSE). [Prüfstand](docs/de/release-evidence.md).
+Laut Nutzer sind Manager und Coach im veröffentlichten Marketplace vorhanden. Die aktuellen Manager-Erweiterungen liegen noch lokal vor. Das bestätigt weder sämtliche Funktionen noch automatische Updates oder den vollständigen Publish-Ablauf. Lizenz: [MIT](LICENSE).
 
 ## Entwicklung
 
@@ -50,6 +50,6 @@ make verify SOURCE=.
 make validate-docs OUTPUT=.
 ```
 
-`make sync-plugin` erzeugt die einzucheckenden Host-Metadaten. `make install-local` testen lokale Änderungen ohne Commit oder Push; die Skill-Aktion **update** pflegt dagegen Dokumentation. [Entwicklung](docs/de/development.md).
+`make sync-plugin` erzeugt die einzucheckenden Host-Metadaten. `make install-local` testen lokale Änderungen ohne Commit oder Push; die Skill-Aktion **docs** pflegt dagegen Dokumentation. [Entwicklung](docs/de/development.md).
 
 Dokumentation erstellt mit Plugin Manager.

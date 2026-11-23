@@ -12,7 +12,6 @@ import unittest
 from unittest import mock
 
 from tests.support.workflow_fixture import WorkflowFixture  # puts the Manager scripts on sys.path
-from tests.integration.project_setup.test_setup import load_module
 from tests.support import project_setup_fixture as fx
 from tests.support.project_setup_fixture import (ALPHA, BETA, DELTA, FICTIONAL, GAMMA, LOCK, ZETA, FictionalSandbox,
                                                  digest, tree)
@@ -260,9 +259,9 @@ class StaleAndErrorTests(SyncBase):
 
     def test_lock_write_failure_after_adopt_reports_actual_partial_change(self):
         self.setup_all(); self.deviate()
-        ps = load_module(self.box.helper, 'sync_partial')
+        ps = fx.load_state(**self.box.ctx_args)
         item = self.status()['sync']['decisions'][0]
-        with mock.patch.object(ps, 'write_lock', side_effect=OSError('disk full')):
+        with mock.patch.object(ps.skeleton_lock, 'write_lock', side_effect=OSError('disk full')):
             data = ps.sync(str(self.p), 'adopt', TARGET, item['source_hash'], item['local_hash'])
         self.assertEqual((False, True, False, 'stop'), (data['ok'], data['changed']['file'], data['changed']['lock'], data['next']))
         self.assertEqual(ALPHA, (self.p / TARGET).read_bytes())
@@ -370,7 +369,7 @@ class GeneratorCooperationTests(WorkflowFixture, unittest.TestCase):
     """Generator integration: the real generator and the real templates are the subject here, not the sync rules."""
     def setUp(self):
         super().setUp()
-        self.ps = load_module(fx.SHARED / 'scripts/project_setup.py', 'sync_flow')
+        self.ps = fx.load_state()
 
     def prepare(self):
         """A deviating common file exists before the generator runs (R17: the generator never judges it)."""

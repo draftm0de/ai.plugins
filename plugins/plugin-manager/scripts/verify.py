@@ -296,12 +296,12 @@ def verify(source, kind='auto'):
         has_marketplace = (root/'marketplace.json').is_file()
         if kind == 'auto':
             if has_plugin == has_marketplace:
-                raise ValueError('Cannot infer repository type; select plugin-verify or marketplace-verify and the exact repository root')
+                raise ValueError('Cannot infer repository type; select --kind plugin or --kind marketplace and the exact repository root')
             selected = 'plugin' if has_plugin else 'marketplace'
         if selected == 'plugin' and not has_plugin:
-            raise ValueError('plugin-verify requires a plugin repository root containing plugin.json')
+            raise ValueError('--kind plugin requires a plugin repository root containing plugin.json')
         if selected == 'marketplace' and not has_marketplace:
-            raise ValueError('marketplace-verify requires a marketplace repository root containing marketplace.json')
+            raise ValueError('--kind marketplace requires a marketplace repository root containing marketplace.json')
         result = plugin(root) if selected == 'plugin' else marketplace(root)
         return dict(result, kind=selected, source=str(root), structure_valid=True,
                     local_development=local_configuration(root, selected), target_code_executed=False,

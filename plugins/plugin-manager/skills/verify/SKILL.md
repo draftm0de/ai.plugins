@@ -11,6 +11,8 @@ Read `../_shared/WORKFLOWS.md` and follow its **verify** action. This is a thin 
 
 Use `../_shared/scripts/verify.py --source TARGET --kind auto` for context-aware verification. TARGET comes from the user or current project root, never from this plugin installation. Reject ambiguous roots. Use --kind plugin or --kind marketplace when the expected type is explicit. This action is read-only; configuration and repair belong to a separate action.
 
+The kind is detected (`--kind auto`) and never a call argument of the command; an explicit `--kind plugin` or `--kind marketplace` stays possible. When `setup_state.py status` shows a pending setup or sync, report it as a finding and continue; verify never runs setup.
+
 Report `structure_valid` independently from `local_development.complete`. Missing local checkout mappings on a fresh clone mean local checks are unavailable; they do not invalidate the published structure. Installation requires those checkouts, but verification never installs them.
 
 ## Explicit scope/source review

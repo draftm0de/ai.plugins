@@ -8,7 +8,7 @@ import unittest
 from tests.support.plugin_fixture import materialize
 
 ROOT = next(p for p in Path(__file__).resolve().parents if (p / 'Makefile').is_file())
-NAMES = {'plugin-manager', 'verify', 'update', 'publish'}
+NAMES = {'setup', 'docs', 'verify', 'publish'}
 
 
 class SkillEntrypointTests(unittest.TestCase):
@@ -44,15 +44,11 @@ class SkillEntrypointTests(unittest.TestCase):
     def test_claude_commands_route_to_public_skills_and_explicit_variants(self):
         for name in NAMES:
             self.assertIn(f'/skills/{name}/SKILL.md', (ROOT/'commands'/f'{name}.md').read_text())
-        for name, kind in [('plugin-verify', 'plugin'), ('marketplace-verify', 'marketplace')]:
-            text = (ROOT/'commands'/f'{name}.md').read_text()
-            self.assertIn('skills/verify/SKILL.md', text)
-            self.assertIn('--kind '+kind, text)
         self.assertFalse((ROOT/'commands/init.md').exists())
-        # R20: the marketplace setup is a flow of plugin-manager, not a skill or command of its own
+        # R20: the marketplace setup is a flow of setup, not a skill or command of its own
         self.assertFalse((ROOT/'skills/marketplace-create').exists())
         self.assertFalse((ROOT/'commands/marketplace-create.md').exists())
-        # R21: the marketplace association of a plugin is the flow associate of plugin-manager, not a skill or command of its own
+        # R21: the marketplace association of a plugin is the flow associate of setup, not a skill or command of its own
         self.assertFalse((ROOT/'skills/configure').exists())
         self.assertFalse((ROOT/'commands/configure.md').exists())
-        self.assertTrue((ROOT/'skills/plugin-manager/flows/associate.md').is_file())
+        self.assertTrue((ROOT/'skills/setup/flows/associate.md').is_file())

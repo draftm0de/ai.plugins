@@ -11,6 +11,9 @@ import tempfile
 ROOT = next(p for p in Path(__file__).resolve().parents if (p / 'Makefile').is_file())
 SHARED = ROOT / 'skills/_shared'
 TEMPLATE_DIR = SHARED / 'templates/plugin/sync'
+SETUP_SCRIPTS = ROOT / 'skills/setup/scripts'  # the setup state helper: setup_state.py and the package state/
+HELPER = SETUP_SCRIPTS / 'setup_state.py'
+DRIVER = ROOT / 'tests/support/run_state.py'  # the real command line with a context given in code
 # Files of the real skeleton whose delivery the delivery/integration tests check. keep.md and remove.md (manual
 # sync-test sources) are deliberately not listed: they may disappear from the real parent. Rule tests of the sync
 # do not use this list at all; they use FictionalSandbox with fixed fictional bytes (see tests/README.md).
@@ -53,12 +56,14 @@ def tree(path):
 
 class Sandbox:
     def make(self, name='demo-plugin', configured=True):
-        """Complete isolated copy of the real Manager's shared tree: delivery/integration tests only."""
+        """Isolated copy of the real parent DATA (manifests, templates); the scripts are the real ones, given this as context."""
         self.temp = tempfile.TemporaryDirectory(prefix='project setup ')
         self.base = Path(self.temp.name).resolve()
         self.manager = self.base / 'manager copy'
-        shutil.copytree(SHARED, self.manager / 'skills/_shared', ignore=shutil.ignore_patterns('__pycache__'))
-        self.helper = self.manager / 'skills/_shared/scripts/project_setup.py'
+        for data in ('manifests', 'templates'):
+            shutil.copytree(SHARED / data, self.manager / 'skills/_shared' / data, ignore=shutil.ignore_patterns('__pycache__'))
+        self.source_root = self.manager / 'skills/_shared'
+        self.ctx_args = {'source_root': self.source_root, 'manager_root': self.manager}
         self.project = self.base / 'my plugin'
         self.project.mkdir()
         (self.project / 'plugin.json').write_text(json.dumps({'name': name}))
@@ -93,9 +98,11 @@ class Sandbox:
     def template(self, relative):
         return (self.manager / 'skills/_shared/templates/plugin/sync' / relative).read_bytes()
 
-    def run(self, operation, *args, target=None, helper=None):
+    def run(self, operation, *args, target=None, real=False):
+        """The real command line (isolated mode) with this sandbox as context; real=True uses the real parent data."""
         args = args if '--plugin' in args else (*args, '--plugin', PLUGIN)
-        command = [sys.executable, '-B', '-I', str(helper or self.helper), operation, '--target',
+        source, manager = ('-', '-') if real else (str(self.source_root), str(self.manager))
+        command = [sys.executable, '-B', '-I', str(DRIVER), str(SETUP_SCRIPTS), source, manager, operation, '--target',
                    str(target or self.project), *args]
         return subprocess.run(command, capture_output=True, text=True, cwd=self.base, env={'PATH': ''})
 
@@ -126,7 +133,7 @@ FICTIONAL = {  # path -> (bytes, executable)
 
 class FictionalSandbox(Sandbox):
     requires_marketplace = False  # the fictional kind has no marketplace
-    """Runs the REAL, unchanged project_setup.py (and the real operator_language.py it depends on) against a minimal
+    """Runs the REAL, unchanged setup state scripts against a minimal
     fictional parent whose kind manifest lists the fictional files as common."""
 
     def make(self, name='demo-plugin', files=None, configured=True):
@@ -134,11 +141,8 @@ class FictionalSandbox(Sandbox):
         self.temp = tempfile.TemporaryDirectory(prefix='project setup fiction ')
         self.base = Path(self.temp.name).resolve()
         self.manager = self.base / 'fictional parent'
-        scripts = self.manager / 'skills/_shared/scripts'
-        scripts.mkdir(parents=True)
-        shutil.copy2(SHARED / 'scripts/operator_language.py', scripts / 'operator_language.py')
-        self.helper = scripts / 'project_setup.py'
-        shutil.copy2(SHARED / 'scripts/project_setup.py', self.helper)  # the real helper, unchanged
+        self.source_root = self.manager / 'skills/_shared'
+        self.ctx_args = {'source_root': self.source_root, 'manager_root': self.manager}
         self.removed = []
         manifests = self.manager / 'skills/_shared/manifests'
         manifests.mkdir(parents=True, exist_ok=True)
@@ -181,3 +185,41 @@ class FictionalSandbox(Sandbox):
         (self.sync_dir / relative).unlink()
         self.removed.append(relative)
         self.write_sync_file()
+
+
+class Loaded:
+    """A fresh in-process setup state package with its Context. The public operations take the context implicitly;
+    everything else (submodules for patching, Conflict, Context) is the package itself."""
+    def __init__(self, package, ctx):
+        self.package, self.ctx = package, ctx
+
+    def __getattr__(self, name):
+        return getattr(self.package, name)
+
+    def status(self, target):
+        return self.package.status(self.ctx, target)
+
+    def gate(self, target):
+        return self.package.gate(self.ctx, target)
+
+    def setup(self, target, requested_language=None):
+        return self.package.setup(self.ctx, target, requested_language)
+
+    def language_only(self, target, requested_language):
+        return self.package.language_only(self.ctx, target, requested_language)
+
+    def sync(self, target, decision, relative, expected_source, expected_local):
+        return self.package.sync(self.ctx, target, decision, relative, expected_source, expected_local)
+
+    def record(self, target, kind, artifact):
+        return self.package.record(self.ctx, target, kind, artifact)
+
+
+def load_state(source_root=None, manager_root=None, plugin=PLUGIN):
+    """A fresh in-process copy of the real setup state package with a context for the running plugin (R15);
+    source_root/manager_root give it mock data (default: the real parent)."""
+    for name in [n for n in sys.modules if n == 'state' or n.startswith('state.')]:
+        del sys.modules[name]
+    sys.path.insert(0, str(SETUP_SCRIPTS))
+    import state
+    return Loaded(state, state.Context(plugin, source_root, manager_root))

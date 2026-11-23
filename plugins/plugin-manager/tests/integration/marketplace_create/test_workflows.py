@@ -45,7 +45,7 @@ class MarketplaceFlowAcceptanceTests(unittest.TestCase):
         self.market = self.root/'catalog'; self.market.mkdir()
         subprocess.run(['git', 'init', '-q', str(self.market)], check=True)
         subprocess.run(['git', '-C', str(self.market), 'remote', 'add', 'origin', 'https://github.com/example/catalog.git'], check=True)
-        self.helper = flow.SKILL/'scripts/project_setup.py'
+        self.helper = flow.SKILL.parent/'setup/scripts/setup_state.py'
 
     def call(self, operation, *args):
         result = subprocess.run([sys.executable, '-B', '-I', str(self.helper), operation, '--target', str(self.market),

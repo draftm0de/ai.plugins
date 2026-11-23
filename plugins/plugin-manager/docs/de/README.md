@@ -8,7 +8,7 @@
 
 ## Anleitungen
 
-[Installation](installation.md) · [Nutzung](usage.md) · [Screens](screens.md) · [FAQ](faq.md) · [Speicherung](storage.md) · [Entwicklung](development.md) · [Publish](publish.md) · [Prüfstand](release-evidence.md)
+[Installation](installation.md) · [Nutzung](usage.md) · [Screens](screens.md) · [FAQ](faq.md) · [Speicherung](storage.md) · [Entwicklung](development.md) · [Publish](publish.md)
 
 ## Quellen und Referenzen
 

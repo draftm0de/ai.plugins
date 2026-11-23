@@ -10,7 +10,6 @@ import unittest
 from unittest import mock
 
 from tests.support.workflow_fixture import WorkflowFixture  # puts the Manager scripts on sys.path
-from tests.integration.project_setup.test_setup import load_module
 from tests.support import project_setup_fixture as fx
 from tests.support.project_setup_fixture import (ALPHA, BETA, DELTA, FICTIONAL, GAMMA, LOCK, ZETA, FictionalSandbox,
                                                  digest, tree)
@@ -265,14 +264,14 @@ class SourceBaseTests(RemovalBase):
 class PartialFailureTests(RemovalBase):
     def test_failure_after_first_removal_reports_actual_changes_and_resume_heals(self):
         self.drop_source(OTHER); self.drop_source(GONE)
-        ps = load_module(self.box.helper, 'removal_partial')
-        real, calls = ps.remove_managed_file, []
+        ps = fx.load_state(**self.box.ctx_args)
+        real, calls = ps.skeleton.remove_managed_file, []
         def failing(*args, **kw):
             calls.append(args[1])
             if len(calls) == 2:
                 raise OSError('device busy')
             return real(*args, **kw)
-        with mock.patch.object(ps, 'remove_managed_file', failing):
+        with mock.patch.object(ps.skeleton, 'remove_managed_file', failing):
             data = ps.setup(str(self.p))
         self.assertFalse(data['ok'])
         self.assertEqual(1, len(data['removed']['files']))
@@ -288,11 +287,11 @@ class PartialFailureTests(RemovalBase):
 
     def test_changed_file_at_delete_time_is_a_conflict_without_deletion(self):
         self.drop_source()
-        ps = load_module(self.box.helper, 'removal_changed')
-        real = ps.inspect
+        ps = fx.load_state(**self.box.ctx_args)
+        real = ps.inspection.inspect
         def inspect(*a):
             plan = real(*a); (self.p / GONE).write_bytes(b'edited after the check'); return plan
-        with mock.patch.object(ps, 'inspect', inspect):
+        with mock.patch.object(ps.inspection, 'inspect', inspect):
             data = ps.setup(str(self.p))
         self.assertFalse(data['ok'])
         self.assertEqual(b'edited after the check', (self.p / GONE).read_bytes())
@@ -311,8 +310,8 @@ class DeleteFailureReportTests(RemovalBase):
 
     def test_rmdir_failure_after_successful_unlink_reports_the_deletion(self):
         item = self.modified_deep()
-        ps = load_module(self.box.helper, 'delete_rmdir')
-        with mock.patch.object(ps.os, 'rmdir', side_effect=OSError(16, 'Device busy')):
+        ps = fx.load_state(**self.box.ctx_args)
+        with mock.patch.object(os, 'rmdir', side_effect=OSError(16, 'Device busy')):
             data = self.call_sync(ps, item)
         self.assertFalse(data['ok'])
         self.assertEqual(([DEEP], True, False, 'stop'), (data['removed']['files'], data['changed']['file'],
@@ -326,8 +325,8 @@ class DeleteFailureReportTests(RemovalBase):
 
     def test_lock_write_failure_after_successful_delete_reports_partial_change_and_resumes(self):
         item = self.modified_deep()
-        ps = load_module(self.box.helper, 'delete_lock')
-        with mock.patch.object(ps, 'write_lock', side_effect=OSError('disk full')):
+        ps = fx.load_state(**self.box.ctx_args)
+        with mock.patch.object(ps.skeleton_lock, 'write_lock', side_effect=OSError('disk full')):
             data = self.call_sync(ps, item)
         self.assertFalse(data['ok'])
         self.assertEqual(([DEEP], True, False), (data['removed']['files'], data['changed']['file'], data['changed']['lock']))
@@ -340,8 +339,8 @@ class DeleteFailureReportTests(RemovalBase):
 
     def test_failure_before_unlink_reports_no_change(self):
         item = self.modified_deep()
-        ps = load_module(self.box.helper, 'delete_unlink')
-        with mock.patch.object(ps.os, 'unlink', side_effect=OSError(1, 'Operation not permitted')):
+        ps = fx.load_state(**self.box.ctx_args)
+        with mock.patch.object(os, 'unlink', side_effect=OSError(1, 'Operation not permitted')):
             data = self.call_sync(ps, item)
         self.assertEqual((False, False, [], b'my notes'), (data['ok'], data['changed']['file'], data['removed']['files'],
                                                          (self.p / DEEP).read_bytes()))
@@ -350,7 +349,7 @@ class DeleteFailureReportTests(RemovalBase):
 class GeneratorCooperationTests(WorkflowFixture, unittest.TestCase):
     """Generator integration: the real generator and real templates are the subject, not the removal rules."""
     def test_skeleton_after_generator_and_evidence_leaves_active_files_untouched(self):
-        ps = load_module(fx.SHARED / 'scripts/project_setup.py', 'removal_flow')
+        ps = fx.load_state()
         self.assertTrue(ps.language_only(str(self.plugin), 'de')['ok'])
         self.create()  # existing generator (R17: configuration first); it already writes the common files it owns
         active = fx.FILES[0]

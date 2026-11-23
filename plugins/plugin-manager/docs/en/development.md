@@ -8,7 +8,7 @@
 
 ## Source of truth
 
-The six public entry points live at `skills/<action-name>/SKILL.md`. Shared rules live in `skills/_shared/WORKFLOWS.md`, helpers in `skills/_shared/scripts/` and templates in `skills/_shared/templates/`. `_shared` has no SKILL.md and is not exposed as an additional skill. `docs/documentation.json` points to `skills/update` and lists shared sources and the other skills under `extra_sources`.
+The four public entry points live at `skills/<action-name>/SKILL.md`. Shared rules live in `skills/_shared/WORKFLOWS.md`, helpers in `skills/_shared/scripts/` and templates in `skills/_shared/templates/`. `_shared` has no SKILL.md and is not exposed as an additional skill. `docs/documentation.json` points to `skills/update` and lists shared sources and the other skills under `extra_sources`.
 
 `skills/` is the host-neutral source. `plugin.json` owns plugin metadata; `marketplace.json` in a separate marketplace owns catalogs. Only the existing Manager in `ai.plugins/plugins/plugin-manager` remains embedded. New marketplaces need no Manager checkout. Canonical templates live under `skills/_shared/templates/plugin/` and `templates/marketplace/`, each split into `sync/` (kept in sync, hashed) and `seed/` (created once). `make build-skeleton-hashes` writes the hash files `skills/_shared/manifests/<kind>.sync.json`; `make check-skeleton-hashes` verifies them and runs in CI with exit 1 on drift.
 
@@ -46,15 +46,15 @@ python3 -B scripts/local_plugins.py install-local --target claude
 
 ## CI and releases
 
-CI validates tests, metadata and documentation and publishes nothing. [Publish](publish.md) uses separate plans per repository. New plugin sources must be published and observed before the marketplace entry is published. No release Actions, tags or plugin ZIPs. [Evidence](release-evidence.md).
+CI validates tests, metadata and documentation and publishes nothing. [Publish](publish.md) uses separate plans per repository. New plugin sources must be published and observed before the marketplace entry is published. No release Actions, tags or plugin ZIPs.
 
 ## Maintain documentation
 
-The update action rereads current sources and preserves the configured languages. `create --kind plugin` generates templates; the agent completes them from evidenced product behavior. No invented publisher, license or skill instructions. init is unsupported.
+The docs action rereads current sources and preserves the configured languages. `create --kind plugin` generates templates; the agent completes them from evidenced product behavior. No invented publisher, license or skill instructions. init is unsupported.
 
 [Create/associate commands](../../skills/_shared/references/workflows.md)
 
-For an update, ask: “Run update for this repository and validate afterward.” The agent rereads `docs/documentation.json`, skill, references, manifests and tools, then maintains `README.md`, `README.en.md`, `docs/de/` and `docs/en/`. Scaffold only creates missing files; existing content is deliberately revised. `make validate-docs OUTPUT=.` checks structure and local links. These checks do not replace content review or host testing.
+For documentation, ask: “Run docs for this repository and validate afterward.” The agent rereads `docs/documentation.json`, skill, references, manifests and tools, then maintains `README.md`, `README.en.md`, `docs/de/` and `docs/en/`. Scaffold only creates missing files; existing content is deliberately revised. `make validate-docs OUTPUT=.` checks structure and local links. These checks do not replace content review or host testing.
 
 New plugin and marketplace templates include SCOPE.md and shared development rules in AGENTS.md and docs/architecture.md; CLAUDE.md points to them. These are versioned target/structure rules. Existing content is preserved; domain requirements are never inferred from code. Review regressions in `tests/integration/verify/test_scope_review.py` test evidence boundaries, missing requirements, skeletons and incorrect runtime dependencies without executing target code. They do not establish LLM review reliability.
 

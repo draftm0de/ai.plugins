@@ -4,7 +4,6 @@ import shutil
 import unittest
 
 from tests.support.workflow_fixture import WorkflowFixture  # puts the Manager scripts on sys.path
-from tests.integration.project_setup.test_setup import load_module
 from tests.support import project_setup_fixture as fx
 from tests.support.project_setup_fixture import FILES, LOCK, Sandbox, tree
 
@@ -120,7 +119,7 @@ class GuidedConfigurationTests(WorkflowFixture, unittest.TestCase):
         self.box = Sandbox().make(); self.addCleanup(self.box.close)
         (self.plugin / '.idea').mkdir(); (self.plugin / '.idea/workspace.xml').write_text('<x/>')
         (self.plugin / '.gitignore').write_text('local-notes/\n')
-        self.ps = load_module(fx.SHARED / 'scripts/project_setup.py', 'config_flow')
+        self.ps = fx.load_state()
 
     def prepare(self):
         # R17: language first, then configuration; no skeleton exists before the kind is known

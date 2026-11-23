@@ -337,15 +337,29 @@ def release_old_marketplace(old, plugin_root, manifest):
     return files
 
 
+def state_helper():
+    """The setup state package (skills/setup/scripts/state), imported from its own folder like its command line does."""
+    scripts = SKILL.parent / 'setup' / 'scripts'
+    loaded = sys.modules.get('state')
+    if loaded is not None and Path(getattr(loaded, '__file__', '') or '').resolve().parent != scripts / 'state':
+        for name in [n for n in sys.modules if n == 'state' or n.startswith('state.')]:
+            del sys.modules[name]  # another package of that name was imported first: use this plugin's own
+    if str(scripts) not in sys.path:
+        sys.path.insert(0, str(scripts))
+    import state
+    return state
+
+
 def load_evidence(root, plugin):
     """Valid configuration evidence (schema 2) of the running plugin through the central helper, as ValueError."""
-    helper = module(SKILL/'scripts/project_setup.py', 'project_setup_for_associate')
+    helper = state_helper()
+    from state import evidence_files
     try:
-        helper.set_plugin(plugin)
-        evidence = helper.read_evidence(root)
+        ctx = helper.Context(plugin)
+        evidence = evidence_files.read_evidence(ctx, root)
     except helper.Conflict as conflict:
         raise ValueError(conflict.reason + ' (' + str(conflict.path) + ')') from conflict
-    return evidence, helper.KINDS
+    return evidence, ctx.kinds
 
 
 def associate(root, marketplace, repository=None, drop_missing_old=False, plugin=OWNER):
@@ -477,9 +491,7 @@ def create_plugin(root, marketplace, *, name=None, display_name=None, descriptio
         stage = Path(directory).resolve()/'plugin'
         stub = Path(directory).resolve()/'source'/name
         stub.mkdir(parents=True)
-        (stub/"SKILL.md").write_text("---\nname: " + name + "\ndescription: Unimplemented plugin skeleton; no domain behavior is available.\n---\n\n# Plugin skeleton\n\nCentral entry of this plugin. Before any interaction, read and follow `../_shared/references/operator-language.md`, then follow `../_shared/flows/entry.md` with `plugin = " + name + "`; the configuration of this plugin is defined in `flows/configure.md`.\n\n<!-- plugin-skeleton: unimplemented -->\n\nThis is a nonfunctional development skeleton. Do not perform domain actions or claim capabilities. Read SCOPE.md in the source repository and clarify requirements before implementing. Remove the skeleton marker only after implementing and reviewing the agreed behavior.\n")
-        (stub/"flows").mkdir()
-        (stub/"flows/configure.md").write_text("# Flow: configuration of " + name + "\n\nThis file is reserved for the configuration dialogue of " + name + ": what has to be asked and decided before the plugin can be used in a workpackage. The common entry flow (`../../_shared/flows/entry.md`) opens it when no configuration evidence exists. It is intentionally empty of procedure; define it together with SCOPE.md before implementing.\n")
+        (stub/"SKILL.md").write_text("---\nname: " + name + "\ndescription: Unimplemented plugin skeleton; no domain behavior is available.\n---\n\n# Plugin skeleton\n\nBefore any interaction, read and follow `../_shared/references/operator-language.md`.\n\n<!-- plugin-skeleton: unimplemented -->\n\nThis is a nonfunctional development skeleton. Do not perform domain actions or claim capabilities. Read SCOPE.md in the source repository and clarify requirements before implementing. Remove the skeleton marker only after implementing and reviewing the agreed behavior.\n")
         scaffold_plugin(stub, stage, languages, default_language, origin, author, name)
         manifest = read(stage/'plugin.json')
         manifest['description'] = description
@@ -491,9 +503,6 @@ def create_plugin(root, marketplace, *, name=None, display_name=None, descriptio
         engine = module(SKILL/'templates/plugin/sync/scripts/plugin.py', 'trusted_payload')
         for path, data in engine.repository_files(manifest).items():
             (stage/path).write_bytes(encode(data))
-        (stage/'skills/_shared/manifests').mkdir(parents=True, exist_ok=True)  # custom: the one default kind of a generated plugin
-        (stage/'skills/_shared/manifests/default.json').write_bytes(encode({'schema_version': 1, 'product': None, 'requires_marketplace': False, 'derived': []}))
-        (stage/'skills/_shared/manifests/default.sync.json').write_bytes(encode({'schema_version': 1, 'files': {}, 'removed': []}))
         complete_skeleton_documentation(stage, display_name)
         document(stage, license_decision)
         files = {root/p.relative_to(stage): p.read_bytes() for p in stage.rglob('*') if p.is_file()}

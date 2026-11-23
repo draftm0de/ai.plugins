@@ -14,9 +14,9 @@ For developers and teams maintaining skills as installable plugins. The Manager 
 
 ## Capabilities and modes
 
-**plugin-manager** configures a cloned marketplace or creates and associates a separate plugin, both as guided flows of the central entry. It changes the marketplace association of a plugin (exactly one marketplace) on request in the `associate` flow. **plugin-verify**, **marketplace-verify** and **verify** are read-only. **update** maintains documentation and **publish** prepares separate approval-gated publications. `init` is unsupported. [Workflows](docs/en/usage.md).
+**setup** (`/plugin-manager:setup`) configures a cloned marketplace or creates and associates a separate plugin, as guided flows; the skill checks the state, runs exactly the needed flow and may be called repeatedly. It changes the marketplace association of a plugin (exactly one marketplace) on request in the `associate` flow. **verify** is read-only and detects itself whether a plugin or a marketplace is present. **docs** maintains documentation and **publish** prepares separate approval-gated publications; both start only when the workpackage is ready and otherwise point to `setup`. `init` is unsupported. [Workflows](docs/en/usage.md).
 
-The four skills are `plugin-manager`, `verify`, `update` and `publish`. Shared rules and tools live in [`skills/_shared/`](skills/_shared/WORKFLOWS.md), with plugin-manager as the central entry. Explicit verify variants remain commands; init is unsupported.
+The four skills are `setup`, `docs`, `verify` and `publish`. Shared rules and tools live in [`skills/_shared/`](skills/_shared/WORKFLOWS.md). The kind (plugin or marketplace) is never a call argument; init is unsupported.
 
 ## Quick start
 
@@ -26,7 +26,7 @@ Add `https://github.com/draftm0de/ai.plugins` as a marketplace in plugin setting
 
 Select the plugin and ask: “Verify this repository.” For documentation: “Update the documentation in German and English.” Claude Code also supports `/plugin-manager:verify PATH` and the other action commands. [Usage](docs/en/usage.md).
 
-`update` is the skill entry point for **update**. It refreshes maintained Markdown from current sources and templates; README is not automatically regenerated on every build. [Maintain documentation](docs/en/development.md#maintain-documentation).
+`docs` is the skill entry point for **docs** (`/plugin-manager:docs`). It refreshes maintained Markdown from current sources and templates; README is not automatically regenerated on every build. [Maintain documentation](docs/en/development.md#maintain-documentation).
 
 ## Storage and privacy
 
@@ -34,7 +34,7 @@ The Manager writes documentation and, for `create --kind plugin`, a separate plu
 
 ## Project status
 
-The user confirms Manager and Coach are present in the published marketplace. Earlier Claude/GPT import confirmations concern that earlier state; current Manager extensions remain local. Isolated CLI tests are documented separately. This does not certify every feature, automatic updates or the entire publication workflow. License: [MIT](LICENSE). [Evidence](docs/en/release-evidence.md).
+The user confirms Manager and Coach are present in the published marketplace. Current Manager extensions remain local. This does not certify every feature, automatic updates or the entire publication workflow. License: [MIT](LICENSE).
 
 ## Development
 
@@ -50,6 +50,6 @@ make verify SOURCE=.
 make validate-docs OUTPUT=.
 ```
 
-`make sync-plugin` generates host metadata to commit. `make install-local` test local edits without a commit or push; the **update** skill action maintains documentation. [Development](docs/en/development.md).
+`make sync-plugin` generates host metadata to commit. `make install-local` test local edits without a commit or push; the **docs** skill action maintains documentation. [Development](docs/en/development.md).
 
 Documentation prepared with Plugin Manager.

@@ -42,9 +42,8 @@ class WorkflowFixture:
     def record(self, root=None):
         """Configuration evidence (schema 2) of the central entry, written only after a passed creation (record)."""
         root = root or self.plugin
-        helper = flow.module(ROOT/'skills/_shared/scripts/project_setup.py', 'fixture_project_setup_' + root.name.replace('-', '_'))
-        helper.set_plugin('plugin-manager')
-        result = helper.record(str(root), 'plugin', root.name)
+        helper = flow.state_helper()
+        result = helper.record(helper.Context('plugin-manager'), str(root), 'plugin', root.name)
         assert result['ok'], result
         return result
 

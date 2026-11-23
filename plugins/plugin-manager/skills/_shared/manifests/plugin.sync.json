@@ -18,23 +18,7 @@
       "executable": false
     },
     "scripts/verify.py": {
-      "sha256": "f704ae8bf3a37326cba0e45b605b64d819bf8cb153442e9994df9461afbd94d2",
-      "executable": false
-    },
-    "skills/_shared/flows/entry.md": {
-      "sha256": "b656a063fc23d3cd92ca4c941ac61c03a77c11492849d87848612124c7eec1a3",
-      "executable": false
-    },
-    "skills/_shared/flows/language.md": {
-      "sha256": "6a02936d710b4c61102dc5f2f1b507d3a8af851c0dd46ca0675ff82770283fad",
-      "executable": false
-    },
-    "skills/_shared/flows/skeleton.md": {
-      "sha256": "3cb457727b1f4f0707ed686e771c7fdb1a068a9a6a4131b52ff7ba09fe941619",
-      "executable": false
-    },
-    "skills/_shared/flows/sync.md": {
-      "sha256": "68f7ceb6e297a48721c2a4f4012eaf2dc6a91a555bc97a74fb4f7b3cd6d0e407",
+      "sha256": "26de8a5bdcdef89e4437084893674dec57f02752353be2cc8b2bfef8420adcde",
       "executable": false
     },
     "skills/_shared/references/operator-language.md": {
@@ -43,10 +27,6 @@
     },
     "skills/_shared/scripts/operator_language.py": {
       "sha256": "685c40f64f1588c7872e3895079227c948c8f2b09527d27e46b786fa7918ea30",
-      "executable": false
-    },
-    "skills/_shared/scripts/project_setup.py": {
-      "sha256": "ea183011ee253d085023e4d4030d5eeef8cdf63df7cab18bd78d946613673040",
       "executable": false
     }
   },

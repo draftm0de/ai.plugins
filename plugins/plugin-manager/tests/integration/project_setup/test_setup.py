@@ -148,15 +148,15 @@ class LanguageTests(Base):
 
     def test_order_ignore_before_language(self):
         order = []
-        ps = load_module(self.box.helper, 'ps')
-        real_ignore, real_load = ps.add_ignore_rule, ps.load_language_helper
+        ps = fx.load_state(**self.box.ctx_args)
+        real_ignore, real_load = ps.preferences.add_ignore_rule, ps.preferences.load_language_helper
         def ignore(*a):
             order.append('ignore'); return real_ignore(*a)
-        def loader():
-            helper = real_load(); original = helper.preference
+        def loader(ctx):
+            helper = real_load(ctx); original = helper.preference
             helper.preference = lambda root, lang=None: (order.append('language') if lang else None, original(root, lang))[1]
             return helper
-        with mock.patch.object(ps, 'add_ignore_rule', ignore), mock.patch.object(ps, 'load_language_helper', loader):
+        with mock.patch.object(ps.preferences, 'add_ignore_rule', ignore), mock.patch.object(ps.preferences, 'load_language_helper', loader):
             self.assertTrue(ps.setup(str(self.p), 'de')['ok'])
         self.assertEqual(['ignore', 'language'], order)
 
@@ -271,26 +271,26 @@ class ConflictTests(Base):
         self.assertEqual(0, self.box.call('status')[0])
 
     def test_file_appearing_during_copy_is_not_overwritten(self):
-        ps = load_module(self.box.helper, 'ps2')
-        real = ps.copy_new
+        ps = fx.load_state(**self.box.ctx_args)
+        real = ps.fsafe.copy_new
         def racing(path, data, executable):
             if path.name == 'run_tests.py':
                 path.write_bytes(b'foreign')
             return real(path, data, executable)
-        with mock.patch.object(ps, 'copy_new', racing):
+        with mock.patch.object(ps.fsafe, 'copy_new', racing):
             data = ps.setup(str(self.p), 'de')
         self.assertEqual(b'foreign', (self.p / 'scripts/run_tests.py').read_bytes())
         self.assertIn('scripts/run_tests.py', data['different'])
         self.assertNotIn('scripts/run_tests.py', self.box.lock())
 
     def test_write_failure_reports_partial_changes_and_resume_works(self):
-        ps = load_module(self.box.helper, 'ps3')
-        real = ps.copy_new
+        ps = fx.load_state(**self.box.ctx_args)
+        real = ps.fsafe.copy_new
         def failing(path, data, executable):
             if path.name == 'verify.py':
                 raise OSError('disk full')
             return real(path, data, executable)
-        with mock.patch.object(ps, 'copy_new', failing):
+        with mock.patch.object(ps.fsafe, 'copy_new', failing):
             data = ps.setup(str(self.p), 'de')
         self.assertFalse(data['ok'])
         self.assertIn('scripts/plugin.py', data['created']['files'])
@@ -316,28 +316,20 @@ class BoundaryTests(Base):
         manager = tree(self.box.manager)
         self.setup_ok('--language', 'de')
         self.assertEqual(manager, tree(self.box.manager))
-        source = (fx.SHARED / 'scripts/project_setup.py').read_text()
+        source = '\n'.join(path.read_text() for path in sorted(fx.SETUP_SCRIPTS.rglob('*.py')))
         for forbidden in ('socket', 'urllib', 'subprocess', 'import scripts', 'from scripts', '/Users/'):
             self.assertNotIn(forbidden, source)
 
 
-def load_module(path, name):
-    import importlib.util
-    spec = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
-    module.set_plugin(fx.PLUGIN)  # running plugin of the helper under test (R15), as --plugin does on the CLI
-    return module
-
-
 class RaceTests(Base):
     def module(self, name):
-        return load_module(self.box.helper, name)
+        return fx.load_state(**self.box.ctx_args)
 
     def after_snapshot(self, ps, change):
-        real = ps.inspect
+        real = ps.inspection.inspect
         def inspect(*args):
             plan = real(*args); change(); return plan
-        return mock.patch.object(ps, 'inspect', inspect)
+        return mock.patch.object(ps.inspection, 'inspect', inspect)
 
     def test_gitignore_changed_after_snapshot_is_not_lost(self):
         ps = self.module('race1')
@@ -356,12 +348,12 @@ class RaceTests(Base):
     def test_gitignore_changed_between_read_and_replace_retries_on_fresh_content(self):
         ps = self.module('race3')
         (self.p / '.gitignore').write_text('a\n')
-        real, calls = ps.current_bytes, []
+        real, calls = ps.fsafe.current_bytes, []
         def current(path):
             if path.name == '.gitignore' and not calls:
                 calls.append(1); path.write_text('a\nb\n')
             return real(path)
-        with mock.patch.object(ps, 'current_bytes', current):
+        with mock.patch.object(ps.fsafe, 'current_bytes', current):
             self.assertTrue(ps.setup(str(self.p), 'de')['ok'])
         self.assertEqual('a\nb\n/.project/operator.json\n', (self.p / '.gitignore').read_text())
 
@@ -378,7 +370,7 @@ class RaceTests(Base):
 
     def test_lock_changed_between_read_and_replace_retries(self):
         ps = self.module('race5')
-        real, calls = ps.current_bytes, []
+        real, calls = ps.fsafe.current_bytes, []
         def current(path):
             if path.name == 'skeleton.json' and not calls:
                 calls.append(1)
@@ -386,7 +378,7 @@ class RaceTests(Base):
             return real(path)
         (self.p / '.project').mkdir(exist_ok=True)
         (self.p / LOCK).write_text(json.dumps({'schema_version': 2, 'files': {}}))
-        with mock.patch.object(ps, 'current_bytes', current):
+        with mock.patch.object(ps.fsafe, 'current_bytes', current):
             self.assertTrue(ps.setup(str(self.p), 'de')['ok'])
         self.assertIn('late', self.box.lock())
 
@@ -403,15 +395,15 @@ class RaceTests(Base):
     def appear_as(self, make, name):
         ps = self.module(name)
         reads = []
-        real_read = ps.Path.read_bytes
+        real_read = Path.read_bytes
         def read(path):
             reads.append(path); return real_read(path)
-        real_copy = ps.copy_new
+        real_copy = ps.fsafe.copy_new
         def racing(path, data, executable):
             if path.name == 'run_tests.py':
                 make(path)
             return real_copy(path, data, executable)
-        with mock.patch.object(ps, 'copy_new', racing), mock.patch.object(ps.Path, 'read_bytes', read):
+        with mock.patch.object(ps.fsafe, 'copy_new', racing), mock.patch.object(Path, 'read_bytes', read):
             data = ps.setup(str(self.p), 'de')
         return data, reads
 
@@ -437,10 +429,10 @@ class RaceTests(Base):
 class SnapshotTests(Base):
     def test_lock_change_between_parse_and_raw_read_cannot_drop_entries(self):
         """Validated lock and expected bytes come from one read; a later change forces a retry."""
-        ps = load_module(self.box.helper, 'snap1')
+        ps = fx.load_state(**self.box.ctx_args)
         (self.p / '.project').mkdir(exist_ok=True)
         (self.p / LOCK).write_text(json.dumps({'schema_version': 2, 'files': {}}))
-        real, calls = ps.read_regular, []
+        real, calls = ps.fsafe.read_regular, []
         def reading(root, relative):
             data = real(root, relative)
             if relative == LOCK and len(calls) == 1:  # first read inside write_lock (after planning read)
@@ -448,21 +440,21 @@ class SnapshotTests(Base):
             if relative == LOCK:
                 calls.append(1)
             return data
-        with mock.patch.object(ps, 'read_regular', reading):
+        with mock.patch.object(ps.fsafe, 'read_regular', reading):
             self.assertTrue(ps.setup(str(self.p), 'de')['ok'])
         lock = self.box.lock()
         self.assertEqual(raw_pair('e' * 64), lock['late'])
         self.assertTrue(set(FILES) <= set(lock))
 
     def test_identical_file_changed_after_classification_gets_no_hash(self):
-        ps = load_module(self.box.helper, 'snap2')
+        ps = fx.load_state(**self.box.ctx_args)
         (self.p / 'scripts').mkdir()
         target = self.p / 'scripts/plugin.py'
         target.write_bytes(template('scripts/plugin.py'))
-        real = ps.inspect
+        real = ps.inspection.inspect
         def inspect(*args):
             plan = real(*args); target.write_bytes(b'changed meanwhile'); return plan
-        with mock.patch.object(ps, 'inspect', inspect):
+        with mock.patch.object(ps.inspection, 'inspect', inspect):
             data = ps.setup(str(self.p), 'de')
         self.assertTrue(data['ok'])
         self.assertEqual(b'changed meanwhile', target.read_bytes())
@@ -474,14 +466,14 @@ class SnapshotTests(Base):
 class TechnicalErrorTests(Base):
     """Technical failures are never reported as content deviations; progress stays visible."""
     def module(self, name):
-        return load_module(self.box.helper, name)
+        return fx.load_state(**self.box.ctx_args)
 
     def run_with_change(self, name, change, language='de'):
         ps = self.module(name)
-        real = ps.inspect
+        real = ps.inspection.inspect
         def inspect(*args):
             plan = real(*args); change(); return plan
-        with mock.patch.object(ps, 'inspect', inspect):
+        with mock.patch.object(ps.inspection, 'inspect', inspect):
             return ps.setup(str(self.p), language)
 
     def preidentical(self):
@@ -536,10 +528,10 @@ class TechnicalErrorTests(Base):
 
     def test_verification_failure_after_creation_reports_unverified_file_without_hash(self):
         ps = self.module('t6')
-        real = ps.copy_new
+        real = ps.fsafe.copy_new
         def corrupt(path, data, executable):
             return real(path, b'corrupt' if path.name == 'verify.py' else data, executable)
-        with mock.patch.object(ps, 'copy_new', corrupt):
+        with mock.patch.object(ps.fsafe, 'copy_new', corrupt):
             data = ps.setup(str(self.p), 'de')
         self.assertFalse(data['ok'])
         self.assertIn('scripts/verify.py', data['created']['files'])
@@ -552,9 +544,9 @@ class TechnicalErrorTests(Base):
     def test_language_save_failure_after_project_folder_creation_is_reported(self):
         shutil.rmtree(self.p / '.project')  # unconfigured: only the language step writes here (R17)
         ps = self.module('t7')
-        real = ps.load_language_helper
-        def loader():
-            helper = real(); original = helper.preference
+        real = ps.preferences.load_language_helper
+        def loader(ctx):
+            helper = real(ctx); original = helper.preference
             def preference(root, language=None):
                 if language:
                     (Path(root) / '.project').mkdir(exist_ok=True)
@@ -562,7 +554,7 @@ class TechnicalErrorTests(Base):
                 return original(root, language)
             helper.preference = preference
             return helper
-        with mock.patch.object(ps, 'load_language_helper', loader):
+        with mock.patch.object(ps.preferences, 'load_language_helper', loader):
             data = ps.language_only(str(self.p), 'de')
         self.assertFalse(data['ok'])
         self.assertIn('.project', data['created']['directories'])
@@ -597,7 +589,7 @@ class TechnicalErrorTests(Base):
 
     def test_oserror_outside_write_phase_is_structured(self):
         ps = self.module('t8')
-        with mock.patch.object(ps, 'status', side_effect=PermissionError(13, 'Permission denied')):
+        with mock.patch.object(ps.reporting, 'status', side_effect=PermissionError(13, 'Permission denied')):
             import io, contextlib
             out = io.StringIO()
             with contextlib.redirect_stdout(out):
@@ -608,17 +600,17 @@ class TechnicalErrorTests(Base):
 
 class TemplateAndIdentityTests(Base):
     def test_symlinked_template_parent_is_rejected_without_reading_linked_content(self):
-        ps = load_module(self.box.helper, 'tpl1')
+        ps = fx.load_state(**self.box.ctx_args)
         templates = self.box.manager / 'skills/_shared/templates/plugin/sync'
         outside = self.box.base / 'linked-scripts'
         (templates / 'scripts').rename(outside)
         (templates / 'scripts').symlink_to(outside)
         reads = []
-        real = ps.Path.read_bytes
+        real = Path.read_bytes
         def read(path):
             reads.append(path); return real(path)
         before = tree(self.p)
-        with mock.patch.object(ps.Path, 'read_bytes', read):
+        with mock.patch.object(Path, 'read_bytes', read):
             with self.assertRaises(ps.Conflict) as caught:
                 ps.setup(str(self.p), 'de')
         self.assertIn('Symlink', caught.exception.reason)
@@ -629,15 +621,14 @@ class TemplateAndIdentityTests(Base):
         self.assertEqual(before, tree(self.p))
 
     def test_embedded_manager_is_rejected_by_identity(self):
-        real_helper = fx.SHARED / 'scripts/project_setup.py'
-        code, data, _ = self.box.call('status', target=fx.ROOT, helper=real_helper)
+        code, data, _ = self.box.call('status', target=fx.ROOT, real=True)
         self.assertEqual((1, False), (code, data['ok']))
         self.assertIn('embedded Plugin Manager', data['conflicts'][0]['reason'])
         (self.p / 'plugin.json').write_text('{"name": "plugin-manager"}')  # same identity elsewhere
         self.assertEqual(1, self.box.call('status')[0])
 
     def test_manager_root_constant_points_at_plugin_root(self):
-        self.assertEqual(fx.ROOT, load_module(fx.SHARED / 'scripts/project_setup.py', 'tpl2').MANAGER_ROOT)
+        self.assertEqual(fx.ROOT, fx.load_state().ctx.manager_root)
 
     def test_other_plugin_with_own_template_folder_is_a_valid_target(self):
         own = self.p / 'skills/_shared/templates/plugin'

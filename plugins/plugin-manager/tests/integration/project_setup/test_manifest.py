@@ -81,9 +81,7 @@ class ManifestTests(unittest.TestCase):
     def test_plugin_classes_follow_the_scope(self):
         sync = set(load('plugin.sync.json')['files'])
         self.assertTrue({'CLAUDE.md', 'scripts/plugin.py', 'scripts/verify.py', 'scripts/run_tests.py', 'install.sh',
-                         'skills/_shared/scripts/operator_language.py', 'skills/_shared/references/operator-language.md',
-                         'skills/_shared/scripts/project_setup.py', 'skills/_shared/flows/entry.md', 'skills/_shared/flows/language.md',
-                         'skills/_shared/flows/skeleton.md', 'skills/_shared/flows/sync.md'} == sync)
+                         'skills/_shared/scripts/operator_language.py', 'skills/_shared/references/operator-language.md'} == sync)  # R16: no setup flow
         seed = set(files_below(TEMPLATES / 'plugin/seed'))
         self.assertTrue({'AGENTS.md', 'SCOPE.md', 'CHANGELOG.md', 'Makefile', 'ci.yml', 'gitignore.txt', 'docs/architecture.md',
                          'docs/prerequisites.md', 'tests/README.md'} <= seed)

@@ -8,17 +8,16 @@ ROOT = next(p for p in Path(__file__).resolve().parents if (p / 'Makefile').is_f
 class EntryTextTests(unittest.TestCase):
     def setUp(self):
         # The entry rules are the common flow plus the Manager's slim SKILL.md (R19); needles check both together.
-        self.skill = (ROOT / 'skills/plugin-manager/SKILL.md').read_text()
-        self.entry = (ROOT / 'skills/_shared/flows/entry.md').read_text()
+        self.skill = (ROOT / 'skills/setup/SKILL.md').read_text()
+        self.entry = (ROOT / 'skills/setup/flows/entry.md').read_text()
         self.text = self.skill + '\n' + self.entry
 
     def flow(self, name):
-        folder = 'skills/plugin-manager/flows' if name in ('configure', 'marketplace', 'associate') else 'skills/_shared/flows'
-        return (ROOT / folder / (name + '.md')).read_text()
+        return (ROOT / 'skills/setup/flows' / (name + '.md')).read_text()
 
     def test_loop_routes_by_status_and_rechecks_after_each_flow(self):
         for needle in ('status --target', '`stop`', '`language`', '`skeleton`', '`configure`', '`ready`',
-                       'language.md', 'skeleton.md', '../../<plugin>/flows/configure.md', 'flows/configure.md',
+                       'language.md', 'skeleton.md', '../../setup/flows/configure.md', 'flows/configure.md',
                        'After each flow that succeeded in this sense', 'run `status` again'):
             self.assertIn(needle, self.text)
         for name in ('language', 'skeleton', 'configure'):
@@ -93,12 +92,12 @@ class EntryTextTests(unittest.TestCase):
     def test_entry_reads_common_language_rule_instead_of_duplicating_it(self):
         reference = (ROOT / 'skills/_shared/references/operator-language.md').read_text()
         self.assertIn('## Language of all visible text', reference)
-        for needle in ('read and apply `../references/operator-language.md`', 'Language of all visible text',
+        for needle in ('read and apply `../../_shared/references/operator-language.md`', 'Language of all visible text',
                        'closing or next-step card fields'):
             self.assertIn(needle, self.text)
         for duplicated in ('Apply the language before output', 'Fixed labels the host itself supplies', 'JSON keys are not translated'):
             self.assertNotIn(duplicated, self.text)
-        self.assertTrue((ROOT / 'skills/plugin-manager/../_shared/references/operator-language.md').is_file())
+        self.assertTrue((ROOT / 'skills/setup/../_shared/references/operator-language.md').is_file())
         # manager-specific rules stay in the entry
         for needle in ('read-only asks and saves no language', 'setup order with the ignore rule', 'on `ready` output only the ready line and wait',
                        'start no verify or other action on your own', 'exactly one `status`', 'Precedence: this entry'):
@@ -128,7 +127,7 @@ class EntryTextTests(unittest.TestCase):
 
     def test_relative_references_in_skill_and_flows_resolve_to_existing_files(self):
         import re
-        sources = [ROOT / 'skills/plugin-manager/SKILL.md', ROOT / 'skills/plugin-manager/flows/configure.md'] + sorted((ROOT / 'skills/_shared/flows').glob('*.md'))
+        sources = [ROOT / 'skills/setup/SKILL.md', ] + sorted((ROOT / 'skills/setup/flows').glob('*.md'))
         checked = 0
         for source in sources:
             for reference in re.findall(r'`(\.\./[^`\s]+)`', source.read_text()):
@@ -138,7 +137,7 @@ class EntryTextTests(unittest.TestCase):
                 checked += 1
                 self.assertTrue((source.parent / reference.split('#')[0]).exists(), str(source.name) + ': ' + reference)
         self.assertGreater(checked, 5)
-        self.assertIn('`../references/operator-language.md`', self.flow('sync'))
+        self.assertIn('`../../_shared/references/operator-language.md`', self.flow('sync'))
         self.assertNotIn('(see `../_shared/references/operator-language.md`)', self.flow('sync'))
 
     def test_no_outdated_never_updated_texts_contradict_the_sync(self):
@@ -226,21 +225,21 @@ class EntryTextTests(unittest.TestCase):
             self.assertNotIn(gone, text)
 
     def test_flows_and_references_name_the_uniform_generator_operations(self):  # R22
-        paths = ('skills/plugin-manager/SKILL.md', 'skills/plugin-manager/flows/configure.md', 'skills/plugin-manager/flows/marketplace.md',
-                 'skills/plugin-manager/flows/associate.md', 'skills/_shared/WORKFLOWS.md', 'skills/_shared/references/workflows.md')
+        paths = ('skills/setup/SKILL.md', 'skills/setup/flows/configure.md', 'skills/setup/flows/marketplace.md',
+                 'skills/setup/flows/associate.md', 'skills/_shared/WORKFLOWS.md', 'skills/_shared/references/workflows.md')
         for path in paths:
             text = (ROOT / path).read_text(encoding='utf-8')
             with self.subTest(path=path):
                 for old in ('plugin-create', 'marketplace-create'):
                     self.assertNotIn(old, text)
-        self.assertIn('create --kind marketplace', (ROOT / 'skills/plugin-manager/flows/marketplace.md').read_text(encoding='utf-8'))
-        self.assertIn('create --kind plugin', (ROOT / 'skills/plugin-manager/flows/configure.md').read_text(encoding='utf-8'))
+        self.assertIn('create --kind marketplace', (ROOT / 'skills/setup/flows/marketplace.md').read_text(encoding='utf-8'))
+        self.assertIn('create --kind plugin', (ROOT / 'skills/setup/flows/configure.md').read_text(encoding='utf-8'))
         self.assertIn('create --kind marketplace|plugin', (ROOT / 'skills/_shared/references/workflows.md').read_text(encoding='utf-8'))
 
     def test_marketplace_create_skill_and_command_are_gone(self):  # R20
         self.assertFalse((ROOT / 'skills/marketplace-create').exists())
         self.assertFalse((ROOT / 'commands/marketplace-create.md').exists())
-        for path in ('skills/_shared/WORKFLOWS.md', 'skills/_shared/references/workflows.md', 'skills/plugin-manager/SKILL.md'):
+        for path in ('skills/_shared/WORKFLOWS.md', 'skills/_shared/references/workflows.md', 'skills/setup/SKILL.md'):
             text = (ROOT / path).read_text(encoding='utf-8')
             self.assertNotIn('marketplace-create/SKILL.md', text, path)
             self.assertNotIn('/plugin-manager:marketplace-create', text, path)
@@ -279,18 +278,19 @@ class EntryTextTests(unittest.TestCase):
         self.assertNotIn('Git operations by this entry', self.text)
 
     def test_command_wrapper_routes_to_entry_skill(self):
-        text = (ROOT / 'commands/plugin-manager.md').read_text()
-        self.assertIn('${CLAUDE_PLUGIN_ROOT}/skills/plugin-manager/SKILL.md', text)
+        text = (ROOT / 'commands/setup.md').read_text()
+        self.assertIn('${CLAUDE_PLUGIN_ROOT}/skills/setup/SKILL.md', text)
         self.assertIn('never the installed plugin directory', text)
 
     def test_command_wrapper_and_specialist_skills_unchanged(self):
-        self.assertIn('/skills/plugin-manager/SKILL.md', (ROOT / 'commands/plugin-manager.md').read_text())
-        for name in ('update', 'verify', 'publish'):
-            self.assertNotIn('project_setup', (ROOT / 'skills' / name / 'SKILL.md').read_text())
-        self.assertNotIn('project_setup', (ROOT / 'skills/_shared/templates/plugin/seed/Makefile').read_text())
-        # R19: the helper ships only as the canonical copy of the plugin template (byte-identical to the Manager's own)
+        self.assertIn('/skills/setup/SKILL.md', (ROOT / 'commands/setup.md').read_text())
+        # R23: docs and publish use the read-only gate, verify the read-only status; none of them calls a writing operation
+        for name in ('docs', 'verify', 'publish'):
+            skill = (ROOT / 'skills' / name / 'SKILL.md').read_text()
+            for writer in ('setup_state.py" setup', 'setup_state.py" record', 'setup_state.py" sync', 'setup_state.py" language'):
+                self.assertNotIn(writer, skill)
+        self.assertNotIn('setup_state', (ROOT / 'skills/_shared/templates/plugin/seed/Makefile').read_text())
+        # R23: the helper exists only in the Manager; no template ships it to generated plugins
         shipped = sorted(str(p.relative_to(ROOT / 'skills/_shared/templates')) for p in (ROOT / 'skills/_shared/templates').rglob('*')
-                         if 'project_setup' in p.name)
-        self.assertEqual(['plugin/sync/skills/_shared/scripts/project_setup.py'], shipped)
-        self.assertEqual((ROOT / 'skills/_shared/scripts/project_setup.py').read_bytes(),
-                         (ROOT / 'skills/_shared/templates/plugin/sync/skills/_shared/scripts/project_setup.py').read_bytes())
+                         if 'setup_state' in p.name)
+        self.assertEqual([], shipped)

@@ -13,3 +13,5 @@ Runtime tests alone do not prove the agent asks or speaks in the correct languag
 - Invalid JSON, unknown schema or symlink: stop, explain, preserve bytes and targets.
 - Read-only domain action with no preference: explain the preference write accurately;
   domain action itself must remain read-only.
+- Bare docs or publish command (no text, nothing set up): stops with the reason and a pointer to
+  /plugin-manager:setup, in English; no question, no language saved. With German text in the call: same stop in German.
