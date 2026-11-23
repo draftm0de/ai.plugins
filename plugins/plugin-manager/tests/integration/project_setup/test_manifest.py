@@ -47,10 +47,10 @@ class ManifestTests(unittest.TestCase):
                 for path, file in actual.items():
                     self.assertEqual({'sha256': digest(file.read_bytes()), 'executable': bool(file.stat().st_mode & 0o111)}, listed[path], path)
 
-    def test_tombstones_are_the_two_manual_sync_test_sources_and_not_shipped(self):
-        self.assertEqual(['keep.md', 'remove.md'], load('plugin.sync.json')['removed'])
+    def test_tombstones_are_removed_files_and_not_shipped(self):
+        self.assertEqual(['install.sh', 'keep.md', 'remove.md'], load('plugin.sync.json')['removed'])
         self.assertEqual([], load('marketplace.sync.json')['removed'])
-        for path in ('keep.md', 'remove.md'):
+        for path in ('install.sh', 'keep.md', 'remove.md'):
             self.assertFalse((TEMPLATES / 'plugin/sync' / path).exists())
             self.assertFalse((TEMPLATES / 'plugin/seed' / path).exists())
 
@@ -80,11 +80,11 @@ class ManifestTests(unittest.TestCase):
 
     def test_plugin_classes_follow_the_scope(self):
         sync = set(load('plugin.sync.json')['files'])
-        self.assertTrue({'CLAUDE.md', 'scripts/plugin.py', 'scripts/verify.py', 'scripts/run_tests.py', 'install.sh',
+        self.assertTrue({'CLAUDE.md', 'scripts/plugin.py', 'scripts/verify.py', 'scripts/run_tests.py',
                          'skills/_shared/scripts/operator_language.py', 'skills/_shared/references/operator-language.md', 'AGENTS.md',
                          'docs/standards/coding.md', 'docs/standards/messages.md', 'docs/standards/testing.md', 'docs/standards/skills.md'} == sync)  # R16: no setup flow; R27: the standards
         seed = set(files_below(TEMPLATES / 'plugin/seed'))
-        self.assertTrue({'CUSTOM.AGENTS.md', 'SCOPE.md', 'CHANGELOG.md', 'Makefile', 'ci.yml', 'gitignore.txt', 'docs/architecture.md',
+        self.assertTrue({'CUSTOM.AGENTS.md', 'SCOPE.md', 'assets/icon.png', 'Makefile', 'ci.yml', 'gitignore.txt', 'docs/architecture.md',
                          'docs/prerequisites.md', 'tests/README.md'} <= seed)
         self.assertEqual('plugin.json', load('plugin.json')['product'])
 

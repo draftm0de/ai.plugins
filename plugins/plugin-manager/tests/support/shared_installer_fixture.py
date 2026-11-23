@@ -32,7 +32,7 @@ class SharedInstallerTestsFixture:
         self.write_manifest()
         self.market = attach(self.root)
         with patch.object(engine, 'ROOT', self.root): engine.repository_metadata()
-        for relative in ('scripts/plugin.py','install.sh'):
+        for relative in ('scripts/plugin.py',):
             target = self.root / relative
             target.parent.mkdir(parents=True,exist_ok=True)
             shutil.copy2(ROOT / relative,target)

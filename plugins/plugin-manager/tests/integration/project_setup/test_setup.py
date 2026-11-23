@@ -29,14 +29,14 @@ class Base(unittest.TestCase):
 
 class StatusTests(Base):
     def test_status_is_write_free_and_separates_language_from_files(self):
-        (self.p / 'install.sh').write_bytes(b'custom')
+        (self.p / 'AGENTS.md').write_bytes(b'custom')
         (self.p / 'scripts').mkdir()
         (self.p / 'scripts/plugin.py').write_bytes(template('scripts/plugin.py'))
         before, manager = tree(self.p), tree(self.box.manager)
         code, data, _ = self.box.call('status')
         self.assertEqual(0, code)
         self.assertEqual('identical', data['files']['scripts/plugin.py'])
-        self.assertEqual('decision_needed', data['files']['install.sh'])
+        self.assertEqual('decision_needed', data['files']['AGENTS.md'])
         self.assertEqual('missing', data['files']['scripts/verify.py'])
         self.assertTrue(data['language']['needs_choice'])
         self.assertIn('scripts/plugin.py', data['lock']['pending'])
@@ -99,13 +99,13 @@ class SupplementTests(Base):
         self.assertEqual(raw_pair('a' * 64), self.box.lock()['other/x.txt'])
 
     def test_different_files_are_kept_with_old_lock_and_others_supplemented(self):
-        (self.p / 'install.sh').write_bytes(b'mine')
+        (self.p / 'AGENTS.md').write_bytes(b'mine')
         (self.p / '.project').mkdir(exist_ok=True)
-        (self.p / LOCK).write_text(json.dumps({'schema_version': 2, 'files': {'install.sh': raw_pair('b' * 64)}}))
+        (self.p / LOCK).write_text(json.dumps({'schema_version': 2, 'files': {'AGENTS.md': raw_pair('b' * 64)}}))
         data = self.setup_ok()
-        self.assertEqual(b'mine', (self.p / 'install.sh').read_bytes())
-        self.assertEqual(raw_pair('b' * 64), self.box.lock()['install.sh'])
-        self.assertEqual(['install.sh'], data['different'])
+        self.assertEqual(b'mine', (self.p / 'AGENTS.md').read_bytes())
+        self.assertEqual(raw_pair('b' * 64), self.box.lock()['AGENTS.md'])
+        self.assertEqual(['AGENTS.md'], data['different'])
         self.assertFalse(data['matches_template'])
         self.assertTrue((self.p / 'scripts/plugin.py').is_file())
 
@@ -126,9 +126,9 @@ class SupplementTests(Base):
 
     def test_missing_file_with_lock_entry_is_recreated(self):
         self.setup_ok()
-        (self.p / 'install.sh').unlink()
+        (self.p / 'AGENTS.md').unlink()
         self.setup_ok()
-        self.assertEqual(template('install.sh'), (self.p / 'install.sh').read_bytes())
+        self.assertEqual(template('AGENTS.md'), (self.p / 'AGENTS.md').read_bytes())
 
 
 class LanguageTests(Base):
@@ -217,9 +217,9 @@ class ConflictTests(Base):
         (self.p / 'scripts').write_text('file instead of folder')
         self.assert_blocked()
         (self.p / 'scripts').unlink()
-        (self.p / 'install.sh').mkdir()
+        (self.p / 'AGENTS.md').mkdir()
         self.assert_blocked()
-        (self.p / 'install.sh').rmdir()
+        (self.p / 'AGENTS.md').rmdir()
         outside = self.box.base / 'outside'; outside.mkdir()
         (self.p / 'scripts').symlink_to(outside)
         self.assert_blocked(reason='Symlink')
@@ -235,20 +235,20 @@ class ConflictTests(Base):
         self.assert_blocked()
 
     def test_unreadable_file(self):
-        (self.p / 'install.sh').write_bytes(b'x'); (self.p / 'install.sh').chmod(0)
+        (self.p / 'AGENTS.md').write_bytes(b'x'); (self.p / 'AGENTS.md').chmod(0)
         if os.geteuid() == 0:
             self.skipTest('root can read everything')
         self.assert_blocked(reason='Cannot read')
 
     def test_invalid_template_source_or_base_is_a_conflict_not_a_removal(self):
         base = self.box.manager / 'skills/_shared/templates/plugin/sync'
-        (base / 'install.sh').unlink()
-        (base / 'install.sh').symlink_to(self.box.base)  # a link is never "removed"
+        (base / 'AGENTS.md').unlink()
+        (base / 'AGENTS.md').symlink_to(self.box.base)  # a link is never "removed"
         self.assert_blocked(reason='Template')
-        (base / 'install.sh').unlink()
-        (base / 'install.sh').mkdir()  # wrong type
+        (base / 'AGENTS.md').unlink()
+        (base / 'AGENTS.md').mkdir()  # wrong type
         self.assert_blocked(reason='Template')
-        (base / 'install.sh').rmdir()
+        (base / 'AGENTS.md').rmdir()
         shutil.rmtree(base)  # whole template base missing
         self.assert_blocked(reason='Template base')
 

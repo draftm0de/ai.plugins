@@ -21,6 +21,12 @@ class DocumentationTests(unittest.TestCase):
         (self.source / 'SKILL.md').write_text('---\nname: fictional-demo\n---\n# Demo\nA fictional test skill.\n')
         self.output = self.root / 'output'
 
+    def give_icon(self, output=None):
+        """The plugin's one icon: the documentation only references it and never copies it."""
+        icon = Path(output or self.output) / 'assets/icon.png'
+        icon.parent.mkdir(parents=True, exist_ok=True)
+        icon.write_bytes(b'fictional icon')
+
     def fill(self):
         for name in doc.outline():
             path = self.output / name
@@ -89,11 +95,15 @@ class DocumentationTests(unittest.TestCase):
             doc.language_policy(repo)
         self.assertEqual(before, {str(p):p.read_bytes() for p in repo.rglob('*') if p.is_file()})
 
-    def test_scaffold_is_bilingual_preserves_existing_and_copies_exact_icon(self):
+    def test_scaffold_is_bilingual_preserves_existing_and_references_the_single_icon(self):
         result = doc.scaffold(self.source, self.output, languages=['de','en'])
         self.assertEqual(len(doc.outline()), 16)
-        self.assertEqual(len(result['created']), 18)
-        self.assertEqual((self.output / 'docs/assets/zyris-icon.png').read_bytes(), doc.icon_source().read_bytes())
+        self.assertEqual(len(result['created']), 17)
+        self.assertFalse((self.output / 'docs/assets').exists())  # no second copy of the icon
+        self.assertIn('assets/icon.png', (self.output / 'README.md').read_text())
+        self.assertIn('assets/icon.png is missing', ' '.join(doc.validate(self.output)))
+        self.give_icon()
+        self.assertNotIn('assets/icon.png is missing', ' '.join(doc.validate(self.output)))
         (self.output / 'README.md').write_text('Existing user content')
         self.assertEqual(doc.scaffold(self.source, self.output, languages=['de','en'])['created'], [])
         self.assertEqual((self.output / 'README.md').read_text(), 'Existing user content')
@@ -102,6 +112,7 @@ class DocumentationTests(unittest.TestCase):
         doc.scaffold(self.source, self.output, languages=['de','en'])
         self.assertTrue(any('placeholders' in item for item in doc.validate(self.output)))
         self.fill()
+        self.give_icon()
         self.assertEqual(doc.validate(self.output), [])
 
     def test_validation_detects_broken_links_missing_locale_and_heading_drift(self):
@@ -124,21 +135,13 @@ class DocumentationTests(unittest.TestCase):
         self.assertIn('counterpart', errors)
         self.assertIn('heading anchor', errors)
 
-    def test_refuses_skill_output_symlinks_and_custom_icon_overwrite(self):
+    def test_refuses_skill_output_symlinks(self):
         with self.assertRaisesRegex(ValueError, 'outside'):
             doc.scaffold(self.source, self.source, languages=['de','en'])
         self.output.mkdir()
         (self.output / 'docs').symlink_to(self.source, target_is_directory=True)
         with self.assertRaisesRegex(ValueError, 'symlink'):
             doc.scaffold(self.source, self.output, languages=['de','en'])
-        self.assertFalse((self.output / 'README.md').exists())
-        (self.output / 'docs').unlink()
-        icon = self.output / 'docs/assets/zyris-icon.png'
-        icon.parent.mkdir(parents=True)
-        icon.write_bytes(b'custom')
-        with self.assertRaisesRegex(ValueError, 'differs'):
-            doc.scaffold(self.source, self.output, languages=['de','en'])
-        self.assertEqual(icon.read_bytes(), b'custom')
         self.assertFalse((self.output / 'README.md').exists())
 
     def test_english_and_german_templates_have_localized_headings(self):
@@ -186,6 +189,7 @@ class DocumentationTests(unittest.TestCase):
                 for name in pages:
                     path = output / name
                     path.write_text(re.sub(r'\{\{[^}]+\}\}', 'Fictional example.', path.read_text()))
+                self.give_icon(output)
                 self.assertEqual([],doc.validate(output))
                 self.assertIn('## Who it is for' if default=='en' else '## Für wen ist das gedacht?',(output/'README.md').read_text())
                 if len(languages)==1:

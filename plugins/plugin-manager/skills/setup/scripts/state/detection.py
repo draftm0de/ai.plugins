@@ -34,8 +34,6 @@ def classify_unconfigured(ctx, root):
                         others.append(relative)
                     elif relative in directories:
                         pass  # symlink or file where a folder belongs: reported by inspect()
-    if 'install.sh' in names and 'install.sh' not in files:
-        others.append('install.sh')
     if others:
         raise Conflict('.', 'Folder has other content and is not an initializable plugin folder: ' + ', '.join(others),
                        'not_fresh', sorted(others))

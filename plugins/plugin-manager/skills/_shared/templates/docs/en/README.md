@@ -2,7 +2,7 @@
 
 [Deutsch](../de/README.md) | **English**
 
-<img src="../assets/zyris-icon.png" alt="ZYRIS" width="48">
+<img src="../../assets/icon.png" alt="draftmode.io" width="48">
 
 [Home](../../README.en.md) · [Overview](README.md) · [Install](installation.md) · [Use](usage.md) · [Screens](screens.md) · [FAQ](faq.md)
 

@@ -15,7 +15,7 @@ If intent and code disagree, expose the conflict and ask which should change. Do
 
 The plugin project root uses the same neutral base structure across products:
 `plugin.json`, `skills/`, `assets/`, `scripts/`, `tests/`, `docs/`,
-`Makefile` and `install.sh`. Local-development and metadata recipes live directly in Makefile.
+`Makefile`. Local-development and metadata recipes live directly in Makefile.
 `skills/<name>/` is the canonical runtime source for every host. Root `scripts/`
 holds development tooling; runtime helpers belong with their capability.
 Plugin host metadata is derived from `plugin.json` by `make sync-plugin`; `make check-plugin` detects drift. Plugins have no marketplace catalogs. A separate marketplace owns `marketplace.json` and derives both host catalogs with `make sync-marketplace`; `make check-marketplace` checks drift. Repository versions are omitted. Only the existing Manager remains embedded in ai.plugins.

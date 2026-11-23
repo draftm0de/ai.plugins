@@ -4,7 +4,7 @@ New skeleton pages are filled with the actual scaffold status in the selected la
 
 [Deutsch](../de/usage.md) | **English**
 
-<img src="../assets/zyris-icon.png" alt="ZYRIS" width="48">
+<img src="../../assets/icon.png" alt="draftmode.io" width="48">
 
 [Start](../../README.en.md) · [Guides](README.md)
 

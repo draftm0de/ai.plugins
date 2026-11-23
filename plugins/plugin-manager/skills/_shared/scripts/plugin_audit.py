@@ -8,7 +8,7 @@ import re
 import sys
 sys.dont_write_bytecode = True
 
-from documentation import SKILL, inspect, scaffold, icon_source, validate
+from documentation import SKILL, inspect, scaffold, validate
 from repository_policy import hygiene, python_payload
 
 UNSAFE = {'.local', '.env', '.git', '.tmp', '.DS_Store', '__pycache__', 'node_modules', 'dist'}
@@ -86,7 +86,7 @@ def audit(root):
             add('payload:' + name, 'fail' if suspicious else 'pass', 'Review unsafe/unexpected distributable paths: ' + ', '.join(suspicious) if suspicious else 'No obvious secret or unexpected paths or symlinks; ordinary Python caches are excluded by snapshot generation, not a secret-content scan')
     # Load our trusted template, never the target repository's executable code.
     template = SKILL / 'templates/plugin/sync'
-    for relative in ('scripts/plugin.py', 'install.sh'):
+    for relative in ('scripts/plugin.py',):
         target = root / relative
         matches = target.is_file() and not target.is_symlink() and target.read_bytes() == (template / relative).read_bytes()
         add('installer:' + relative, 'pass' if matches else 'fail',
@@ -210,7 +210,6 @@ def scaffold_plugin(source, output, languages=None, default_language=None, repos
     for relative, data in engine.repository_files(manifest).items():
         files[relative] = (json.dumps(data, indent=2) + '\n').encode()
     files['plugin.json'] = (json.dumps(manifest, indent=2) + '\n').encode()
-    files['assets/icon.png'] = icon_source().read_bytes()
     for part in ('sync', 'seed'):
         folder = SKILL / 'templates/plugin' / part
         for path in folder.rglob('*'):

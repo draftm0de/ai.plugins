@@ -60,7 +60,7 @@ class PluginTests(unittest.TestCase):
                                      '--output', str(root / 'docs-output'), '--languages', 'de', 'en'], capture_output=True, text=True, timeout=15)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertTrue((root / 'docs-output/README.en.md').is_file())
-            self.assertEqual((root / 'docs-output/docs/assets/zyris-icon.png').read_bytes(), (ROOT / 'assets/icon.png').read_bytes())
+            self.assertFalse((root / 'docs-output/docs/assets').exists())  # the documentation references the plugin's one icon, never a copy
 
 
 class RepositoryMetadataTests(unittest.TestCase):

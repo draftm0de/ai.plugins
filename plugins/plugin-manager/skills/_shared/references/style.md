@@ -14,7 +14,7 @@ Each language’s README remains compact: aim for 100–150 lines, linking deepe
 
 ## Visual system
 
-Use the bundled `zyris-icon.png` at width 48 in the README and documentation index of each language. Reference it with GitHub-compatible relative paths. Use native Markdown for tables and callouts. Optional repo-native SVG transcript previews use navy `#101b2d`, pale panels `#f4f7fc`, teal `#87ddc6`, dark text `#13243a` and a neutral sans-serif font. All previews require an explicit label and provenance in their page language; the design is not a host UI. Produce variants only for selected languages, with identical layout when bilingual. Never mix languages inside a generated graphic.
+Use the plugin's one icon `assets/icon.png` (never a copy) at width 48 in the README and documentation index of each language, with the alt text `draftmode.io`. Reference it with GitHub-compatible relative paths. A new plugin gets a neutral placeholder of 96 px that the plugin replaces by its own icon. Use native Markdown for tables and callouts. Optional repo-native SVG transcript previews use navy `#101b2d`, pale panels `#f4f7fc`, teal `#87ddc6`, dark text `#13243a` and a neutral sans-serif font. All previews require an explicit label and provenance in their page language; the design is not a host UI. Produce variants only for selected languages, with identical layout when bilingual. Never mix languages inside a generated graphic.
 
 Use descriptive alt text. Include a visible text explanation for each visual. Do not invent a CI badge or license badge. A CI badge is allowed only when the actual remote and workflow exist. Documentation branding does not change source-product ownership.
 

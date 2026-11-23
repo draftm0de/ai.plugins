@@ -2,7 +2,7 @@
 
 **Deutsch** | [English](README.en.md)
 
-<img src="docs/assets/zyris-icon.png" alt="ZYRIS" width="48">
+<img src="assets/icon.png" alt="draftmode.io" width="48">
 
 ## Für wen ist das gedacht?
 

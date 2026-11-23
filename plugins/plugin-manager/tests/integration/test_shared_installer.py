@@ -51,7 +51,7 @@ class SharedInstallerTests(SharedInstallerTestsFixture, unittest.TestCase):
             result = subprocess.run(['make', '-s', command], cwd=self.root, capture_output=True)
             self.assertNotEqual(0, result.returncode, command)
         for command in ('build', 'install', 'update'):
-            for prefix in (['bash', 'install.sh'], [sys.executable, 'scripts/plugin.py']):
+            for prefix in ([sys.executable, 'scripts/plugin.py'],):
                 result = subprocess.run(prefix + [command], cwd=self.root, capture_output=True)
                 self.assertEqual(2, result.returncode, command)
         self.assertFalse((self.market/'dist').exists())
@@ -96,8 +96,8 @@ class SharedInstallerTests(SharedInstallerTestsFixture, unittest.TestCase):
             engine.configuration(self.root)
 
 
-    def test_arbitrary_manifest_drives_both_wrappers(self):
-        first=json.loads(self.invoke('bash','install.sh','install-local','--target','claude','--dry-run').stdout)
+    def test_arbitrary_manifest_drives_both_entry_points(self):
+        first=json.loads(self.invoke(sys.executable,'scripts/plugin.py','install-local','--target','claude','--dry-run').stdout)
         second=self.invoke('make','-s','install-local','TARGET=claude','DRY_RUN=1')
         self.assertEqual(first,json.loads(second.stdout))
         self.assertEqual(first['path'],first['commands'][0][4])
@@ -130,15 +130,12 @@ class SharedInstallerTests(SharedInstallerTestsFixture, unittest.TestCase):
         legacy=self.root/'home/.agents/skills/fictional-skill';legacy.mkdir(parents=True);(legacy/'SKILL.md').write_text('preserve')
         env=dict(os.environ,HOME=str(self.root/'home'))
         for args in (('claude-chat',),('all',)):
-            result=subprocess.run(['bash','install.sh',*args],cwd=self.root,env=env,capture_output=True)
+            result=subprocess.run([sys.executable,'scripts/plugin.py',*args],cwd=self.root,env=env,capture_output=True)
             self.assertEqual(2,result.returncode)
-        self.invoke('bash','install.sh','install-local','--target','claude','--dry-run')
+        self.invoke(sys.executable,'scripts/plugin.py','install-local','--target','claude','--dry-run')
         self.assertEqual('preserve',(legacy/'SKILL.md').read_text())
         self.assertEqual('fictional-progress',(private/'state.json').read_text())
 
-
-    def test_bash_syntax(self):
-        self.invoke('bash','-n','install.sh')
 
 
     def test_codex_missing_cli_and_failed_registration_never_report_success(self):

@@ -25,10 +25,6 @@
       "sha256": "771c288745f66e7da6b1fd1bf7768ccb962bad69fbfd969b5906bd1aa4f33079",
       "executable": false
     },
-    "install.sh": {
-      "sha256": "27bb10b169fdc03ce763ea75c17ed37b64aaba0084a3c909fad64e05117c8a8f",
-      "executable": false
-    },
     "scripts/plugin.py": {
       "sha256": "c9023a6afbce46cd67c0c422911aa515deb639f24f25f8ae6abf591964ab9661",
       "executable": false
@@ -51,6 +47,7 @@
     }
   },
   "removed": [
+    "install.sh",
     "keep.md",
     "remove.md"
   ]

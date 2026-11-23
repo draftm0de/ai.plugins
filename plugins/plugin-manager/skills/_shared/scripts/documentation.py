@@ -172,17 +172,6 @@ def inspect(source):
             'evidence_files': evidence, 'source_executed': False}
 
 
-def icon_source():
-    bundled = SKILL / 'assets/icon.png'
-    if bundled.is_file():
-        return bundled
-    # Source checkout has one canonical brand asset; packages inject a local copy.
-    source = SKILL.parents[1] / 'assets/icon.png'
-    if not source.is_file():
-        raise ValueError('Bundled icon is missing; rebuild the plugin')
-    return source
-
-
 def safe_target(root, relative):
     path = root
     for part in Path(relative).parts:
@@ -221,12 +210,6 @@ def scaffold(source, output, title=None, languages=None, default_language=None):
             text = template_text(template, policy)
             text = text.replace('{{TITLE}}', title or info['name'])
             plans.append((target, text.encode('utf-8')))
-    icon = safe_target(root, 'docs/assets/zyris-icon.png')
-    data = icon_source().read_bytes()
-    if icon.exists() and (not icon.is_file() or icon.read_bytes() != data):
-        raise ValueError('Existing docs/assets/zyris-icon.png differs; preserve/review it before replacing')
-    if not icon.exists():
-        plans.append((icon, data))
     for target, content in plans:
         target.parent.mkdir(parents=True, exist_ok=True)
         with target.open('xb') as handle:
@@ -307,13 +290,13 @@ def validate(output):
                 errors.append(f'{name}: missing heading anchor: {link}')
             if '.tmp' in destination.relative_to(root).parts:
                 errors.append(f'{name}: public link to ignored test artifacts')
-    icon = safe_target(root, 'docs/assets/zyris-icon.png')
-    if not icon.is_file() or icon.read_bytes() != icon_source().read_bytes():
-        errors.append('Brand icon missing or differs from the bundled source')
+    icon = safe_target(root, 'assets/icon.png')  # the plugin's one icon (single source); the documentation only references it
+    if not icon.is_file():
+        errors.append('assets/icon.png is missing (the single icon of the plugin)')
     for name in (name for name in pages if name.startswith('README') or name.endswith('/README.md')):
         path = safe_target(root, name)
-        if path.is_file() and 'zyris-icon.png' not in path.read_text(encoding='utf-8'):
-            errors.append(f'{name}: brand icon must be referenced')
+        if path.is_file() and 'assets/icon.png' not in path.read_text(encoding='utf-8'):
+            errors.append(f'{name}: the icon assets/icon.png must be referenced')
     return errors
 
 
