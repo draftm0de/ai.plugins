@@ -309,3 +309,13 @@ Test: tests/contracts/verify/test_standards.py
 Test: tests/integration/project_setup/test_manifest.py
 Test: tests/integration/project_setup/test_setup.py
 Test: tests/integration/project_setup/test_sync.py
+
+## R29: Documentation reads every skill of the plugin
+
+Status: confirmed
+Acceptance: The documentation of a plugin repository is written from all of its sources, not from one skill: every skill under `skills/` (`SKILL.md` and its `references`, `flows` and `scripts`) and `SCOPE.md`, plus the `extra_sources` named in `docs/documentation.json`. `docs/documentation.json` holds only the language policy, `extra_sources` and open questions; it names no skill. A manifest with the field `source_skill` is rejected with a concrete reason before any write and is never converted or edited by the Manager. A standalone skill folder outside a repository is still documented as that one skill, with the output repository named explicitly. The documentation reads sources only and never executes them; the helper lists the sources (`inspect`), the agent reads them and writes the content from evidence.
+Source: skills/_shared/scripts/documentation.py
+Source: skills/_shared/WORKFLOWS.md
+Source: skills/_shared/references/source-of-truth.md
+Test: tests/integration/update/test_documentation.py
+Test: tests/contracts/test_skill_entrypoints.py

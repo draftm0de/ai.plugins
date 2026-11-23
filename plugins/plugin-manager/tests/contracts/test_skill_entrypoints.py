@@ -32,7 +32,7 @@ class SkillEntrypointTests(unittest.TestCase):
         manifest = json.loads((ROOT/'plugin.json').read_text())
         self.assertEqual('./skills/verify/SKILL.md', manifest['extensions']['com.openai']['onboardingSkill'])
         config = json.loads((ROOT/'docs/documentation.json').read_text())
-        self.assertTrue((ROOT/config['source_skill']/'SKILL.md').is_file())
+        self.assertNotIn('source_skill', config)  # the documentation reads every skill (R29)
         self.assertIn('skills/_shared/WORKFLOWS.md', config['extra_sources'])
 
     def test_both_host_payloads_keep_shared_rules_and_five_skills(self):

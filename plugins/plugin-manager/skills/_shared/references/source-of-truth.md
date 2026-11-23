@@ -69,19 +69,18 @@ help alone are not behavioral acceptance.
 
 ## Pointer manifest
 
-`docs/documentation.json` is optional. It locates canonical sources and owns documentation-only settings. These settings are configuration, not duplicated product facts. Allowed fields:
+`docs/documentation.json` is optional. It names extra sources beyond the skills of the repository (every `skills/<name>/` and `SCOPE.md` are always read) and owns documentation-only settings. These settings are configuration, not duplicated product facts. Allowed fields:
 
 ```json
 {
   "schema_version": 1,
-  "source_skill": "skills/example-skill",
   "extra_sources": [],
   "open_questions": [],
   "documentation": {"languages": ["en"], "default_language": "en"}
 }
 ```
 
-Paths are repository-relative and must resolve inside that repository. For an external folder, the manifest stores language settings without source_skill; pass the source explicitly on each run rather than storing a machine-specific path.
+Paths are repository-relative and must resolve inside that repository. For an external folder, the manifest stores language settings only; pass the source explicitly on each run rather than storing a machine-specific path. A field `source_skill` is not supported: the manifest is rejected with a reason and never converted.
 
 Do not add a feature list, version, command list, generated description, scoring rules or storage behavior to this manifest. These facts already belong in source. `open_questions` stores only unresolved questions, not duplicate authoritative answers. Remove resolved questions after the canonical fact is established.
 

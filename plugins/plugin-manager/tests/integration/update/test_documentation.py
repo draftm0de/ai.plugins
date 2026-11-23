@@ -44,15 +44,17 @@ class DocumentationTests(unittest.TestCase):
                     doc.scaffold(source,repo,languages=['en'])
                 self.assertEqual(before,{str(p):p.read_bytes() for p in repo.rglob('*') if p.is_file()})
 
-    def test_manifest_source_never_escapes_current_skill_layout(self):
+    def test_the_removed_source_pointer_is_rejected_with_a_reason_and_nothing_is_converted(self):  # R29
         repo = self.root/'repository';(repo/'docs').mkdir(parents=True)
-        (repo/'skills').mkdir();(repo/'legacy').mkdir();(repo/'legacy/SKILL.md').write_text('---\nname: example\n---\n')
-        (repo/'skills/link').symlink_to(repo/'legacy')
-        for value in ('skills/../legacy','skills/link','.'):
-            (repo/'docs/documentation.json').write_text(json.dumps({'schema_version':1,'source_skill':value,'documentation':{'languages':['en'],'default_language':'en'}}))
-            with self.assertRaisesRegex(ValueError,'Unsupported source layout'):
-                doc.scaffold(repo,self.output,languages=['en'])
-            self.assertFalse(self.output.exists())
+        (repo/'skills/one').mkdir(parents=True);(repo/'skills/one/SKILL.md').write_text('---\nname: one\n---\n')
+        manifest = repo/'docs/documentation.json'
+        text = json.dumps({'schema_version':1,'source_skill':'skills/one','documentation':{'languages':['en'],'default_language':'en'}})
+        manifest.write_text(text)
+        for call in (lambda: doc.scaffold(repo, self.output, languages=['en']), lambda: doc.inspect(repo)):
+            with self.assertRaisesRegex(ValueError, 'Unsupported field source_skill'):
+                call()
+        self.assertFalse(self.output.exists())
+        self.assertEqual(text, manifest.read_text())
 
     def test_standalone_frontmatter_never_bypasses_source_preflight(self):
         (self.source/'.claude/skills').mkdir(parents=True)
@@ -82,14 +84,14 @@ class DocumentationTests(unittest.TestCase):
         old.mkdir(parents=True)
         (old / 'SKILL.md').write_text('---\nname: example\n---\n')
         with self.assertRaisesRegex(ValueError, 'Unsupported source layout'):
-            doc.source_skill(repo)
+            doc.source_skills(repo)
         (repo / 'SKILL.md').write_text('# Old pointer')
         with self.assertRaisesRegex(ValueError, 'Unsupported source layout'):
-            doc.source_skill(repo)
+            doc.source_skills(repo)
         (repo / 'docs/de').mkdir(parents=True)
         (repo / 'docs/en').mkdir()
         (repo / 'README.en.md').write_text('Existing content')
-        (repo / 'docs/documentation.json').write_text(json.dumps({'schema_version':1,'source_skill':'.claude/skills/example'}))
+        (repo / 'docs/documentation.json').write_text(json.dumps({'schema_version':1,'extra_sources':[]}))
         before = {str(p):p.read_bytes() for p in repo.rglob('*') if p.is_file()}
         with self.assertRaisesRegex(ValueError, 'explicit documentation'):
             doc.language_policy(repo)
@@ -151,32 +153,29 @@ class DocumentationTests(unittest.TestCase):
         self.assertEqual(outline['docs/de/screens.md'][0], 'Vorschau')
         self.assertEqual(outline['docs/en/screens.md'][0], 'Preview')
 
-    def test_manifest_selects_source_without_caching_product_facts(self):
+    def test_every_skill_of_the_repository_and_the_scope_are_documentation_sources(self):  # R29
         repo = self.root / 'repository'
-        selected = repo / 'skills/one'
-        selected.mkdir(parents=True)
-        (selected / 'SKILL.md').write_text('---\nname: one\n---\n')
-        other = repo / 'skills/two'
-        other.mkdir()
-        (other / 'SKILL.md').write_text('---\nname: two\n---\n')
-        doc.scaffold(selected, repo, languages=['de','en'])
-        manifest_path = repo / 'docs/documentation.json'
-        data = json.loads(manifest_path.read_text())
-        self.assertEqual(data['source_skill'], 'skills/one')
-        self.assertEqual(doc.source_skill(repo), selected.resolve())
+        for name in ('one', 'two'):
+            (repo / 'skills' / name / 'flows').mkdir(parents=True)
+            (repo / 'skills' / name / 'SKILL.md').write_text('---\nname: %s\n---\n' % name)
+            (repo / 'skills' / name / 'flows/x.md').write_text('flow')
+        (repo / 'SCOPE.md').write_text('# Scope')
+        info = doc.inspect(repo)
+        self.assertEqual(['skills/one/SKILL.md', 'skills/one/flows/x.md', 'skills/two/SKILL.md', 'skills/two/flows/x.md', 'SCOPE.md'], info['evidence_files'])
+        self.assertEqual(2, len(info['skills']))
+        doc.scaffold(repo, repo, languages=['de','en'])
+        data = json.loads((repo / 'docs/documentation.json').read_text())
+        self.assertNotIn('source_skill', data)  # no pointer to one skill is written
         data['features'] = ['A duplicated unsupported claim']
-        manifest_path.write_text(json.dumps(data))
+        (repo / 'docs/documentation.json').write_text(json.dumps(data))
         with self.assertRaisesRegex(ValueError, 'not duplicated'):
             doc.inspect(repo)
 
-    def test_manifest_rejects_missing_and_external_sources(self):
-        repo = self.root / 'repository'
-        (repo / 'docs').mkdir(parents=True)
-        path = repo / 'docs/documentation.json'
-        for pointer in ('missing', '../source'):
-            path.write_text(json.dumps({'schema_version':1,'source_skill':pointer,'documentation':{'languages':['en'],'default_language':'en'}}))
-            with self.subTest(pointer=pointer), self.assertRaises(ValueError):
-                doc.inspect(repo)
+    def test_a_repository_without_a_skill_is_rejected(self):
+        repo = self.root / 'empty'
+        repo.mkdir()
+        with self.assertRaisesRegex(ValueError, 'No skill found'):
+            doc.inspect(repo)
 
     def test_single_language_and_english_default_layouts(self):
         for languages, default in ((['en'],'en'), (['de'],'de'), (['en','de'],'en')):

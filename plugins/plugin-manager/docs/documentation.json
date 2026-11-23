@@ -1,17 +1,10 @@
 {
   "schema_version": 1,
-  "source_skill": "skills/docs",
   "extra_sources": [
     "skills/_shared/WORKFLOWS.md",
     "skills/_shared/references",
     "skills/_shared/scripts",
-    "skills/_shared/templates",
-    "skills/setup/SKILL.md",
-    "skills/setup/flows/marketplace.md",
-    "skills/setup/flows/associate.md",
-    "skills/verify/SKILL.md",
-    "skills/publish/SKILL.md",
-    "skills/setup/flows/configure.md"
+    "skills/_shared/templates"
   ],
   "open_questions": [],
   "documentation": {

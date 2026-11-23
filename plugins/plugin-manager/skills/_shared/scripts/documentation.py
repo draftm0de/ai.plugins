@@ -97,79 +97,87 @@ def read_manifest(root):
     if path.is_symlink():
         raise ValueError('Documentation manifest must not be a symlink')
     data = strict_json(path.read_text(encoding='utf-8'))
-    allowed = {'schema_version', 'source_skill', 'extra_sources', 'open_questions', 'documentation'}
+    allowed = {'schema_version', 'extra_sources', 'open_questions', 'documentation'}
+    if isinstance(data, dict) and 'source_skill' in data:
+        raise ValueError('Unsupported field source_skill in the documentation manifest: the documentation reads every skill of the repository. Remove the field; nothing is converted automatically.')
     if not isinstance(data, dict) or set(data) - allowed or type(data.get('schema_version')) is not int or data.get('schema_version') != 1:
         raise ValueError('Invalid documentation manifest; store source pointers, not duplicated product facts')
     if 'documentation' not in data:
         raise ValueError('Missing explicit documentation language policy; unsupported manifest, no automatic inference or migration')
     check_policy(data['documentation'])
-    if 'source_skill' in data and (not isinstance(data['source_skill'], str) or not data['source_skill']):
-        raise ValueError('Invalid source_skill')
-    if 'source_skill' not in data and 'documentation' not in data:
-        raise ValueError('Manifest requires source_skill or documentation policy')
     for key in ('extra_sources', 'open_questions'):
         if not isinstance(data.get(key, []), list) or not all(isinstance(value, str) for value in data.get(key, [])):
             raise ValueError(f'Manifest {key} must be a list of strings')
-    for value in ([data['source_skill']] if 'source_skill' in data else []) + data.get('extra_sources', []):
+    for value in data.get('extra_sources', []):
         target = (root / value).resolve()
         if Path(value).is_absolute() or not target.is_relative_to(root.resolve()) or not target.exists():
             raise ValueError(f'Manifest source pointer is missing or outside the repository: {value}')
-    if 'source_skill' in data:
-        parts = Path(data['source_skill']).parts
-        target = root
-        if not parts or parts[0] != 'skills' or '..' in parts:
-            raise ValueError('Unsupported source layout: repository skills must be under skills/')
-        for part in parts:
-            target /= part
-            if target.is_symlink():
-                raise ValueError('Unsupported source layout: symlink source pointer')
-        if not target.resolve().is_relative_to((root/'skills').resolve()):
-            raise ValueError('Unsupported source layout: source escapes skills/')
-    if 'source_skill' in data and not ((root / data['source_skill']) / 'SKILL.md').is_file():
-        raise ValueError('Manifest source_skill has no SKILL.md; resolve the source before documenting')
     return data
 
 
-def source_skill(source):
+def source_skills(source):
+    """Every skill directory the documentation reads: the skill folder itself when `source` is a standalone skill,
+    else all skills of the repository (skills/*/SKILL.md). Documentation is never tied to one skill."""
     root = Path(source).expanduser().resolve()
     if not root.is_dir():
         raise ValueError('Source must be an accessible local directory')
     if any((root / old).exists() or (root / old).is_symlink() for old in ('.claude/skills', '.agents/skills')):
         raise ValueError('Unsupported source layout: repository skills must be under skills/')
-    manifest = read_manifest(root)
+    read_manifest(root)
     if (root / 'SKILL.md').is_file():
         if any((root / name).exists() for name in ('plugin.json', 'marketplace.json')):
             raise ValueError('Unsupported root SKILL.md in product repository; use skills/')
         if (root / 'SKILL.md').read_text(encoding='utf-8').startswith('---\n'):
-            return root
+            return [root]
         raise ValueError('Unsupported root SKILL.md pointer; select a current skill directory')
-    if manifest and 'source_skill' in manifest:
-        return (root / manifest['source_skill']).resolve()
-    candidates = []
-    for relative in ('skills',):
-        for path in sorted((root / relative).glob('*/SKILL.md')):
-            resolved = path.parent.resolve()
-            if resolved not in candidates:
-                candidates.append(resolved)
-    if len(candidates) != 1:
-        raise ValueError('Select one skill directory. Candidates: ' + ', '.join(map(str, candidates)))
-    return candidates[0]
+    found = []
+    for path in sorted((root / 'skills').glob('*/SKILL.md')):
+        resolved = path.parent.resolve()
+        if path.parent.is_symlink() or not resolved.is_relative_to((root / 'skills').resolve()):
+            raise ValueError('Unsupported source layout: symlink source pointer')
+        if resolved not in found:
+            found.append(resolved)
+    if not found:
+        raise ValueError('No skill found: a repository needs skills/<name>/SKILL.md')
+    return found
+
+
+EVIDENCE_FOLDERS = ('references', 'flows', 'scripts')
+EVIDENCE_SUFFIXES = ('.md', '.py', '.sh', '.json', '.yaml', '.yml')
 
 
 def inspect(source):
-    skill = source_skill(source)
-    text = (skill / 'SKILL.md').read_text(encoding='utf-8')
-    match = re.search(r'^name:\s*(.+)$', text, re.MULTILINE)
-    evidence = ['SKILL.md']
-    for folder in ('references', 'scripts'):
-        for path in sorted((skill / folder).rglob('*')):
-            relative = path.relative_to(skill)
-            if (path.is_file() and not path.is_symlink()
-                    and not any(part.startswith('.') or part == '__pycache__' for part in relative.parts)
-                    and path.suffix in ('.md', '.py', '.sh', '.json', '.yaml', '.yml')):
-                evidence.append(str(relative))
-    return {'skill': str(skill), 'name': match.group(1).strip('"\'') if match else skill.name,
-            'evidence_files': evidence, 'source_executed': False}
+    root = Path(source).expanduser().resolve()
+    skills = source_skills(root)
+    standalone = skills == [root]
+    base = root
+    evidence = []
+    for skill in skills:
+        prefix = skill.relative_to(base)
+        evidence.append(str(prefix / 'SKILL.md') if not standalone else 'SKILL.md')
+        for folder in EVIDENCE_FOLDERS:
+            if not (skill / folder).is_dir():
+                continue
+            for path in sorted((skill / folder).rglob('*')):
+                relative = path.relative_to(skill)
+                if (path.is_file() and not path.is_symlink()
+                        and not any(part.startswith('.') or part == '__pycache__' for part in relative.parts)
+                        and path.suffix in EVIDENCE_SUFFIXES):
+                    evidence.append(str(relative) if standalone else str(prefix / relative))
+    if not standalone and (root / 'SCOPE.md').is_file() and not (root / 'SCOPE.md').is_symlink():
+        evidence.append('SCOPE.md')  # the goal of the plugin is a documentation source too
+    name = skills[0].name
+    if standalone:
+        match = re.search(r'^name:\s*(.+)$', (root / 'SKILL.md').read_text(encoding='utf-8'), re.MULTILINE)
+        name = match.group(1).strip('"\'') if match else root.name
+    elif (root / 'plugin.json').is_file():
+        try:
+            name = strict_json((root / 'plugin.json').read_text(encoding='utf-8')).get('name') or root.name
+        except (ValueError, OSError, AttributeError):
+            name = root.name
+    else:
+        name = root.name if len(skills) > 1 else skills[0].name
+    return {'skills': [str(skill) for skill in skills], 'name': name, 'evidence_files': evidence, 'source_executed': False}
 
 
 def safe_target(root, relative):
@@ -186,21 +194,18 @@ def safe_target(root, relative):
 def scaffold(source, output, title=None, languages=None, default_language=None):
     info = inspect(source)
     root = Path(output).expanduser().resolve()
-    if root.is_relative_to(Path(info['skill'])):
+    if any(root.is_relative_to(Path(skill)) for skill in info['skills']):
         raise ValueError('Write documentation outside the distributable source skill')
+    for skill in info['skills']:  # a skill inside the output repository must lie under skills/
+        inside = Path(skill).relative_to(root).parts if Path(skill).is_relative_to(root) else None
+        if inside is not None and (not inside or inside[0] != 'skills' or '..' in inside):
+            raise ValueError('Unsupported source layout: repository skills must be under skills/')
     plans = []
     manifest_path = safe_target(root, 'docs/documentation.json')
     manifest = read_manifest(root)
     policy = language_policy(root, languages, default_language)
-    if manifest and 'source_skill' in manifest and (root / manifest['source_skill']).resolve() != Path(info['skill']):
-        raise ValueError('Output manifest points to another skill; resolve this conflict before writing')
     if not manifest:
         manifest = {'schema_version': 1, 'extra_sources': [], 'open_questions': [], 'documentation': policy}
-        if Path(info['skill']).is_relative_to(root):
-            pointer = Path(info['skill']).relative_to(root)
-            if not pointer.parts or pointer.parts[0] != 'skills' or '..' in pointer.parts:
-                raise ValueError('Unsupported source layout: repository skills must be under skills/')
-            manifest['source_skill'] = str(pointer)
         plans.append((manifest_path, (json.dumps(manifest, ensure_ascii=False, indent=2) + '\n').encode()))
     for name, (template, _, _) in page_layout(policy).items():
         target = safe_target(root, name)

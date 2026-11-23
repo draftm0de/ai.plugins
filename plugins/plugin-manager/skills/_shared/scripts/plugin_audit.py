@@ -171,7 +171,9 @@ def scaffold_plugin(source, output, languages=None, default_language=None, repos
     from documentation import language_policy
     language_policy(Path(output).expanduser().resolve(), languages, default_language)
     info = inspect(source)
-    source = Path(info['skill'])
+    if len(info['skills']) != 1:
+        raise ValueError('A new plugin is created from exactly one skill source')
+    source = Path(info['skills'][0])
     output = Path(output).expanduser().absolute()
     if any(part.is_symlink() for part in (output, *output.parents)):
         raise ValueError('Output path must not contain symlinks')
