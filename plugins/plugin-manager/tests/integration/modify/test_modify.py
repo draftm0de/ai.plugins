@@ -106,7 +106,7 @@ class PluginModifyTests(ModifyBase):
 
     def test_an_unconfigured_workpackage_is_refused(self):
         other = self.repo('other-plugin')
-        with self.assertRaisesRegex(ValueError, 'Configure first'):
+        with self.assertRaisesRegex(ValueError, 'is not configured yet'):
             self.modify.modify(other, description='No evidence yet')
 
 
@@ -156,7 +156,7 @@ class ModifyCommandLineTests(ModifyBase):
         before = snapshot(self.plugin, self.market)
         result = self.run_cli('--root', str(self.plugin), '--name', 'Not Kebab')
         self.assertEqual(1, result.returncode)
-        self.assertIn('ERROR: The technical name must be lowercase kebab-case', result.stderr)
+        self.assertIn('The modify action could not be completed, because the technical name is not valid.', result.stderr)
         self.assertEqual(before, snapshot(self.plugin, self.market))
 
     def test_no_value_is_an_invalid_call(self):

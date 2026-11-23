@@ -5,6 +5,7 @@ from . import detection
 from . import evidence_files
 from . import inspection
 from . import preferences
+from . import messages
 from .constants import Conflict, IGNORE_RULE
 
 
@@ -93,31 +94,21 @@ def conflict_result(operation, target, conflict):
             'created': {'files': [], 'directories': []}, 'target_code_executed': False}
 
 
-GATE_REASONS = {
-    'stop': 'something in this folder blocks the setup',
-    'language': 'the language is not set yet',
-    'configure': 'this folder is not configured yet',
-    'skeleton': 'some required files or settings are missing',
-    'sync': 'a managed file needs your decision',
-}
-
-
-STOP_MESSAGE = ('The {action} action was stopped, because this folder is not set up yet, or only partly ({reason}).\n\n'
-                'Please run /plugin-manager:setup first.')  # the same layout as every error message (messages.md)
-
-
-def gate(ctx, target, action=None):
+def gate(ctx, target, action=None, language=None):
     """Write-free answer to: may a writing skill other than setup (docs, publish) start? Open means the
-    state is not ready; the caller stops and points to /plugin-manager:setup. Never writes and runs no flow."""
+    state is not ready; the caller stops and points to /plugin-manager:setup. Never writes and runs no flow.
+    The stop message comes from messages.py, in `language` (else the saved operator language, else English)."""
+    lang = messages.language_for(target, language)
     try:
         data = status(ctx, target)
     except Conflict as conflict:
+        reason = messages.GATE_REASONS['en']['stop']
         return {'operation': 'gate', 'ok': False, 'ready': False, 'next': 'stop', 'target': str(target),
-                'reason': GATE_REASONS['stop'], 'detail': str(conflict.reason), 'run': '/plugin-manager:setup',
-                'message': STOP_MESSAGE.format(action=action or 'requested', reason=GATE_REASONS['stop']), 'target_code_executed': False}
+                'reason': reason, 'detail': str(conflict.reason), 'run': '/plugin-manager:setup',
+                'message': messages.gate_message(action, 'stop', lang), 'target_code_executed': False}
     ready = bool(data['ok']) and data['next'] == 'ready'
-    reason = '' if ready else GATE_REASONS.get(data['next'], 'the state is not ready')
+    reason = '' if ready else messages.GATE_REASONS['en'].get(data['next'], 'the state is not ready')
     detail = '; '.join(str(c.get('reason', '')) for c in data['conflicts']) or None
     return {'operation': 'gate', 'ok': ready, 'ready': ready, 'next': data['next'], 'target': data['target'],
             'reason': reason, 'detail': detail, 'run': None if ready else '/plugin-manager:setup',
-            'message': None if ready else STOP_MESSAGE.format(action=action or 'requested', reason=reason), 'target_code_executed': False}
+            'message': None if ready else messages.gate_message(action, data['next'], lang), 'target_code_executed': False}

@@ -70,10 +70,10 @@ class UniformOperationTests(WorkflowFixture, unittest.TestCase):
         for name in ('marketplace_create', 'plugin_create', 'configure'):
             self.assertFalse(hasattr(flow, name), name)
 
-    def test_help_lists_exactly_create_and_associate(self):
+    def test_help_lists_exactly_the_known_commands(self):
         result = self.cli('--help')
         self.assertEqual(0, result.returncode)
-        self.assertIn('{create,associate}', result.stdout)
+        self.assertIn('{create,associate,prerequisites}', result.stdout)
 
 
 if __name__ == '__main__':

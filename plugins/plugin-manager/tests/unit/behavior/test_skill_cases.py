@@ -58,7 +58,7 @@ class GradingTests(unittest.TestCase):
 
     def test_either_question_label_is_accepted_for_the_yes_no_question_and_a_bilingual_question_counts_once(self):
         case = CASES['docs_bare_gate_closed_language']
-        reply = 'The docs action was stopped, because this folder is not set up yet, or only partly (x).\n\nPlease run /plugin-manager:setup first.'
+        reply = '\n\n'.join(case['expect']['contains'])
         for label in ('asks_question', 'asks_confirmation'):
             self.assertEqual([], run_skills.grade(case, answer(reply, next_step=label, options=['Yes, run it', 'No, stop'])))
         self.assertIn('next_step', ' '.join(run_skills.grade(case, answer(reply, next_step='reports_only', options=['Yes, run it', 'No, stop']))))
@@ -82,8 +82,10 @@ class GradingTests(unittest.TestCase):
 
     def test_a_failure_must_be_told_in_plain_words_with_the_command(self):
         case = CASES['setup_failure_is_explained_in_plain_words']
-        good = answer('Das Setup konnte nicht abgeschlossen werden, weil der Ordner /Users/demo/tests/demo.plugin.a nicht als Git-Repository erkannt wird. Die Sprache wurde gespeichert.\n\nBitte initialisiere es entweder in einer IDE (zum Beispiel VS Code) oder führe in einem Terminal in diesem Ordner `git init` aus. Rufe danach /plugin-manager:setup erneut auf.')
+        good = answer('\n\n'.join(case['expect']['contains']))  # the finished message of the helper, unchanged
         self.assertEqual([], run_skills.grade(case, good))
+        paraphrase = answer('Das Setup ging nicht, weil der Ordner kein Git-Repository ist. Führe `git init` aus und rufe danach /plugin-manager:setup erneut auf.')
+        self.assertIn('does not contain', ' '.join(run_skills.grade(case, paraphrase)))  # a rewording is not the message
         technical = answer('Der Generator lief mit Exit 1 und checks.status != passed. Der Ordner ist kein Git-Repository: `git init`. Das JSON zeigt conflicts.')
         errors = ' '.join(run_skills.grade(case, technical))
         self.assertIn('technical wording', errors)
@@ -91,14 +93,14 @@ class GradingTests(unittest.TestCase):
 
     def test_missing_git_must_use_the_catalogue_wording_not_a_free_one(self):
         case = CASES['setup_missing_git_uses_the_catalogue_message_before_other_questions']
-        good = answer('Das Setup konnte nicht abgeschlossen werden, weil der Ordner /Users/demo/tests/demo.plugin.a nicht als Git-Repository erkannt wird. Die Sprache wurde gespeichert.\n\nBitte führe in diesem Ordner, in einer IDE (zum Beispiel VS Code) oder in einem Terminal, `git init` aus und danach `git remote add origin https://github.com/<owner>/<name>.git`. Rufe danach /plugin-manager:setup erneut auf.')
+        good = answer('\n\n'.join(case['expect']['contains']))  # the finished message of the helper, unchanged
         self.assertEqual([], run_skills.grade(case, good))
         only_init = answer('Das Setup konnte nicht abgeschlossen werden, weil der Ordner kein Git-Repository ist.\n\nBitte führe `git init` aus und rufe danach /plugin-manager:setup erneut auf.')
         self.assertIn('git remote add origin', ' '.join(run_skills.grade(case, only_init)))
         free = answer('Die Konfiguration kann noch nicht weitergehen, weil der Ordner kein Git-Checkout ist und es keinen GitHub-origin gibt. Bitte initialisiere ein Repository und rufe /plugin-manager:setup erneut auf.')
         errors = ' '.join(run_skills.grade(case, free))
         self.assertIn('technical wording', errors)
-        self.assertIn('git init', errors)
+        self.assertIn('does not contain', errors)
 
     def test_a_german_message_uses_du_not_sie(self):
         case = CASES['setup_failure_is_explained_in_plain_words']
@@ -109,13 +111,13 @@ class GradingTests(unittest.TestCase):
 
     def test_an_unknown_failure_is_not_guessed_and_offers_the_details(self):
         case = CASES['setup_unknown_failure_is_not_guessed']
-        good = answer('Das Setup konnte nicht abgeschlossen werden, weil die Ursache nicht bekannt ist (ein unerwarteter Fehler). Es wurde nichts geändert.\n\nBitte rufe entweder /plugin-manager:setup erneut auf oder prüfe den Ordner mit /plugin-manager:verify.\nMöchtest du die technischen Details sehen?',
-                      next_step='asks_question', options=['Technische Details anzeigen', 'Nein, danke'])
+        message = '\n\n'.join(case['expect']['contains'])
+        good = answer(message + '\nMöchtest du die technischen Details sehen?', next_step='asks_question', options=['Technische Details anzeigen', 'Nein, danke'])
         self.assertEqual([], run_skills.grade(case, good))
         guessed = answer('Das Setup konnte nicht abgeschlossen werden, weil der Fehlercode 17 bedeutet, dass der Speicher voll ist.\n\nRäume auf.', next_step='reports_only')
         errors = ' '.join(run_skills.grade(case, guessed))
         self.assertIn('technical wording', errors)
-        self.assertIn('mentions none of', errors)
+        self.assertIn('does not contain', errors)
 
     def test_modify_must_show_the_dry_run_and_ask_before_any_real_write(self):
         case = CASES['modify_shows_consequences_and_asks_before_writing']

@@ -36,7 +36,10 @@
         "publish_plan\\.py",
         "documentation\\.py"
       ],
-      "contains": [],
+      "contains": [
+        "The docs action was stopped, because this folder is not set up yet, or only partly (the language is not set yet).",
+        "Please run /plugin-manager:setup first."
+      ],
       "options": [
         "Yes, run it",
         "No, stop"
@@ -64,8 +67,8 @@
     ],
     "observed": [
       {
-        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action docs",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"sync\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"a managed file needs your decision\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped, because this folder is not set up yet, or only partly (a managed file needs your decision).\\n\\nPlease run /plugin-manager:setup first.\",\n  \"detail\": null\n}"
+        "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action docs --message-language de",
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"sync\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"a managed file needs your decision\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"Die Aktion docs wurde abgebrochen, weil dieser Ordner noch nicht oder nur teilweise eingerichtet ist (eine verwaltete Datei braucht deine Entscheidung).\\n\\nFühre zuerst /plugin-manager:setup aus.\",\n  \"detail\": null\n}"
       }
     ],
     "expect": {
@@ -83,7 +86,10 @@
         "setup_state\\.py.*\\b(setup|record|sync|language)\\b",
         "documentation\\.py"
       ],
-      "contains": [],
+      "contains": [
+        "Die Aktion docs wurde abgebrochen, weil dieser Ordner noch nicht oder nur teilweise eingerichtet ist (eine verwaltete Datei braucht deine Entscheidung).",
+        "Führe zuerst /plugin-manager:setup aus."
+      ],
       "options": [
         "Ja, ausführen",
         "Nein, abbrechen"
@@ -91,7 +97,7 @@
       "hands_over_to": "none",
       "in_order": [
         "Die Aktion docs wurde abgebrochen, weil",
-        "/plugin-manager:setup"
+        "Führe zuerst /plugin-manager:setup aus"
       ],
       "forbidden_text": [
         "\\b(Öffnen|Führen|Rufen|Prüfen|Starten|Wählen|Verwenden|Geben|Nutzen|Legen|Setzen) Sie\\b",
@@ -218,7 +224,10 @@
         "gh ",
         "setup_state\\.py.*\\b(setup|record|sync|language)\\b"
       ],
-      "contains": [],
+      "contains": [
+        "The publish action was stopped, because this folder is not set up yet, or only partly (something in this folder blocks the setup).",
+        "Please run /plugin-manager:setup first."
+      ],
       "options": [
         "Yes, run it",
         "No, stop"
@@ -265,7 +274,10 @@
         "modify\\.py",
         "setup_state\\.py.*\\b(setup|record|sync|language)\\b"
       ],
-      "contains": [],
+      "contains": [
+        "The modify action was stopped, because this folder is not set up yet, or only partly (some required files or settings are missing).",
+        "Please run /plugin-manager:setup first."
+      ],
       "options": [
         "Yes, run it",
         "No, stop"
@@ -435,7 +447,7 @@
     "observed": [
       {
         "command": "python3 -B \"workflows.py\" create --kind plugin --skeleton --root /Users/demo/tests/demo.plugin.a --marketplace /Users/demo/market --name demo-plugin-a --display-name \"Demo Plugin A\" --description \"Ein Demo-Plugin\" --author \"Demo\" --license MIT --copyright-holder \"Demo\" --copyright-year 2026",
-        "output": "exit status 1\nERROR: The folder /Users/demo/tests/demo.plugin.a is not a Git repository. In your IDE (for example VS Code) or in a terminal, run `git init` in that folder."
+        "output": "exit status 1\nDie Aktion setup konnte nicht abgeschlossen werden, weil der Ordner /Users/demo/tests/demo.plugin.a nicht als Git-Repository erkannt wird. Die Sprache, die du gewählt hast, wurde gespeichert.\n\nBitte initialisiere entweder in einer IDE (zum Beispiel VS Code) ein Git-Repository oder führe in einem Terminal in diesem Ordner `git init` aus. Rufe danach /plugin-manager:setup erneut auf.\n\n[Technical details, only when the person asks: the folder is not a git repository]"
       },
       {
         "command": "python3 -B \"setup_state.py\" status --target /Users/demo/tests/demo.plugin.a --plugin plugin-manager",
@@ -473,6 +485,10 @@
       "in_order": [
         "konnte nicht abgeschlossen werden, weil",
         "/plugin-manager:setup"
+      ],
+      "contains": [
+        "Die Aktion setup konnte nicht abgeschlossen werden, weil der Ordner /Users/demo/tests/demo.plugin.a nicht als Git-Repository erkannt wird. Die Sprache, die du gewählt hast, wurde gespeichert.",
+        "Bitte initialisiere entweder in einer IDE (zum Beispiel VS Code) ein Git-Repository oder führe in einem Terminal in diesem Ordner `git init` aus. Rufe danach /plugin-manager:setup erneut auf."
       ]
     }
   },
@@ -518,6 +534,10 @@
       {
         "command": "python3 -B \"workflows.py\" create --kind plugin --skeleton --root /Users/demo/tests/demo.plugin.a --marketplace /Users/demo/market --name demo-plugin-a --display-name \"Demo Plugin A\" --description \"Ein Demo-Plugin\" --author \"Demo\" --license MIT --copyright-holder \"Demo\" --copyright-year 2026",
         "output": "exit status 1\nERROR: internal failure code 17 (no further details)"
+      },
+      {
+        "command": "python3 -B \"setup_state.py\" explain --action setup --message-language de --error \"internal failure code 17\"",
+        "output": "{\n  \"operation\": \"explain\",\n  \"ok\": true,\n  \"message\": \"Die Aktion setup konnte nicht abgeschlossen werden, weil die Ursache nicht bekannt ist (ein unerwarteter Fehler).\\n\\nBitte rufe entweder denselben Skill erneut auf (er prüft zuerst den Zustand, Wiederholen ist also sicher) oder führe `/plugin-manager:verify` für eine reine Lese-Prüfung des Ordners aus. Rufe danach /plugin-manager:setup erneut auf.\",\n  \"known\": false,\n  \"detail\": \"internal failure code 17\"\n}"
       }
     ],
     "expect": {
@@ -555,6 +575,10 @@
       "forbidden_commands": [
         "workflows\\.py",
         "setup_state\\.py.*\\b(setup|record|sync)\\b"
+      ],
+      "contains": [
+        "Die Aktion setup konnte nicht abgeschlossen werden, weil die Ursache nicht bekannt ist (ein unerwarteter Fehler).",
+        "Bitte rufe entweder denselben Skill erneut auf (er prüft zuerst den Zustand, Wiederholen ist also sicher) oder führe `/plugin-manager:verify` für eine reine Lese-Prüfung des Ordners aus. Rufe danach /plugin-manager:setup erneut auf."
       ]
     }
   },
@@ -590,12 +614,8 @@
     ],
     "observed": [
       {
-        "command": "python3 -B \"setup_state.py\" status --target /Users/demo/tests/demo.plugin.a --plugin plugin-manager",
-        "output": "{\"operation\":\"status\",\"ok\":true,\"state\":\"unconfigured\",\"next\":\"configure\",\"language\":{\"operator_language\":\"de\",\"needs_choice\":false},\"conflicts\":[]}"
-      },
-      {
-        "command": "git -C /Users/demo/tests/demo.plugin.a rev-parse --show-toplevel",
-        "output": "fatal: not a git repository (or any of the parent directories): .git"
+        "command": "python3 -B \"workflows.py\" prerequisites --kind plugin --root /Users/demo/tests/demo.plugin.a --message-language de --changed language",
+        "output": "exit status 1\nDie Aktion setup konnte nicht abgeschlossen werden, weil der Ordner /Users/demo/tests/demo.plugin.a nicht als Git-Repository erkannt wird und noch keine GitHub-Adresse hat. Die Sprache, die du gewählt hast, wurde gespeichert.\n\nBitte führe in diesem Ordner, in einer IDE (zum Beispiel VS Code) oder in einem Terminal, `git init` aus und danach `git remote add origin https://github.com/<owner>/<name>.git` (das Repository muss auf GitHub noch nicht existieren). Rufe danach /plugin-manager:setup erneut auf.\n\n[Technical details, only when the person asks: no git repository]"
       }
     ],
     "expect": {
@@ -636,6 +656,10 @@
         "git init",
         "git remote add origin",
         "/plugin-manager:setup"
+      ],
+      "contains": [
+        "Die Aktion setup konnte nicht abgeschlossen werden, weil der Ordner /Users/demo/tests/demo.plugin.a nicht als Git-Repository erkannt wird und noch keine GitHub-Adresse hat. Die Sprache, die du gewählt hast, wurde gespeichert.",
+        "Bitte führe in diesem Ordner, in einer IDE (zum Beispiel VS Code) oder in einem Terminal, `git init` aus und danach `git remote add origin https://github.com/<owner>/<name>.git` (das Repository muss auf GitHub noch nicht existieren). Rufe danach /plugin-manager:setup erneut auf."
       ]
     }
   }

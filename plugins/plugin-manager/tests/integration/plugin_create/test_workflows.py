@@ -98,7 +98,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         (self.plugin/'docs').mkdir()
         (self.plugin/'docs/architecture.md').write_text('Conflicting project rules')
         before = {str(p):p.read_bytes() for base in (self.plugin,self.market) for p in base.rglob('*') if p.is_file()}
-        with self.assertRaisesRegex(ValueError, 'Existing content differs'):
+        with self.assertRaisesRegex(ValueError, 'already exist with other content'):
             self.create()
         self.assertEqual(before, {str(p):p.read_bytes() for base in (self.plugin,self.market) for p in base.rglob('*') if p.is_file()})
 
@@ -121,7 +121,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
     def test_collisions_and_wrong_origins_preserve_files(self):
         (self.plugin/'AGENTS.md').write_text('personal rules')  # custom file (not in the common skeleton list): still a strict collision
         before=(self.market/'marketplace.json').read_bytes()
-        with self.assertRaisesRegex(ValueError,'Existing content differs'):self.create()
+        with self.assertRaisesRegex(ValueError,'already exist with other content'):self.create()
         self.assertFalse((self.plugin/'plugin.json').exists())
         self.assertEqual(before,(self.market/'marketplace.json').read_bytes())
         with self.assertRaises(TypeError):  # a marketplace has no repository of its own to supply

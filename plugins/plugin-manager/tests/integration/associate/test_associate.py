@@ -200,7 +200,7 @@ class AssociateTests(AssociateBase):
             with self.subTest(content=content):
                 (self.plugin / LOCAL).write_bytes(flow.encode(content))
                 before = snapshot(self.plugin, self.market, second)
-                with self.assertRaisesRegex(ValueError, 'Unsupported plugin-local association format'):
+                with self.assertRaisesRegex(ValueError, 'has a format this version does not read'):
                     flow.associate(self.plugin, second)
                 self.assertEqual(before, snapshot(self.plugin, self.market, second))
 
@@ -214,7 +214,7 @@ class AssociateTests(AssociateBase):
 
     def test_requires_the_configuration_evidence_of_a_plugin(self):
         self.create()  # created but never recorded: no config.json yet
-        with self.assertRaisesRegex(ValueError, 'Configure first'):
+        with self.assertRaisesRegex(ValueError, 'is not configured yet'):
             flow.associate(self.plugin, self.market)
         self.record()
         config = self.config()

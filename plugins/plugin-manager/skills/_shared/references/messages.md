@@ -15,7 +15,7 @@ Two short paragraphs of running text, separated by one blank line. No labels, no
 a sentence.
 
 ```
-<The action> could not be completed, because <the cause in plain words>. <What was already changed, or nothing.>
+The <action> action could not be completed, because <the cause in plain words>. <What was already changed, or nothing.>
 
 Please <the way to fix it>. Then call /plugin-manager:<skill> again.
 ```
@@ -23,9 +23,9 @@ Please <the way to fix it>. Then call /plugin-manager:<skill> again.
 Two ways in one sentence: "Please either <first way> or <second way>." Example (English):
 
 ```
-The setup could not be completed, because the folder /Users/demo/plugin.a is not recognised as a Git repository. The language you chose was saved.
+The setup action could not be completed, because the folder /Users/demo/plugin.a is not recognised as a Git repository. The language you chose was saved.
 
-Please run `git init` in that folder, in your IDE (for example VS Code) or in a terminal. Then call /plugin-manager:setup again.
+Please either initialise a Git repository in an IDE (for example VS Code) or run `git init` in a terminal in that folder. Then call /plugin-manager:setup again.
 ```
 
 - The first paragraph names what the person asked for (setup, docs, modify, publish), never a helper or flow, says
@@ -42,36 +42,33 @@ Please run `git init` in that folder, in your IDE (for example VS Code) or in a 
 - Never write the answer as a bullet list, a recap or a heading structure; the shape above is the whole message. Write
   it as your reply to the person, in full, never only in a status, summary or wrap-up field of the host.
 
-## Known causes
+## The wording is not yours
 
-Use these wordings for the causes below (translate faithfully). Fill in the path. The cause continues the sentence
-after "because"; the way continues "Please ...".
+The wording of every known cause, in both languages, lives in one place: the catalogue of
+`../../setup/scripts/state/messages.py` (R26). Scripts raise a failure with a code; the command prints the finished
+message. You write that message unchanged, you never compose, translate, shorten or extend it.
 
-| Cause (after "because") | Way |
-| --- | --- |
-| (marketplace, or any other folder) the folder `<path>` is not recognised as a Git repository | either initialise a Git repository in an IDE (for example VS Code) or run `git init` in a terminal in that folder |
-| (plugin only) the folder `<path>` is not recognised as a Git repository and has no GitHub address yet | run `git init` in that folder, in an IDE (for example VS Code) or in a terminal, and then `git remote add origin https://github.com/<owner>/<name>.git` (the repository does not have to exist yet) |
-| the folder `<path>` has no GitHub address yet | run `git remote add origin https://github.com/<owner>/<name>.git` in that folder (the repository does not have to exist yet) |
-| the folder `<path>` lies inside the Git repository `<root>` | choose the folder that is itself the repository |
-| the address `<address>` is not a plain GitHub address | use the form `https://github.com/<owner>/<name>.git`, without user name or password |
-| Git is not installed or cannot be found | install Git |
-| the folder `<path>` is not a marketplace | choose the folder that contains the file `marketplace.json` |
-| the folder `<path>` already holds other files that are not part of a plugin | either start in an empty folder or move the other files out of the folder |
-| some files in `<path>` already exist with other content | keep them as they are, or choose by hand which version stays (the setup asks for each file) |
-| the file `<file>` has a format this version does not read | move or rename the file (the Manager never converts or deletes it) |
+- A helper answer (setup state helper) carries the finished text in `message`.
+- A command line (`workflows.py`, `modify.py`) prints it on stderr. The line `[Technical details, only when the
+  person asks: ...]` after it is not part of the message; show it only when the person asks.
+- Pass `--message-language <language of the person's text>` where the command accepts it; without the option the
+  saved operator language counts, else English. Pass `--changed language` when the language was saved before the
+  call.
+- Known causes today: `git_missing`, `not_a_repository`, `plugin_without_repository`, `no_origin`,
+  `inside_repository`, `address_not_plain`, `address_differs`, `other_content`, `existing_differs`,
+  `unsupported_format`, `not_configured`, `invalid_name`, `empty_display_name`, `empty_description`,
+  `nothing_to_change`, and the closed gate. A new cause is a new entry in the catalogue, never a sentence in a flow.
 
 ## Unknown causes
 
-When the failure matches none of the known causes, do not guess:
+A failure without a catalogue code gets the "cause not known" message from the same module; do not guess:
 
-- First paragraph: "... could not be completed, because the cause is not known (an unexpected error)." Name what was
-  already changed, or that nothing was.
-- Second paragraph: "Please either call the same skill again (it checks the state first, so repeating is safe) or
-  run `/plugin-manager:verify` for a read-only check of the folder."
+- When a command ends without a finished message (an error of the host, a crash), run
+  `python3 -B "../../setup/scripts/setup_state.py" explain --action <skill> --message-language <language> --error "<raw text>"`
+  and write the `message` it prints unchanged. It says the cause is not known and offers `verify` and a repeat.
 - When the host offers a structured question tool, ask one question: "Show technical details?" with the answers
   "Show technical details" and "No, thanks" (German: "Technische Details anzeigen" and "Nein, danke"). On yes,
-  show the raw error text once in a code block under the heading "Technical details", so that it can be passed
-  on; on no, end.
+  show the raw error text once in a code block under the heading "Technical details"; on no, end.
 - Never invent a cause, never run a repair command, never retry silently.
 
-The stop of `docs`, `modify` and `publish` at a closed gate (`flows/gate.md`) uses the same structure, in one sentence: "The <action> action was stopped, because this folder is not set up yet, or only partly (<reason>)." and "Please run /plugin-manager:setup first."
+The stop of `docs`, `modify` and `publish` at a closed gate (`flows/gate.md`) is produced the same way (`gate_message`).

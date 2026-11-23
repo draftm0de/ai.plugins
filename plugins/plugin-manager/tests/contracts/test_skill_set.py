@@ -56,7 +56,7 @@ class SkillSetTests(unittest.TestCase):
                 self.assertIn('writes nothing', skill)
         self.assertTrue((ROOT / 'skills/_shared/flows/gate.md').is_file())
         gate = text('skills/_shared/flows/gate.md')
-        for needle in ('setup_state.py', 'gate --target', '`ready`', '/plugin-manager:setup', 'writes nothing', 'in English', 'never guess a language', '--action', 'Die Aktion', 'because', 'weil', 'Please run', 'Führe zuerst', 'Yes, run it', 'No, stop', 'Ja, ausführen', 'hand over to the skill `setup`'):
+        for needle in ('setup_state.py', 'gate --target', '`ready`', '/plugin-manager:setup', 'writes nothing', 'else English', '--message-language', 'never guess a language', '--action', 'finished text', 'Do not translate, shorten or reword it', 'Yes, run it', 'No, stop', 'Ja, ausführen', 'hand over to the skill `setup`'):
             self.assertIn(needle, gate)
 
     def test_verify_stays_read_only_and_reports_pending_setup_as_finding(self):
@@ -77,7 +77,7 @@ class SkillSetTests(unittest.TestCase):
 
     def test_every_skill_and_failure_flow_follows_the_plain_message_rules(self):  # R25
         rules = text('skills/_shared/references/messages.md')
-        for needle in ('Mandatory structure', 'because', 'Please', 'Führe', 'No labels', 'raw error text', 'git init', 'git remote add origin', 'Known causes', 'Unknown causes', 'Never invent a cause', 'Technische Details anzeigen', '## Address', 'German uses "du"'):
+        for needle in ('Mandatory structure', 'because', 'Please', 'Führe', 'No labels', 'raw error text', 'git init', 'messages.py', 'The wording is not yours', 'plugin_without_repository', 'Unknown causes', 'Never invent a cause', 'Technische Details anzeigen', '## Address', 'German uses "du"'):
             self.assertIn(needle, rules)
         for name in SKILLS:
             self.assertIn('../_shared/references/messages.md', text('skills/%s/SKILL.md' % name), name)

@@ -25,11 +25,11 @@ DOCS_NOTE = ('Call forms (/<name>:<skill>, <name>@<marketplace>), documentation 
 
 def check_values(name, display_name, description):
     if name is not None and not NAME.fullmatch(name):
-        raise ValueError('The technical name must be lowercase kebab-case')
+        raise flow.failure('invalid_name')
     if display_name is not None and not display_name.strip():
-        raise ValueError('The display name must not be empty')
+        raise flow.failure('empty_display_name')
     if description is not None and not description.strip():
-        raise ValueError('The description must not be empty')
+        raise flow.failure('empty_description')
 
 
 def modify(root, *, name=None, display_name=None, description=None, plugin=flow.OWNER, dry_run=False):
@@ -37,11 +37,11 @@ def modify(root, *, name=None, display_name=None, description=None, plugin=flow.
     dry_run writes nothing and lists the files that would change (`would_change`), to show the consequences first."""
     check_values(name, display_name, description)
     if name is None and display_name is None and description is None:
-        raise ValueError('Nothing to change: give a name, a display name or a description')
+        raise flow.failure('nothing_to_change')
     root = flow.safe_path(root)
     evidence, _ = flow.load_evidence(root, plugin)
     if evidence is None:
-        raise ValueError('Configure first: this workpackage has no configuration evidence for ' + plugin + ' (run /plugin-manager:setup)')
+        raise flow.failure('not_configured')
     if evidence['kind'] == 'plugin':
         return modify_plugin(root, evidence, name, display_name, description, plugin, dry_run)
     if evidence['kind'] == 'marketplace':
@@ -184,6 +184,7 @@ def main(argv=None):
     parser.add_argument('--description', help='New description (plugin only)')
     parser.add_argument('--plugin', default=flow.OWNER, help='Running plugin that owns the workpackage evidence')
     parser.add_argument('--dry-run', action='store_true', help='Write nothing; list the files that would change')
+    parser.add_argument('--message-language', choices=('de', 'en'), help='Language of an error message: the language of the person\'s text; default the saved operator language, else English')
     args = parser.parse_args(argv)
     if args.name is None and args.display_name is None and args.description is None:
         parser.error('give at least one of --name, --display-name, --description')
@@ -192,8 +193,7 @@ def main(argv=None):
                                 plugin=args.plugin, dry_run=args.dry_run), ensure_ascii=False, indent=2))
         return 0
     except (ValueError, OSError, KeyError, TypeError, subprocess.CalledProcessError) as exc:
-        print('ERROR: ' + str(exc), file=sys.stderr)
-        return 1
+        return flow.report_failure(exc, 'modify', args.root, args.message_language, None)
 
 
 if __name__ == '__main__':

@@ -14,6 +14,11 @@ sys.dont_write_bytecode = True
 SKILL = Path(__file__).resolve().parents[1]
 
 
+def failure(code, **facts):
+    """A failure with a catalogue code (setup/scripts/state/messages.py); still a ValueError."""
+    return state_helper().messages.Failure(code, **facts)
+
+
 def strict_json(text):
     """Reject ambiguous or non-round-trippable JSON before planning writes."""
     def unique(pairs):
@@ -71,7 +76,7 @@ def repository_url(value):
     value = value.strip().removesuffix('.git')
     match = re.fullmatch(r'(?:https://github\.com/|git@github\.com:)([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)', value)
     if not match:
-        raise ValueError('The address ' + value + ' is not a plain GitHub address. Use the form https://github.com/<owner>/<name>.git, without a user name or password.')
+        raise failure('address_not_plain', address=value)
     return 'https://github.com/' + match[1]
 
 
@@ -80,28 +85,25 @@ def git(root, *args):
     try:
         return subprocess.check_output(['git', '-C', str(root), *args], text=True, stderr=subprocess.DEVNULL).strip()
     except FileNotFoundError:
-        raise ValueError('Git is not installed or cannot be found. Install Git and try again.') from None
+        raise failure('git_missing') from None
     except subprocess.CalledProcessError:
         return None
-
-
-NOT_A_REPOSITORY = 'The folder {root} is not a Git repository. In your IDE (for example VS Code) or in a terminal, run `git init` in that folder.'
 
 
 def git_root(root):
     """The folder must itself be the root of a Git repository (a marketplace needs no origin)."""
     actual = git(root, 'rev-parse', '--show-toplevel')
     if actual is None:
-        raise ValueError(NOT_A_REPOSITORY.format(root=root))
+        raise failure('not_a_repository', path=root)
     if Path(actual).resolve() != root.resolve():
-        raise ValueError('The folder ' + str(root) + ' lies inside the Git repository ' + actual + '. Choose the folder that is itself the repository.')
+        raise failure('inside_repository', path=root, root=actual)
 
 
 def git_tracked(root, path):
     """Whether Git tracks anything at `path` in the repository at `root`."""
     listing = git(root, 'ls-files', '--', path)
     if listing is None:
-        raise ValueError(NOT_A_REPOSITORY.format(root=root))
+        raise failure('not_a_repository', path=root)
     return bool(listing)
 
 
@@ -109,11 +111,10 @@ def git_repository(root, supplied=None):
     git_root(root)
     configured = git(root, 'config', '--get', 'remote.origin.url')
     if not configured:
-        raise ValueError('The folder ' + str(root) + ' has no GitHub address yet. In your IDE or in a terminal, run '
-                         '`git remote add origin https://github.com/<owner>/<name>.git` in that folder. The repository does not have to exist yet.')
+        raise failure('no_origin', path=root)
     origin = repository_url(configured)
     if supplied and repository_url(supplied) != origin:
-        raise ValueError('The given address ' + supplied + ' differs from the GitHub address of the folder (' + origin + ').')
+        raise failure('address_differs', address=supplied, origin=origin)
     return origin
 
 
@@ -136,7 +137,7 @@ def apply(files, replace=()):
         if before == content:
             continue
         if before is not None and path not in replace:
-            raise ValueError('Existing content differs; review before replacing: ' + str(path))
+            raise failure('existing_differs', path=path)
         previous[path] = before
         changes[path] = content
     written = []
@@ -278,7 +279,7 @@ def plugin_local_association(plugin_root):
     local = read(path)
     if (set(local) != {'schema_version', 'marketplace_path'} or type(local['schema_version']) is not int or local['schema_version'] != 1
             or not isinstance(local['marketplace_path'], str) or not local['marketplace_path'].strip()):
-        raise ValueError('Unsupported plugin-local association format in ' + str(path) + ': only {"schema_version": 1, '
+        raise failure('unsupported_format', path=path, detail='Unsupported plugin-local association format: only {"schema_version": 1, '
                          '"marketplace_path": "<path>"} is supported (a plugin belongs to exactly one marketplace); '
                          'existing data preserved, no migration')
     return local['marketplace_path']
@@ -402,7 +403,7 @@ def associate(root, marketplace, repository=None, drop_missing_old=False, plugin
         raise ValueError('Use separate plugin and marketplace repositories')
     evidence, kinds = load_evidence(root, plugin)
     if evidence is None:
-        raise ValueError('Configure first: this workpackage has no configuration evidence for ' + plugin + ' (flows/configure.md)')
+        raise failure('not_configured')
     if not kinds[evidence['kind']]['requires_marketplace']:
         raise ValueError('Only a plugin belongs to a marketplace; this workpackage is configured as ' + evidence['kind'])
     verifier = module(SKILL/'scripts/verify.py', 'trusted_verify')
@@ -566,6 +567,36 @@ def create_plugin(root, marketplace, *, name=None, display_name=None, descriptio
             'implementation_status': 'skeleton', 'checks': checks, 'next': next_step}
 
 
+def prerequisites(kind, root):
+    """Write-free check before a configuration: a plugin folder is a Git repository with a GitHub address, a marketplace
+    folder is a Git repository. A plugin folder that is no repository gets the message with both steps."""
+    root = Path(root).resolve()
+    if kind == 'plugin':
+        if git(root, 'rev-parse', '--show-toplevel') is None:
+            raise failure('plugin_without_repository', path=root)
+        git_repository(root)
+    else:
+        git_root(root)
+    return {'action': 'prerequisites', 'kind': kind, 'ok': True, 'changed': False}
+
+
+ACTION_NAMES = {'create_marketplace': 'setup', 'create_plugin': 'setup', 'associate': 'setup', 'prerequisites': 'setup'}
+
+
+def args_root(args):
+    return args.get('root') or Path.cwd()
+
+
+def report_failure(error, action, folder, language, changed):
+    """One output for every failure of a command line: the finished message of messages.py on stderr (written unchanged
+    to the person), then the technical text after a marker, shown only when the person asks for it."""
+    messages = state_helper().messages
+    said = messages.explain(action, error, messages.language_for(folder, language), changed, folder=folder)
+    print(said['message'], file=sys.stderr)
+    print('\n[Technical details, only when the person asks: ' + said['detail'] + ']', file=sys.stderr)
+    return 1
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, epilog='Requires Git and Python 3.10+; Make is optional. associate sets or changes the one marketplace of a plugin; the example JSON is only a manual template. No automatic tool installation.')
     sub = parser.add_subparsers(dest='action', required=True)
@@ -590,8 +621,17 @@ def main():
     associate_parser.add_argument('--marketplace', type=Path, required=True, help='Local checkout of the one marketplace the plugin belongs to')
     associate_parser.add_argument('--plugin', default=OWNER, help='Running plugin that owns the workpackage evidence')
     associate_parser.add_argument('--drop-missing-old', action='store_true', help='Release only the local reference when the previous marketplace checkout is gone (its catalog entry then remains there)')
+    for command in (create, associate_parser):
+        command.add_argument('--message-language', choices=('de', 'en'), help='Language of an error message: the language of the person\'s text; default the saved operator language, else English')
+        command.add_argument('--changed', choices=('none', 'language'), help='What the failed call already saved before it started (named in the message)')
+    prerequisites = sub.add_parser('prerequisites', help='Write-free: is the folder a Git repository with a GitHub address (plugin) or a Git repository (marketplace)?')
+    prerequisites.add_argument('--kind', required=True, choices=('marketplace', 'plugin'))
+    prerequisites.add_argument('--root', type=Path, default=Path.cwd())
+    prerequisites.add_argument('--message-language', choices=('de', 'en'))
+    prerequisites.add_argument('--changed', choices=('none', 'language'))
     parsed, unknown = parser.parse_known_args()
     args = vars(parsed); action = args.pop('action')
+    message_language, changed = args.pop('message_language', None), args.pop('changed', None)
     if unknown:
         parser.error('unrecognized arguments: ' + ' '.join(unknown))
     if action == 'create':
@@ -616,7 +656,7 @@ def main():
         result = globals()[action](**args)
         print(json.dumps(result, ensure_ascii=False, indent=2)); return 0
     except (ValueError, OSError, KeyError, TypeError, subprocess.CalledProcessError) as exc:
-        print('ERROR: ' + str(exc), file=sys.stderr); return 1
+        return report_failure(exc, ACTION_NAMES.get(action, 'setup'), args_root(args), message_language, changed)
 
 if __name__ == '__main__':
     sys.exit(main())

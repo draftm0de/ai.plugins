@@ -21,7 +21,7 @@ class GitMessageTests(WorkflowFixture, unittest.TestCase):
     def test_a_folder_that_is_no_git_repository_names_git_init(self):
         plain = self.root / 'plain'
         plain.mkdir()
-        message = self.raises(lambda: flow.create_marketplace(plain, 'plain', 'Plain', 'Publisher'), 'is not a Git repository', '`git init`')
+        message = self.raises(lambda: flow.create_marketplace(plain, 'plain', 'Plain', 'Publisher'), 'not recognised as a Git repository', '`git init`')
         self.assertIn(str(plain), message)
         self.raises(lambda: flow.git_tracked(plain, '.local'), '`git init`')
 

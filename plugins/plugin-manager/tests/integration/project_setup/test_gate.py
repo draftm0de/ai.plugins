@@ -48,10 +48,17 @@ class GateTests(SyncBase):
         self.assertIn('\n\nPlease run /plugin-manager:setup first.', data['message'])
         self.assertEqual(2, self.box.call('gate', '--action', 'verify')[0])  # only gated skills are known
 
+    def test_the_message_comes_in_the_requested_language_else_the_saved_one_else_english(self):  # R26
+        code, data, _ = self.box.call('gate', '--action', 'docs', '--message-language', 'de')
+        self.assertEqual('Die Aktion docs wurde abgebrochen, weil dieser Ordner noch nicht oder nur teilweise eingerichtet ist (die Sprache ist noch nicht gesetzt).\n\nFühre zuerst /plugin-manager:setup aus.', data['message'])
+        self.assertTrue(self.box.call('gate', '--action', 'docs')[1]['message'].startswith('The docs action was stopped'))  # nothing saved: English
+        self.setup_all()
+        self.assertEqual(0, self.box.call('gate', '--action', 'docs')[0])
+
     def test_gate_reports_conflicts_as_closed(self):
         self.setup_all()
         (self.p / '.project/plugins/plugin-manager/config.json').write_text('{bad')
-        code, data, _ = self.box.call('gate')
+        code, data, _ = self.box.call('gate', '--message-language', 'en')
         self.assertEqual((1, False, 'stop'), (code, data['ready'], data['next']))
         self.assertIn('because this folder is not set up yet, or only partly (something in this folder blocks the setup)', data['message'])
         self.assertIn('configuration evidence', data['detail'])  # the technical detail is kept, but stays out of the message

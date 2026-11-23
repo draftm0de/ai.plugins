@@ -27,7 +27,7 @@ class EntryTextTests(unittest.TestCase):
 
     def test_stop_rules_no_endless_loops_and_ready_waits(self):
         for needle in ('Stop and report instead of repeating', 'same `next` without progress', 'do not ask again in a loop',
-                       'wait for input', 'no endless re-sync', 'in the plain words of', 'what was already changed'):
+                       'wait for input', 'no endless re-sync', 'the finished message', 'never compose a failure message yourself'):
             self.assertIn(needle, self.text)
         for name in ('language', 'skeleton'):
             self.assertIn('Check `ok` and the exit code', self.flow(name))
@@ -116,7 +116,7 @@ class EntryTextTests(unittest.TestCase):
                        'nothing is written or stored', 'sync --target', '--decision keep|adopt', '--source-hash', '--local-hash',
                        'records both current hashes', 'replaces only this file', 'Only the explicitly chosen file is touched',
                        '`stale_decision`', 'not applied', 'run `status` again', 'never mean `matches_template`',
-                       'Check `ok` and the exit code', 'what was already written or removed'):
+                       'Check `ok` and the exit code', 'the `message` of the answer unchanged'):
             self.assertIn(needle, text)
         self.assertLess(text.index('Ask explicitly'), text.index('sync --target'))
 
@@ -174,8 +174,8 @@ class EntryTextTests(unittest.TestCase):
             self.assertIn(needle, sync)
         self.assertNotIn('keep|adopt|delete', sync)
         skeleton = self.flow('skeleton')
-        self.assertIn('which files and settings were already written or removed', skeleton.split('2. Check')[1].split('3.')[0])
-        self.assertIn('already written or removed', sync)  # plain words, no field names (R25)
+        self.assertIn('the `message` of the answer unchanged', skeleton.split('2. Check')[1].split('3.')[0])
+        self.assertIn('the `message` of the answer unchanged', sync)  # finished text of the helper (R26)
         self.assertNotIn('every other flow leave its bytes unchanged', self.text)
         for needle in ('never replace its bytes', 'only the automatic removal and the explicit `delete` decision',
                        'Never show, quote or describe the content', 'not for `ready`', 'not for accepted deviations or kept files',
@@ -187,7 +187,7 @@ class EntryTextTests(unittest.TestCase):
                        '`changed`', 'only after that success', 'cannot be shown as `ready`'):
             self.assertIn(needle, self.text)
         text = self.flow('configure')
-        for needle in ('no `ok`', 'exit 0 **and** `checks.status == "passed"`', 'needs_attention', 'what was already created',
+        for needle in ('no `ok`', 'exit 0 **and** `checks.status == "passed"`', 'needs_attention', 'unchanged (`../../_shared/references/messages.md`)',
                        'do not say "ready"', 'do not derive success from a plugin.json that now exists',
                        'Only after a passed run write the evidence'):
             self.assertIn(needle, text)
