@@ -7,6 +7,7 @@ import unittest
 R = next(p for p in Path(__file__).resolve().parents if (p / 'Makefile').is_file())
 sys.path.insert(0, str(R / 'skills/_shared/scripts'))
 import plugin_audit as audit
+import verify as skill_verify
 
 NAMES = ('coding.md', 'messages.md', 'testing.md', 'skills.md')
 SOURCE = R / 'skills/_shared/templates/plugin/sync/docs/standards'
@@ -52,6 +53,33 @@ class StandardsTests(unittest.TestCase):
         scope = self.plugin / 'SCOPE.md'
         scope.write_text(scope.read_text() + '\n' + line + '\n')
         self.assertEqual('fail', self.status()['standards:scope'])
+
+    def test_the_verify_skill_reports_a_missing_changed_or_unreferenced_standard_and_a_copy_in_scope(self):  # R27
+        self.assertTrue(skill_verify.verify(self.plugin, 'plugin')['structure_valid'])
+        standard = self.plugin / 'docs/standards/coding.md'
+        original = standard.read_bytes()
+        standard.write_text('my own rules\n')
+        self.assertIn('differs from the managed standard', ' '.join(skill_verify.verify(self.plugin, 'plugin')['errors']))
+        standard.unlink()
+        self.assertIn('docs/standards/coding.md is missing', ' '.join(skill_verify.verify(self.plugin, 'plugin')['errors']))
+        standard.write_bytes(original)
+        agents = self.plugin / 'AGENTS.md'
+        text = agents.read_text()
+        agents.write_text(text.split('## Standards')[0])
+        self.assertIn('AGENTS.md does not tell to read docs/standards/', ' '.join(skill_verify.verify(self.plugin, 'plugin')['errors']))
+        agents.write_text(text)
+        line = next(l.strip() for l in original.decode().splitlines() if len(l.strip()) >= 60)
+        scope = self.plugin / 'SCOPE.md'
+        scope.write_text(scope.read_text() + '\n' + line + '\n')
+        self.assertIn('SCOPE.md copies standard text', ' '.join(skill_verify.verify(self.plugin, 'plugin')['errors']))
+
+    def test_the_manager_follows_its_own_standards_and_all_copies_of_the_verifier_agree(self):
+        for name in NAMES:
+            self.assertEqual((SOURCE / name).read_bytes(), (R / 'docs/standards' / name).read_bytes(), name)
+        self.assertTrue(skill_verify.verify(R, 'plugin')['structure_valid'])
+        canonical = (R / 'skills/_shared/scripts/verify.py').read_bytes()
+        for relative in ('scripts/verify.py', 'skills/_shared/templates/plugin/sync/scripts/verify.py', 'skills/_shared/templates/marketplace/sync/scripts/verify.py'):
+            self.assertEqual(canonical, (R / relative).read_bytes(), relative)
 
 
 if __name__ == '__main__':

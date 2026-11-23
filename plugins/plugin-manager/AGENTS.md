@@ -28,3 +28,15 @@ Changes to rules may make an existing plugin fail verification. Update it only u
 an explicit implementation request; never weaken scope to accept outdated content.
 Keine Altformat-Unterstützung oder stillen Migrationen. Nicht unterstützte Daten
 mit konkretem Grund ablehnen, niemals löschen oder überschreiben.
+
+## Standards / Standards
+
+Before implementing, read `docs/standards/coding.md`, `messages.md`, `testing.md` and `skills.md`. They are
+managed by the plugin manager and identical in every plugin: never edit them here, never copy their text into
+SCOPE.md and never deviate from them. SCOPE.md holds only the goal and requirements of this plugin; when it
+contradicts a standard, the standard wins and `verify` reports the contradiction.
+
+Vor der Implementierung `docs/standards/coding.md`, `messages.md`, `testing.md` und `skills.md` lesen. Sie
+werden vom Plugin-Manager verwaltet und sind in jedem Plugin gleich: hier nicht ändern, nicht in SCOPE.md
+kopieren, nicht davon abweichen. SCOPE.md enthält nur Ziel und Anforderungen dieses Plugins; bei einem
+Widerspruch gilt der Standard und `verify` meldet ihn.

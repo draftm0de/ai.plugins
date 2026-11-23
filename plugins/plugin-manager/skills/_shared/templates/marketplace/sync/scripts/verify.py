@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Read-only repository verification. Never execute repository code or change files."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -70,6 +71,40 @@ def skeleton_marker(text, python=False):
             return line_number
     return None
 
+STANDARDS = ('coding.md', 'messages.md', 'testing.md', 'skills.md')
+
+
+def standards(root):
+    """R27: the four managed standards are in the plugin, unchanged, referenced by AGENTS.md and not copied into SCOPE.md.
+    Next to the Manager's own runtime the hashes of the managed files are known; a copy of this script inside a repository
+    checks presence, the reference and the copy rule only."""
+    problems = []
+    manifest = Path(__file__).resolve().parents[1] / 'manifests' / 'plugin.sync.json'
+    known = strict_json(manifest.read_text(encoding='utf-8')).get('files', {}) if manifest.is_file() else {}
+    texts = []
+    for name in STANDARDS:
+        path = root / 'docs/standards' / name
+        if path.is_symlink() or not path.is_file():
+            problems.append('docs/standards/' + name + ' is missing')
+            continue
+        data = path.read_bytes()
+        texts.append(data.decode('utf-8', 'replace'))
+        expected = known.get('docs/standards/' + name, {}).get('sha256')
+        if expected and hashlib.sha256(data).hexdigest() != expected:
+            problems.append('docs/standards/' + name + ' differs from the managed standard')
+    agents = root / 'AGENTS.md'
+    if 'docs/standards' not in (agents.read_text(encoding='utf-8', errors='replace') if agents.is_file() and not agents.is_symlink() else ''):
+        problems.append('AGENTS.md does not tell to read docs/standards/')
+    scope = root / 'SCOPE.md'
+    scope_text = scope.read_text(encoding='utf-8', errors='replace') if scope.is_file() and not scope.is_symlink() else ''
+    copied = [line.strip() for text in texts for line in text.splitlines() if len(line.strip()) >= 60 and line.strip() in scope_text]
+    if copied:
+        problems.append('SCOPE.md copies standard text: ' + copied[0][:60] + '...')
+    if problems:
+        raise ValueError('The managed standards are not in place: ' + '; '.join(problems)
+                         + '. A standard is never edited in a plugin; run /plugin-manager:setup to bring the files back and add the Standards section to AGENTS.md.')
+
+
 def plugin(root):
     manifest = read(root, 'plugin.json')
     name = manifest.get('name')
@@ -137,6 +172,7 @@ def plugin(root):
     for relative in ('marketplace.json', '.claude-plugin/marketplace.json', '.agents/plugins/marketplace.json', '.codex-plugin/marketplace.json'):
         if (root/relative).exists() or (root/relative).is_symlink():
             raise ValueError('Plugin repository must not own marketplace catalogs: ' + relative)
+    standards(root)
     return {'name': name, 'skills': len(entries), 'valid': True,
             'implementation_status': 'skeleton' if skeleton else 'not_assessed'}
 
