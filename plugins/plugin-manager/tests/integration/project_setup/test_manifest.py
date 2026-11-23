@@ -81,7 +81,8 @@ class ManifestTests(unittest.TestCase):
     def test_plugin_classes_follow_the_scope(self):
         sync = set(load('plugin.sync.json')['files'])
         self.assertTrue({'CLAUDE.md', 'scripts/plugin.py', 'scripts/verify.py', 'scripts/run_tests.py', 'install.sh',
-                         'skills/_shared/scripts/operator_language.py', 'skills/_shared/references/operator-language.md'} == sync)  # R16: no setup flow
+                         'skills/_shared/scripts/operator_language.py', 'skills/_shared/references/operator-language.md',
+                         'docs/standards/coding.md', 'docs/standards/messages.md', 'docs/standards/testing.md', 'docs/standards/skills.md'} == sync)  # R16: no setup flow; R27: the standards
         seed = set(files_below(TEMPLATES / 'plugin/seed'))
         self.assertTrue({'AGENTS.md', 'SCOPE.md', 'CHANGELOG.md', 'Makefile', 'ci.yml', 'gitignore.txt', 'docs/architecture.md',
                          'docs/prerequisites.md', 'tests/README.md'} <= seed)
@@ -94,10 +95,13 @@ class ManifestTests(unittest.TestCase):
         for gone in ('update-local', 'plugin-verify', 'marketplace-verify', 'plugin-create', 'marketplace-create', 'configure'):
             self.assertNotIn(gone, text)
 
-    def test_claude_file_is_identical_for_every_kind(self):
-        contents = {(TEMPLATES / kind / 'sync/CLAUDE.md').read_bytes() for kind in KINDS}
-        self.assertEqual(1, len(contents))
-        self.assertIn(b'@AGENTS.md', contents.pop())
+    def test_claude_file_imports_the_agent_instructions_and_a_plugin_also_the_standards(self):  # R27
+        for kind in KINDS:
+            text = (TEMPLATES / kind / 'sync/CLAUDE.md').read_text()
+            self.assertEqual('@AGENTS.md', text.split('-->')[1].split()[0], kind)
+            imports = [line for line in text.splitlines() if line.startswith('@')]
+            expected = ['@AGENTS.md'] + (['@docs/standards/' + name for name in ('coding.md', 'messages.md', 'testing.md', 'skills.md')] if kind == 'plugin' else [])
+            self.assertEqual(expected, imports, kind)
 
     def test_line_endings_never_change_a_hash(self):
         self.assertEqual('* -text', (TEMPLATES / '.gitattributes').read_text().strip())

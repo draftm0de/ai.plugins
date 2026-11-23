@@ -2,7 +2,23 @@
   "schema_version": 1,
   "files": {
     "CLAUDE.md": {
-      "sha256": "d50241a8f54f9b9dc16bcc0c741754b2f3b9017c0dd4e9358068c74f6a31a638",
+      "sha256": "ca9dd2eccd839cb603be5881d0592995222ccf5d587f706d8619c02b52b66348",
+      "executable": false
+    },
+    "docs/standards/coding.md": {
+      "sha256": "e6827fd809019b1bc07b6d841fff8e88cf89ce32f36f4d2421fe3486e50547b3",
+      "executable": false
+    },
+    "docs/standards/messages.md": {
+      "sha256": "5ca824bab4c83968bb1a114fa966f0299940672797b4f0fe1cb72494e167ceb7",
+      "executable": false
+    },
+    "docs/standards/skills.md": {
+      "sha256": "fe117c46afc01a35bf3dfa400dd68897cc4991d9fa2b00008db99733acfa7727",
+      "executable": false
+    },
+    "docs/standards/testing.md": {
+      "sha256": "771c288745f66e7da6b1fd1bf7768ccb962bad69fbfd969b5906bd1aa4f33079",
       "executable": false
     },
     "install.sh": {

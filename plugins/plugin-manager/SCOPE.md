@@ -277,3 +277,20 @@ Test: tests/unit/messages/test_messages.py
 Test: tests/integration/plugin_create/test_prerequisites.py
 Test: tests/integration/project_setup/test_gate.py
 Test: tests/unit/behavior/test_skill_cases.py
+
+## R27: One set of standards for every plugin
+
+Status: confirmed
+Acceptance: Every plugin repository carries the same four standards under `docs/standards/` (`coding.md`, `messages.md`, `testing.md`, `skills.md`), delivered and kept current by the Manager as managed files (sync, per-file decision on a deviation as for every managed file), and read by the agent before implementing: `AGENTS.md` of a new plugin tells to read them, and the managed `CLAUDE.md` of a plugin imports them. The standards are identical in every plugin and have no plugin-specific exceptions; a deviation is a finding, never an accepted state. `SCOPE.md` of a plugin holds only the goal and requirements of that plugin and never copies a standard; when it contradicts a standard, the standard wins. `verify` reports read-only, in the plain audit: a missing or changed standard, an `AGENTS.md` that does not point to the standards, and standard text copied into `SCOPE.md`. `verify --review` additionally compares SCOPE and source with the standards and reports contradictions as findings with the standard, path and line; it never changes a standard or SCOPE. The standards cover coding (layout, context instead of globals, current formats only, coded failures), messages (layout, address, one catalogue built in code, R25/R26), tests (structure, rules, model tests, reporting) and skills (one skill per action, boundaries as structure, shared gate). Marketplace repositories receive no standards. A check of source against the standards that cannot be decided by reading (for example whether a message is built in a second place) remains the task of the review.
+Source: skills/_shared/templates/plugin/sync/docs/standards/coding.md
+Source: skills/_shared/templates/plugin/sync/docs/standards/messages.md
+Source: skills/_shared/templates/plugin/sync/docs/standards/testing.md
+Source: skills/_shared/templates/plugin/sync/docs/standards/skills.md
+Source: skills/_shared/templates/plugin/sync/CLAUDE.md
+Source: skills/_shared/templates/plugin/seed/AGENTS.md
+Source: skills/_shared/manifests/plugin.sync.json
+Source: skills/_shared/scripts/plugin_audit.py
+Source: skills/_shared/references/scope-review.md
+Test: tests/contracts/verify/test_standards.py
+Test: tests/integration/project_setup/test_manifest.py
+Test: tests/integration/project_setup/test_setup.py

@@ -9,6 +9,7 @@
 - `tests/unit/`, `tests/integration/`, `tests/contracts/`: deterministic tests.
 - `tests/behavior/`, `tests/native/`: explicit model/isolated-host tests only.
 - `tests/fixtures/`, `tests/support/`: fictional data and shared helpers.
+- `docs/standards/`: coding, message, test and skill standards, managed by the Manager and identical in every plugin (plugin repositories only; edited only in `skills/_shared/templates/plugin/sync/docs/standards/`).
 - `docs/`: maintained documentation. Do not duplicate authoritative product facts.
 - `.local/marketplace.json`: ignored machine-local associations, never committed.
 

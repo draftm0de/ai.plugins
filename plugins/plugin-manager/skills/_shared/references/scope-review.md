@@ -8,7 +8,7 @@ private candidate data, credentials, ignored personal data, state or run archive
 ## Inputs
 
 Resolve the user's repository, never the Manager installation. Read SCOPE.md,
-AGENTS.md and docs/architecture.md safely. Respect the target's configured languages.
+AGENTS.md, docs/architecture.md and the managed standards in docs/standards/ safely. Respect the target's configured languages.
 SCOPE is the desired product, not documentation generated from its current source.
 If it is missing, draft, ambiguous or inconsistent, ask only the unresolved questions
 and report that acceptance cannot be assessed. Do not invent requirements or infer
@@ -35,7 +35,11 @@ For each confirmed requirement:
    packaged shared dependencies, no plugin-owned marketplace, correct test layers,
    no private state in install/cache folders. Explain actual violations; do not demand
    empty directories, a new framework or unrelated refactors.
-5. Mark each requirement as supported_by_source, contradicted, missing_evidence or
+5. Compare SCOPE.md and the source with the managed standards (`docs/standards/*.md`, identical in every plugin).
+   The standards win: report each requirement, text or code that contradicts one as a finding with the standard,
+   the path and the real line, never as a reason to change the standard. A plugin has no exceptions. Report
+   a standard that is missing or changed as a structural finding of the plain audit, not as a review result.
+6. Mark each requirement as supported_by_source, contradicted, missing_evidence or
    not_assessed. Supported by source is not runtime/host acceptance. Report uncertainty
    where static reasoning is insufficient. The source verdict and test coverage are
    separate: clearly correct source remains supported_by_source even if tests are

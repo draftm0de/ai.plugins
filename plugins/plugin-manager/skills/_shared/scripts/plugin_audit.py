@@ -91,6 +91,24 @@ def audit(root):
         matches = target.is_file() and not target.is_symlink() and target.read_bytes() == (template / relative).read_bytes()
         add('installer:' + relative, 'pass' if matches else 'fail',
             'Matches canonical installer template' if matches else 'Missing or divergent installer; review and regenerate from documentation plugin template')
+    # The standards are managed by the plugin manager and identical in every plugin (R27); SCOPE.md holds only the plugin's goal.
+    standard_files = sorted((template / 'docs/standards').glob('*.md'))
+    for source in standard_files:
+        target = root / 'docs/standards' / source.name
+        same = target.is_file() and not target.is_symlink() and target.read_bytes() == source.read_bytes()
+        add('standards:' + source.name, 'pass' if same else 'fail',
+            'Matches the managed standard' if same else 'Missing or changed; a standard is never edited in a plugin, run /plugin-manager:setup to bring it back')
+    agents = root / 'AGENTS.md'
+    agents_text = agents.read_text(encoding='utf-8') if agents.is_file() and not agents.is_symlink() else ''
+    add('standards:reference', 'pass' if all('docs/standards/' + p.name in agents_text or p.name in agents_text for p in standard_files) and 'docs/standards' in agents_text else 'fail',
+        'AGENTS.md points to the standards' if 'docs/standards' in agents_text else 'AGENTS.md must tell to read docs/standards/ before implementing')
+    scope = root / 'SCOPE.md'
+    scope_text = scope.read_text(encoding='utf-8') if scope.is_file() and not scope.is_symlink() else ''
+    copied = sorted({line.strip() for source in standard_files for line in source.read_text(encoding='utf-8').splitlines()
+                     if len(line.strip()) >= 60 and line.strip() in scope_text})
+    add('standards:scope', 'fail' if copied else 'pass',
+        'SCOPE.md copies standard text (keep only the plugin goal there): ' + copied[0][:60] + '...' if copied else
+        'SCOPE.md holds no copy of a standard; contradictions with the standards need `verify --review`')
     makefile = root / 'Makefile'
     make = makefile.read_text() if makefile.is_file() else ''
     marker_start = '# Local development and repository metadata'

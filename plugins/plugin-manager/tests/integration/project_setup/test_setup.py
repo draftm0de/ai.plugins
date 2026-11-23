@@ -56,7 +56,7 @@ class SupplementTests(Base):
     def test_claude_copy_lock_and_preserve_local_changes(self):
         expected = template('CLAUDE.md')
         self.assertIn(b'This file exists only for Claude compatibility.', expected)
-        self.assertEqual(b'@AGENTS.md', expected.split(b'-->')[1].strip())
+        self.assertEqual(b'@AGENTS.md', expected.split(b'-->')[1].split()[0])
         self.setup_ok('--language', 'de')
         target = self.p / 'CLAUDE.md'
         self.assertEqual(expected, target.read_bytes())
