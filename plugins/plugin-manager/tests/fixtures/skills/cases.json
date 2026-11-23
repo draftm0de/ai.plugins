@@ -602,6 +602,7 @@
       "language": "de",
       "mentions": [
         "git init",
+        "git remote add origin",
         "weil"
       ],
       "next_step": "reports_only",
@@ -623,7 +624,7 @@
         "\\b(Öffnen|Führen|Rufen|Prüfen|Starten|Wählen|Verwenden|Geben|Nutzen|Legen|Setzen) Sie\\b",
         "\\b(Ihr|Ihre|Ihrem|Ihren|Ihrer|Ihnen)\\b",
         "\\bcheckout\\b",
-        "\\borigin\\b",
+        "(?<!remote add )\\borigin\\b",
         "Nichts habe ich"
       ],
       "forbidden_commands": [
@@ -633,6 +634,7 @@
       "in_order": [
         "konnte nicht abgeschlossen werden, weil",
         "git init",
+        "git remote add origin",
         "/plugin-manager:setup"
       ]
     }

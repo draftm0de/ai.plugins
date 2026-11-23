@@ -49,7 +49,8 @@ after "because"; the way continues "Please ...".
 
 | Cause (after "because") | Way |
 | --- | --- |
-| the folder `<path>` is not recognised as a Git repository | either initialise a Git repository in an IDE (for example VS Code) or run `git init` in a terminal in that folder |
+| (marketplace, or any other folder) the folder `<path>` is not recognised as a Git repository | either initialise a Git repository in an IDE (for example VS Code) or run `git init` in a terminal in that folder |
+| (plugin only) the folder `<path>` is not recognised as a Git repository and has no GitHub address yet | run `git init` in that folder, in an IDE (for example VS Code) or in a terminal, and then `git remote add origin https://github.com/<owner>/<name>.git` (the repository does not have to exist yet) |
 | the folder `<path>` has no GitHub address yet | run `git remote add origin https://github.com/<owner>/<name>.git` in that folder (the repository does not have to exist yet) |
 | the folder `<path>` lies inside the Git repository `<root>` | choose the folder that is itself the repository |
 | the address `<address>` is not a plain GitHub address | use the form `https://github.com/<owner>/<name>.git`, without user name or password |

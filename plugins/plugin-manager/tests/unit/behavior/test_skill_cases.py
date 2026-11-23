@@ -91,8 +91,10 @@ class GradingTests(unittest.TestCase):
 
     def test_missing_git_must_use_the_catalogue_wording_not_a_free_one(self):
         case = CASES['setup_missing_git_uses_the_catalogue_message_before_other_questions']
-        good = answer('Das Setup konnte nicht abgeschlossen werden, weil der Ordner /Users/demo/tests/demo.plugin.a nicht als Git-Repository erkannt wird. Die Sprache wurde gespeichert.\n\nBitte initialisiere es entweder in einer IDE (zum Beispiel VS Code) oder führe in einem Terminal in diesem Ordner `git init` aus. Rufe danach /plugin-manager:setup erneut auf.')
+        good = answer('Das Setup konnte nicht abgeschlossen werden, weil der Ordner /Users/demo/tests/demo.plugin.a nicht als Git-Repository erkannt wird. Die Sprache wurde gespeichert.\n\nBitte führe in diesem Ordner, in einer IDE (zum Beispiel VS Code) oder in einem Terminal, `git init` aus und danach `git remote add origin https://github.com/<owner>/<name>.git`. Rufe danach /plugin-manager:setup erneut auf.')
         self.assertEqual([], run_skills.grade(case, good))
+        only_init = answer('Das Setup konnte nicht abgeschlossen werden, weil der Ordner kein Git-Repository ist.\n\nBitte führe `git init` aus und rufe danach /plugin-manager:setup erneut auf.')
+        self.assertIn('git remote add origin', ' '.join(run_skills.grade(case, only_init)))
         free = answer('Die Konfiguration kann noch nicht weitergehen, weil der Ordner kein Git-Checkout ist und es keinen GitHub-origin gibt. Bitte initialisiere ein Repository und rufe /plugin-manager:setup erneut auf.')
         errors = ' '.join(run_skills.grade(case, free))
         self.assertIn('technical wording', errors)
