@@ -75,7 +75,7 @@ STANDARDS = ('coding.md', 'messages.md', 'testing.md', 'skills.md')
 
 
 def standards(root):
-    """R27: the four managed standards are in the plugin, unchanged, referenced by AGENTS.md and not copied into SCOPE.md.
+    """R27/R28: the four managed standards and the managed AGENTS.md are in the plugin, unchanged, and not copied into SCOPE.md or CUSTOM.AGENTS.md.
     Next to the Manager's own runtime the hashes of the managed files are known; a copy of this script inside a repository
     checks presence, the reference and the copy rule only."""
     problems = []
@@ -93,16 +93,24 @@ def standards(root):
         if expected and hashlib.sha256(data).hexdigest() != expected:
             problems.append('docs/standards/' + name + ' differs from the managed standard')
     agents = root / 'AGENTS.md'
-    if 'docs/standards' not in (agents.read_text(encoding='utf-8', errors='replace') if agents.is_file() and not agents.is_symlink() else ''):
-        problems.append('AGENTS.md does not tell to read docs/standards/')
-    scope = root / 'SCOPE.md'
-    scope_text = scope.read_text(encoding='utf-8', errors='replace') if scope.is_file() and not scope.is_symlink() else ''
-    copied = [line.strip() for text in texts for line in text.splitlines() if len(line.strip()) >= 60 and line.strip() in scope_text]
+    agents_data = agents.read_bytes() if agents.is_file() and not agents.is_symlink() else None
+    if agents_data is None:
+        problems.append('AGENTS.md is missing')
+    else:
+        expected = known.get('AGENTS.md', {}).get('sha256')
+        if expected and hashlib.sha256(agents_data).hexdigest() != expected:
+            problems.append('AGENTS.md differs from the managed one (plugin-specific instructions belong into CUSTOM.AGENTS.md)')
+        if b'docs/standards' not in agents_data:
+            problems.append('AGENTS.md does not tell to read docs/standards/')
+    own = [root / name for name in ('SCOPE.md', 'CUSTOM.AGENTS.md')]
+    own_texts = {path.name: path.read_text(encoding='utf-8', errors='replace') for path in own if path.is_file() and not path.is_symlink()}
+    copied = [(name, line.strip()) for text in texts for line in text.splitlines() if len(line.strip()) >= 60
+              for name, own_text in own_texts.items() if line.strip() in own_text]
     if copied:
-        problems.append('SCOPE.md copies standard text: ' + copied[0][:60] + '...')
+        problems.append(copied[0][0] + ' copies standard text: ' + copied[0][1][:60] + '...')
     if problems:
         raise ValueError('The managed standards are not in place: ' + '; '.join(problems)
-                         + '. A standard is never edited in a plugin; run /plugin-manager:setup to bring the files back and add the Standards section to AGENTS.md.')
+                         + '. A standard is never edited in a plugin; run /plugin-manager:setup to bring the managed files back.')
 
 
 def plugin(root):

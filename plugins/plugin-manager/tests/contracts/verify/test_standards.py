@@ -30,10 +30,12 @@ class StandardsTests(unittest.TestCase):
     def test_a_new_plugin_has_the_four_standards_identical_to_the_managed_ones(self):
         for name in NAMES:
             self.assertEqual((SOURCE / name).read_bytes(), (self.plugin / 'docs/standards' / name).read_bytes(), name)
-        self.assertEqual({'standards:' + n: 'pass' for n in NAMES} | {'standards:reference': 'pass', 'standards:scope': 'pass'}, self.status())
-        claude = (self.plugin / 'CLAUDE.md').read_text()
+        self.assertEqual({'standards:' + n: 'pass' for n in NAMES} | {'standards:AGENTS.md': 'pass', 'standards:scope': 'pass'}, self.status())
+        agents = (self.plugin / 'AGENTS.md').read_text()
         for name in NAMES:
-            self.assertIn('@docs/standards/' + name, claude)
+            self.assertIn('\n@docs/standards/' + name, agents)
+        self.assertIn('\n@CUSTOM.AGENTS.md', agents)
+        self.assertEqual('@AGENTS.md', (self.plugin / 'CLAUDE.md').read_text().split('-->')[1].strip())
 
     def test_a_missing_or_changed_standard_is_a_finding(self):
         (self.plugin / 'docs/standards/coding.md').write_text('my own rules\n')
@@ -43,10 +45,11 @@ class StandardsTests(unittest.TestCase):
         self.assertEqual('pass', found['standards:messages.md'])
         self.assertFalse(audit.audit(self.plugin)['structurally_valid'])
 
-    def test_agents_md_must_point_to_the_standards(self):
+    def test_agents_md_is_the_managed_one_and_plugin_specific_text_belongs_into_custom_agents_md(self):  # R28
         agents = self.plugin / 'AGENTS.md'
-        agents.write_text(agents.read_text().split('## Standards')[0])
-        self.assertEqual('fail', self.status()['standards:reference'])
+        agents.write_text(agents.read_text() + '\nMy own rule.\n')
+        self.assertEqual('fail', self.status()['standards:AGENTS.md'])
+        self.assertTrue((self.plugin / 'CUSTOM.AGENTS.md').is_file())
 
     def test_a_standard_copied_into_the_scope_is_a_finding(self):
         line = next(l.strip() for l in (SOURCE / 'coding.md').read_text().splitlines() if len(l.strip()) >= 60)
@@ -66,7 +69,7 @@ class StandardsTests(unittest.TestCase):
         agents = self.plugin / 'AGENTS.md'
         text = agents.read_text()
         agents.write_text(text.split('## Standards')[0])
-        self.assertIn('AGENTS.md does not tell to read docs/standards/', ' '.join(skill_verify.verify(self.plugin, 'plugin')['errors']))
+        self.assertIn('AGENTS.md differs from the managed one', ' '.join(skill_verify.verify(self.plugin, 'plugin')['errors']))
         agents.write_text(text)
         line = next(l.strip() for l in original.decode().splitlines() if len(l.strip()) >= 60)
         scope = self.plugin / 'SCOPE.md'

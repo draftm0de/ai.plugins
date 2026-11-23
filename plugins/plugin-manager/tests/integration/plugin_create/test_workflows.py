@@ -119,7 +119,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         self.assertEqual(before, {str(p):p.read_bytes() for base in (self.plugin,self.market) for p in base.rglob('*') if p.is_file()})
 
     def test_collisions_and_wrong_origins_preserve_files(self):
-        (self.plugin/'AGENTS.md').write_text('personal rules')  # custom file (not in the common skeleton list): still a strict collision
+        (self.plugin/'CUSTOM.AGENTS.md').write_text('personal rules')  # a seeded file of the plugin: still a strict collision
         before=(self.market/'marketplace.json').read_bytes()
         with self.assertRaisesRegex(ValueError,'already exist with other content'):self.create()
         self.assertFalse((self.plugin/'plugin.json').exists())
@@ -259,17 +259,17 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
 
     def test_skeleton_cli_and_conflicting_development_rules(self):
         original = 'User-owned instructions must be preserved\n'
-        (self.plugin/'AGENTS.md').write_text(original)
+        (self.plugin/'CUSTOM.AGENTS.md').write_text(original)
         before = (self.market/'marketplace.json').read_bytes()
         args = [sys.executable, '-B', str(flow.SKILL/'scripts/workflows.py'), 'create','--kind','plugin', '--license', 'deferred',
                 '--root', str(self.plugin), '--marketplace', str(self.market), '--skeleton',
                 '--name', 'new-plugin', '--display-name', 'Fictional Plugin', '--author', 'Fixture', '--languages', 'en']
         result = subprocess.run(args, capture_output=True, text=True)
         self.assertNotEqual(0, result.returncode)
-        self.assertEqual(original, (self.plugin/'AGENTS.md').read_text())
+        self.assertEqual(original, (self.plugin/'CUSTOM.AGENTS.md').read_text())
         self.assertEqual(before, (self.market/'marketplace.json').read_bytes())
         self.assertFalse((self.plugin/'plugin.json').exists())
-        (self.plugin/'AGENTS.md').unlink()  # owned temporary fixture only
+        (self.plugin/'CUSTOM.AGENTS.md').unlink()  # owned temporary fixture only
         result = subprocess.run(args, capture_output=True, text=True)
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertEqual('skeleton', json.loads(result.stdout)['implementation_status'])

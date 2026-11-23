@@ -29,6 +29,12 @@ an explicit implementation request; never weaken scope to accept outdated conten
 Keine Altformat-Unterstützung oder stillen Migrationen. Nicht unterstützte Daten
 mit konkretem Grund ablehnen, niemals löschen oder überschreiben.
 
+## Operator language
+
+Every public skill must load `skills/_shared/references/operator-language.md` before
+setup/domain interaction. Preserve this gate when replacing the skeleton or adding
+skills. Persist the explicit preference per consuming project; never in the plugin.
+
 ## Standards / Standards
 
 Before implementing, read `docs/standards/coding.md`, `messages.md`, `testing.md` and `skills.md`. They are
@@ -40,3 +46,19 @@ Vor der Implementierung `docs/standards/coding.md`, `messages.md`, `testing.md` 
 werden vom Plugin-Manager verwaltet und sind in jedem Plugin gleich: hier nicht ändern, nicht in SCOPE.md
 kopieren, nicht davon abweichen. SCOPE.md enthält nur Ziel und Anforderungen dieses Plugins; bei einem
 Widerspruch gilt der Standard und `verify` meldet ihn.
+
+## Plugin-specific instructions / Plugin-spezifische Anweisungen
+
+Also read `CUSTOM.AGENTS.md` when it exists. It holds only what is specific to this plugin and never repeats or
+weakens a rule of this file or of the standards. This file is managed by the plugin manager: do not edit it here.
+
+Lies außerdem `CUSTOM.AGENTS.md`, falls vorhanden. Sie enthält nur Plugin-Spezifisches und wiederholt oder
+schwächt keine Regel dieser Datei oder der Standards. Diese Datei wird vom Plugin-Manager verwaltet: hier nicht ändern.
+
+Imports for Claude Code (other hosts read the files named above as text) / Importe für Claude Code:
+
+@CUSTOM.AGENTS.md
+@docs/standards/coding.md
+@docs/standards/messages.md
+@docs/standards/testing.md
+@docs/standards/skills.md

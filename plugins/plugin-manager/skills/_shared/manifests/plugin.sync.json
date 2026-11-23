@@ -1,8 +1,12 @@
 {
   "schema_version": 1,
   "files": {
+    "AGENTS.md": {
+      "sha256": "a8111fe4a0458a8c82704bf9d6feb694e0fa15eaa09211583f1223da7113d5d0",
+      "executable": false
+    },
     "CLAUDE.md": {
-      "sha256": "ca9dd2eccd839cb603be5881d0592995222ccf5d587f706d8619c02b52b66348",
+      "sha256": "d50241a8f54f9b9dc16bcc0c741754b2f3b9017c0dd4e9358068c74f6a31a638",
       "executable": false
     },
     "docs/standards/coding.md": {
@@ -34,7 +38,7 @@
       "executable": false
     },
     "scripts/verify.py": {
-      "sha256": "20a6446bc321085625844a1d4682eb9e704837937f00a83e7d8bd32bcd0af6c0",
+      "sha256": "1091dd93ba94bf53697ef5634935c79638d8ee3e5939db447044aaf2d5fd81a1",
       "executable": false
     },
     "skills/_shared/references/operator-language.md": {

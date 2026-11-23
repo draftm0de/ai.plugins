@@ -137,11 +137,11 @@ class CopyAndIdempotenceTests(SyncBase):
         for name, data in extras.items():
             self.assertEqual(data, (self.p / name).read_bytes())
 
-    def test_unmanaged_agents_file_is_not_touched_or_locked(self):
-        (self.p / 'AGENTS.md').write_text('mine')
+    def test_unmanaged_file_is_not_touched_or_locked(self):
+        (self.p / 'CUSTOM.AGENTS.md').write_text('mine')  # the plugin's own instructions (R28): never managed
         self.setup_all()
-        self.assertEqual('mine', (self.p / 'AGENTS.md').read_text())
-        self.assertNotIn('AGENTS.md', self.lock()['files'])
+        self.assertEqual('mine', (self.p / 'CUSTOM.AGENTS.md').read_text())
+        self.assertNotIn('CUSTOM.AGENTS.md', self.lock()['files'])
 
 
 class DecisionTests(SyncBase):

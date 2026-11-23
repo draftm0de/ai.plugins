@@ -281,13 +281,12 @@ Test: tests/unit/behavior/test_skill_cases.py
 ## R27: One set of standards for every plugin
 
 Status: confirmed
-Acceptance: Every plugin repository carries the same four standards under `docs/standards/` (`coding.md`, `messages.md`, `testing.md`, `skills.md`), delivered and kept current by the Manager as managed files (sync, per-file decision on a deviation as for every managed file), and read by the agent before implementing: `AGENTS.md` of a new plugin tells to read them, and the managed `CLAUDE.md` of a plugin imports them. The standards are identical in every plugin and have no plugin-specific exceptions; a deviation is a finding, never an accepted state. `SCOPE.md` of a plugin holds only the goal and requirements of that plugin and never copies a standard; when it contradicts a standard, the standard wins. `verify` reports read-only, as a structural error: a missing or changed standard, an `AGENTS.md` that does not point to the standards, and standard text copied into `SCOPE.md`. `verify --review` additionally compares SCOPE and source with the standards and reports contradictions as findings with the standard, path and line; it never changes a standard or SCOPE. The standards cover coding (layout, context instead of globals, current formats only, coded failures), messages (layout, address, one catalogue built in code, R25/R26), tests (structure, rules, model tests, reporting) and skills (one skill per action, boundaries as structure, shared gate). Marketplace repositories receive no standards. The Manager is a plugin and follows the same standards (its own copies equal the managed files). A check of source against the standards that cannot be decided by reading (for example whether a message is built in a second place) remains the task of the review.
+Acceptance: Every plugin repository carries the same four standards under `docs/standards/` (`coding.md`, `messages.md`, `testing.md`, `skills.md`), delivered and kept current by the Manager as managed files (sync, per-file decision on a deviation as for every managed file), and read by the agent before implementing: the managed `AGENTS.md` (R28) tells to read them and imports them for Claude Code. The standards are identical in every plugin and have no plugin-specific exceptions; a deviation is a finding, never an accepted state. `SCOPE.md` of a plugin holds only the goal and requirements of that plugin and never copies a standard; when it contradicts a standard, the standard wins. `verify` reports read-only, as a structural error: a missing or changed standard, and standard text copied into `SCOPE.md` or `CUSTOM.AGENTS.md`. `verify --review` additionally compares SCOPE and source with the standards and reports contradictions as findings with the standard, path and line; it never changes a standard or SCOPE. The standards cover coding (layout, context instead of globals, current formats only, coded failures), messages (layout, address, one catalogue built in code, R25/R26), tests (structure, rules, model tests, reporting) and skills (one skill per action, boundaries as structure, shared gate). Marketplace repositories receive no standards. The Manager is a plugin and follows the same standards (its own copies equal the managed files). A check of source against the standards that cannot be decided by reading (for example whether a message is built in a second place) remains the task of the review.
 Source: skills/_shared/templates/plugin/sync/docs/standards/coding.md
 Source: skills/_shared/templates/plugin/sync/docs/standards/messages.md
 Source: skills/_shared/templates/plugin/sync/docs/standards/testing.md
 Source: skills/_shared/templates/plugin/sync/docs/standards/skills.md
-Source: skills/_shared/templates/plugin/sync/CLAUDE.md
-Source: skills/_shared/templates/plugin/seed/AGENTS.md
+Source: skills/_shared/templates/plugin/sync/AGENTS.md
 Source: skills/_shared/manifests/plugin.sync.json
 Source: skills/_shared/scripts/verify.py
 Source: skills/_shared/scripts/plugin_audit.py
@@ -295,3 +294,18 @@ Source: skills/_shared/references/scope-review.md
 Test: tests/contracts/verify/test_standards.py
 Test: tests/integration/project_setup/test_manifest.py
 Test: tests/integration/project_setup/test_setup.py
+
+## R28: Common agent instructions are managed, plugin-specific ones are the plugin's
+
+Status: confirmed
+Acceptance: Every plugin repository has two instruction files with separate owners. `AGENTS.md` carries the rules common to all plugins (scope first, current formats only, operator language, read the standards, read `CUSTOM.AGENTS.md`); the Manager delivers it as a managed file and keeps it current (sync, per-file decision on a deviation as for every managed file), and it is identical in every plugin. `CUSTOM.AGENTS.md` holds only what is specific to the plugin; the generator seeds it once, the Manager never manages, overwrites or deletes it, and it never repeats or weakens `AGENTS.md` or a standard. For Claude Code, `AGENTS.md` imports `CUSTOM.AGENTS.md` and the four standards, and `CLAUDE.md` stays limited to importing `AGENTS.md`; other hosts read the named files as text. `verify` reports, read-only, a missing or changed `AGENTS.md` and standard text copied into `CUSTOM.AGENTS.md`. A missing `CUSTOM.AGENTS.md` is not an error. Whether `CUSTOM.AGENTS.md` weakens a rule is a task of `verify --review`. Marketplace repositories are not part of this requirement. An existing plugin whose `AGENTS.md` differs gets the per-file decision of `setup`; the Manager converts nothing silently.
+Source: skills/_shared/templates/plugin/sync/AGENTS.md
+Source: skills/_shared/templates/plugin/seed/CUSTOM.AGENTS.md
+Source: skills/_shared/templates/plugin/sync/CLAUDE.md
+Source: skills/_shared/manifests/plugin.sync.json
+Source: skills/_shared/scripts/verify.py
+Source: skills/_shared/scripts/plugin_audit.py
+Test: tests/contracts/verify/test_standards.py
+Test: tests/integration/project_setup/test_manifest.py
+Test: tests/integration/project_setup/test_setup.py
+Test: tests/integration/project_setup/test_sync.py

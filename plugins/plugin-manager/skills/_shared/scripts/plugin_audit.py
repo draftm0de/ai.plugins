@@ -98,17 +98,16 @@ def audit(root):
         same = target.is_file() and not target.is_symlink() and target.read_bytes() == source.read_bytes()
         add('standards:' + source.name, 'pass' if same else 'fail',
             'Matches the managed standard' if same else 'Missing or changed; a standard is never edited in a plugin, run /plugin-manager:setup to bring it back')
-    agents = root / 'AGENTS.md'
-    agents_text = agents.read_text(encoding='utf-8') if agents.is_file() and not agents.is_symlink() else ''
-    add('standards:reference', 'pass' if all('docs/standards/' + p.name in agents_text or p.name in agents_text for p in standard_files) and 'docs/standards' in agents_text else 'fail',
-        'AGENTS.md points to the standards' if 'docs/standards' in agents_text else 'AGENTS.md must tell to read docs/standards/ before implementing')
-    scope = root / 'SCOPE.md'
-    scope_text = scope.read_text(encoding='utf-8') if scope.is_file() and not scope.is_symlink() else ''
-    copied = sorted({line.strip() for source in standard_files for line in source.read_text(encoding='utf-8').splitlines()
-                     if len(line.strip()) >= 60 and line.strip() in scope_text})
+    agents, managed_agents = root / 'AGENTS.md', template / 'AGENTS.md'
+    same = agents.is_file() and not agents.is_symlink() and agents.read_bytes() == managed_agents.read_bytes()
+    add('standards:AGENTS.md', 'pass' if same else 'fail',
+        'Matches the managed AGENTS.md' if same else 'Missing or changed; plugin-specific instructions belong into CUSTOM.AGENTS.md, run /plugin-manager:setup to bring the managed file back')
+    own = {name: (root / name).read_text(encoding='utf-8') for name in ('SCOPE.md', 'CUSTOM.AGENTS.md') if (root / name).is_file() and not (root / name).is_symlink()}
+    copied = sorted({name + ': ' + line.strip() for source in standard_files for line in source.read_text(encoding='utf-8').splitlines()
+                     if len(line.strip()) >= 60 for name, text in own.items() if line.strip() in text})
     add('standards:scope', 'fail' if copied else 'pass',
-        'SCOPE.md copies standard text (keep only the plugin goal there): ' + copied[0][:60] + '...' if copied else
-        'SCOPE.md holds no copy of a standard; contradictions with the standards need `verify --review`')
+        'SCOPE.md or CUSTOM.AGENTS.md copies standard text (keep only the plugin goal there): ' + copied[0][:80] + '...' if copied else
+        'SCOPE.md and CUSTOM.AGENTS.md hold no copy of a standard; contradictions with the standards need `verify --review`')
     makefile = root / 'Makefile'
     make = makefile.read_text() if makefile.is_file() else ''
     marker_start = '# Local development and repository metadata'

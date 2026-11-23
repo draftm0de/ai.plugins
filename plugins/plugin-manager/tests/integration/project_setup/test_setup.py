@@ -56,7 +56,7 @@ class SupplementTests(Base):
     def test_claude_copy_lock_and_preserve_local_changes(self):
         expected = template('CLAUDE.md')
         self.assertIn(b'This file exists only for Claude compatibility.', expected)
-        self.assertEqual(b'@AGENTS.md', expected.split(b'-->')[1].split()[0])
+        self.assertEqual(b'@AGENTS.md', expected.split(b'-->')[1].strip())
         self.setup_ok('--language', 'de')
         target = self.p / 'CLAUDE.md'
         self.assertEqual(expected, target.read_bytes())
@@ -66,7 +66,8 @@ class SupplementTests(Base):
         self.assertEqual(b'local instructions', target.read_bytes())
         self.assertIn('CLAUDE.md', data['different'])
         self.assertEqual(pair(expected), self.box.lock()['CLAUDE.md'])
-        self.assertFalse((self.p / 'AGENTS.md').exists())
+        self.assertEqual(template('AGENTS.md'), (self.p / 'AGENTS.md').read_bytes())  # R28: the common instructions are managed
+        self.assertFalse((self.p / 'CUSTOM.AGENTS.md').exists())  # the plugin's own file is seeded by the generator, never managed
 
     def test_creates_files_dirs_lock_and_modes_without_git(self):
         data = self.setup_ok('--language', 'de')

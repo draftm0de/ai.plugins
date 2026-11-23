@@ -1,5 +1,6 @@
 # Repository architecture / Repository-Struktur
 
+- `AGENTS.md`: common agent rules, managed by the Manager in plugin repositories; `CUSTOM.AGENTS.md`: the plugin's own instructions.
 - `SCOPE.md`: confirmed goals, non-goals and acceptance criteria; draft until agreed.
 - `skills/<name>/SKILL.md`: public skill entry points for plugins.
 - `skills/<name>/scripts/`: distributed runtime; no imports from a developer checkout.
