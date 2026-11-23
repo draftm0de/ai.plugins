@@ -15,7 +15,7 @@ The kind is detected (`--kind auto`) and never a call argument of the command; a
 
 Report `structure_valid` independently from `local_development.complete`. Missing local checkout mappings on a fresh clone mean local checks are unavailable; they do not invalidate the published structure. Installation requires those checkouts, but verification never installs them.
 
-Messages to the person (failures, stops, results) follow `../_shared/references/messages.md`: outcome first, the cause in plain words, one concrete next step, no technical terms.
+Messages to the person (failures, stops, results) follow `../_shared/references/messages.md`: two short paragraphs of running text (what could not be done, because of what, what was changed; then the request with the exact way and the call to repeat), no labels, no technical terms.
 
 ## Explicit scope/source review
 

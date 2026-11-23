@@ -102,8 +102,8 @@ GATE_REASONS = {
 }
 
 
-STOP_MESSAGE = ('The {action} action was stopped.\nWhy:\nThis folder is not set up yet, or only partly ({reason}).\n'
-                'Solution:\nRun /plugin-manager:setup first.')  # the same structure as every error message (messages.md)
+STOP_MESSAGE = ('The {action} action was stopped, because this folder is not set up yet, or only partly ({reason}).\n\n'
+                'Please run /plugin-manager:setup first.')  # the same layout as every error message (messages.md)
 
 
 def gate(ctx, target, action=None):

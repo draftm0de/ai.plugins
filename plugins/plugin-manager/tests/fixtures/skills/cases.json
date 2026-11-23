@@ -16,7 +16,7 @@
     "observed": [
       {
         "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action docs",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the language is not set yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped.\\nWhy:\\nThis folder is not set up yet, or only partly (the language is not set yet).\\nSolution:\\nRun /plugin-manager:setup first.\",\n  \"detail\": null\n}"
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the language is not set yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped, because this folder is not set up yet, or only partly (the language is not set yet).\\n\\nPlease run /plugin-manager:setup first.\",\n  \"detail\": null\n}"
       }
     ],
     "expect": {
@@ -43,9 +43,7 @@
       ],
       "hands_over_to": "none",
       "in_order": [
-        "The docs action was stopped.",
-        "Why:",
-        "Solution:",
+        "The docs action was stopped, because",
         "/plugin-manager:setup"
       ]
     }
@@ -67,7 +65,7 @@
     "observed": [
       {
         "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action docs",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"sync\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"a managed file needs your decision\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped.\\nWhy:\\nThis folder is not set up yet, or only partly (a managed file needs your decision).\\nSolution:\\nRun /plugin-manager:setup first.\",\n  \"detail\": null\n}"
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"sync\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"a managed file needs your decision\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped, because this folder is not set up yet, or only partly (a managed file needs your decision).\\n\\nPlease run /plugin-manager:setup first.\",\n  \"detail\": null\n}"
       }
     ],
     "expect": {
@@ -92,9 +90,7 @@
       ],
       "hands_over_to": "none",
       "in_order": [
-        "Die Aktion docs wurde abgebrochen.",
-        "Warum:",
-        "Lösung:",
+        "Die Aktion docs wurde abgebrochen, weil",
         "/plugin-manager:setup"
       ],
       "forbidden_text": [
@@ -118,7 +114,7 @@
       },
       {
         "role": "agent",
-        "text": "The docs action was stopped.\nWhy:\nThis folder is not set up yet, or only partly (the language is not set yet).\nSolution:\nRun /plugin-manager:setup first.\nQuestion: Run /plugin-manager:setup now? [Yes, run it] [No, stop]"
+        "text": "The docs action was stopped, because this folder is not set up yet, or only partly (the language is not set yet).\n\nPlease run /plugin-manager:setup first.\nQuestion: Run /plugin-manager:setup now? [Yes, run it] [No, stop]"
       },
       {
         "role": "person",
@@ -128,7 +124,7 @@
     "observed": [
       {
         "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action docs",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the language is not set yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped.\\nWhy:\\nThis folder is not set up yet, or only partly (the language is not set yet).\\nSolution:\\nRun /plugin-manager:setup first.\",\n  \"detail\": null\n}"
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the language is not set yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped, because this folder is not set up yet, or only partly (the language is not set yet).\\n\\nPlease run /plugin-manager:setup first.\",\n  \"detail\": null\n}"
       }
     ],
     "expect": {
@@ -159,7 +155,7 @@
       },
       {
         "role": "agent",
-        "text": "The docs action was stopped.\nWhy:\nThis folder is not set up yet, or only partly (the language is not set yet).\nSolution:\nRun /plugin-manager:setup first.\nQuestion: Run /plugin-manager:setup now? [Yes, run it] [No, stop]"
+        "text": "The docs action was stopped, because this folder is not set up yet, or only partly (the language is not set yet).\n\nPlease run /plugin-manager:setup first.\nQuestion: Run /plugin-manager:setup now? [Yes, run it] [No, stop]"
       },
       {
         "role": "person",
@@ -169,7 +165,7 @@
     "observed": [
       {
         "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action docs",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the language is not set yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped.\\nWhy:\\nThis folder is not set up yet, or only partly (the language is not set yet).\\nSolution:\\nRun /plugin-manager:setup first.\",\n  \"detail\": null\n}"
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the language is not set yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped, because this folder is not set up yet, or only partly (the language is not set yet).\\n\\nPlease run /plugin-manager:setup first.\",\n  \"detail\": null\n}"
       }
     ],
     "expect": {
@@ -202,7 +198,7 @@
     "observed": [
       {
         "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action publish",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"stop\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"something in this folder blocks the setup\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The publish action was stopped.\\nWhy:\\nThis folder is not set up yet, or only partly (something in this folder blocks the setup).\\nSolution:\\nRun /plugin-manager:setup first.\",\n  \"detail\": \"Unsupported evidence file\"\n}"
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"stop\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"something in this folder blocks the setup\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The publish action was stopped, because this folder is not set up yet, or only partly (something in this folder blocks the setup).\\n\\nPlease run /plugin-manager:setup first.\",\n  \"detail\": \"Unsupported evidence file\"\n}"
       }
     ],
     "expect": {
@@ -229,9 +225,7 @@
       ],
       "hands_over_to": "none",
       "in_order": [
-        "The publish action was stopped.",
-        "Why:",
-        "Solution:",
+        "The publish action was stopped, because",
         "/plugin-manager:setup"
       ]
     }
@@ -253,7 +247,7 @@
     "observed": [
       {
         "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action modify",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"skeleton\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"some required files or settings are missing\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The modify action was stopped.\\nWhy:\\nThis folder is not set up yet, or only partly (some required files or settings are missing).\\nSolution:\\nRun /plugin-manager:setup first.\",\n  \"detail\": null\n}"
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"skeleton\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"some required files or settings are missing\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The modify action was stopped, because this folder is not set up yet, or only partly (some required files or settings are missing).\\n\\nPlease run /plugin-manager:setup first.\",\n  \"detail\": null\n}"
       }
     ],
     "expect": {
@@ -278,9 +272,7 @@
       ],
       "hands_over_to": "none",
       "in_order": [
-        "The modify action was stopped.",
-        "Why:",
-        "Solution:",
+        "The modify action was stopped, because",
         "/plugin-manager:setup"
       ]
     }
@@ -479,9 +471,7 @@
         "setup_state\\.py.*\\b(setup|record|sync)\\b"
       ],
       "in_order": [
-        "konnte nicht abgeschlossen werden",
-        "Warum:",
-        "Lösung",
+        "konnte nicht abgeschlossen werden, weil",
         "/plugin-manager:setup"
       ]
     }
@@ -533,9 +523,7 @@
     "expect": {
       "language": "de",
       "in_order": [
-        "konnte nicht abgeschlossen werden",
-        "Warum:",
-        "Lösung",
+        "konnte nicht abgeschlossen werden, weil",
         "/plugin-manager:verify"
       ],
       "mentions_any": [

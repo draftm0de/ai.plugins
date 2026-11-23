@@ -7,11 +7,11 @@ description: Change what a plugin or marketplace repository states about itself 
 
 Read `../_shared/WORKFLOWS.md` and follow its **modify** action. This is a thin plugin entry point; the rules live in that shared workflow reference. The helper is `scripts/modify.py`; it takes the kind from the configuration evidence of the workpackage, never from the call.
 
-Messages to the person (failures, stops, results) follow `../_shared/references/messages.md`: outcome first, the cause in plain words, one concrete next step, no technical terms.
+Messages to the person (failures, stops, results) follow `../_shared/references/messages.md`: two short paragraphs of running text (what could not be done, because of what, what was changed; then the request with the exact way and the call to repeat), no labels, no technical terms.
 
 ## State gate
 
-Before asking anything follow `../_shared/flows/gate.md` (`setup_state.py gate --action modify`). When the gate is closed, stop as that flow says: the structured message (headline, Why, Solution), then the question whether to run `/plugin-manager:setup`; this skill writes nothing then. Only `setup` changes configuration, skeleton files or sync decisions.
+Before asking anything follow `../_shared/flows/gate.md` (`setup_state.py gate --action modify`). When the gate is closed, stop as that flow says: the one-sentence stop message, then the question whether to run `/plugin-manager:setup`; this skill writes nothing then. Only `setup` changes configuration, skeleton files or sync decisions.
 
 ## Dialogue
 

@@ -7,7 +7,7 @@ description: Brings an explicitly selected plugin or marketplace repository into
 
 The state-guided skill of the Plugin Manager. Follow `flows/entry.md` with `plugin = plugin-manager` (every helper call passes `--plugin plugin-manager`); the flows `language.md`, `skeleton.md` and `sync.md` live next to it, as do `flows/configure.md` (plugin or marketplace), `flows/marketplace.md` and, on request, `flows/associate.md` (the one marketplace of a plugin). Specialised actions stay in their own skills; shared rules for them are in `../_shared/WORKFLOWS.md`. Helper: `scripts/setup_state.py`; language rules: `../_shared/references/operator-language.md`, which applies only where it does not conflict with the entry flow. Precedence: the entry's read-only rule and flow order win. In particular its direct `--set` before continuing and its rule to ask/save a missing language even for read-only actions do not apply here. Resolve paths from this loaded SKILL.md; never search host caches.
 
-Messages to the person (failures, stops, results) follow `../_shared/references/messages.md`: outcome first, the cause in plain words, one concrete next step, no technical terms.
+Messages to the person (failures, stops, results) follow `../_shared/references/messages.md`: two short paragraphs of running text (what could not be done, because of what, what was changed; then the request with the exact way and the call to repeat), no labels, no technical terms.
 
 ## Manager-specific rules
 
