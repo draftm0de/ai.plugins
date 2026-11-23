@@ -52,6 +52,10 @@
     "tests/behavior/run_cases.py": {
       "sha256": "fdab0bfa72f51c6fe367598b14457f9edc5235d5f0a1c31ba37c1fa42049e73f",
       "executable": false
+    },
+    "tests/contracts/test_operator_language.py": {
+      "sha256": "067bd855af12a1a3c526f0558d4e586fe3b46d9b040c123373de9f66dbd72078",
+      "executable": false
     }
   },
   "removed": [

@@ -47,3 +47,4 @@ Status: confirmed
 Acceptance: This plugin ships a shared operator-language helper and entry-point instructions. Before setup/domain interaction, a missing project preference is asked alone and persisted only after an explicit answer. Later calls reuse it, including bare slash commands and new sessions. An explicit change updates only that project's preference. Content/documentation languages remain independent; invalid state is rejected without mutation. Future skills preserve the same gate.
 Source: skills/_shared/scripts/operator_language.py
 Source: skills/_shared/references/operator-language.md
+Test: tests/contracts/test_operator_language.py
