@@ -6,7 +6,7 @@ Used when the person asks to set, change or move the marketplace of a plugin ("c
 
 A plugin belongs to exactly one marketplace. Two facts carry it, nothing else does:
 
-- the identity `marketplace: {name, repository}` in the committed `.project/plugins/plugin-manager/config.json` (mandatory for the kind `plugin`), and
+- the identity `marketplace: {name}` in the committed `.project/plugins/plugin-manager/config.json` (mandatory for the kind `plugin`), and
 - the path of the checkout on this machine in the Git-ignored `.project/plugins/plugin-manager/local.json` (`{"schema_version": 1, "marketplace_path": "<path>"}`).
 
 There is no second association, no list of named associations and no fallback to the former `.local/marketplace.json` of the plugin; a `local.json` in any other format is refused and never migrated. The marketplace side keeps the checkouts of its plugins under `sources` in its own ignored `.local/marketplace.json`.
@@ -30,7 +30,7 @@ There is no second association, no list of named associations and no fallback to
    ```
 
    It checks the target as a marketplace, that plugin and marketplace are separate repositories, that the identity fits, that no local configuration is tracked by Git and that the ignore rules are effective, and writes everything in one transaction with rollback. The same marketplace is idempotent (a fresh clone only gets its `local.json`).
-5. Judge the result by the helper's own answer, which has `action: "associate"`, `changed`, `published: false`, `from`, `to`, `old_catalog_entry_remains` and a prose `next`, but no `ok`: success means exit 0. On a non-zero exit report the concrete reason: nothing was written. Typical reasons: the target is no marketplace or a plugin repository, the marketplace name belongs to another repository, a local configuration is tracked, `local.json` has an unsupported format, a second marketplace without the explicit change, or the previous marketplace is not available locally.
+5. Judge the result by the helper's own answer, which has `action: "associate"`, `changed`, `published: false`, `from`, `to`, `old_catalog_entry_remains` and a prose `next`, but no `ok`: success means exit 0. On a non-zero exit report the reason in the plain words of `../../_shared/references/messages.md` (nothing was changed). Typical reasons: the target is no marketplace or a plugin repository, the marketplace name belongs to another repository, a local configuration is tracked, `local.json` has an unsupported format, a second marketplace without the explicit change, or the previous marketplace is not available locally.
 6. When the previous marketplace checkout is gone, its catalog entry cannot be removed. Explain that and ask for restoring the checkout. Only after the person's explicit consent repeat the call with `--drop-missing-old`: it releases only the local reference and the identity of the plugin; the result then carries `old_catalog_entry_remains: true` and the entry has to be removed by hand in that repository.
 7. Run `status` again. Report the changed paths by name and the helper's `next` text: the plugin's `config.json`, the `marketplace.json` and the host catalogs of the marketplaces involved are changed and unversioned; they are published through the separate publish action after its own approval.
 

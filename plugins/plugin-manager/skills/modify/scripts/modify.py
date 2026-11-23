@@ -111,7 +111,7 @@ def catalog_update(root, market, old, new):
     """Files that carry the changed identity into the catalog entry of the plugin and the local checkout mapping."""
     verifier = flow.module(flow.SKILL / 'scripts/verify.py', 'trusted_verify')
     verifier.marketplace(market)
-    if subprocess.check_output(['git', '-C', str(market), 'ls-files', '--', '.local']).strip():
+    if flow.git_tracked(market, '.local'):
         raise ValueError('Local configuration is tracked; review before writing private checkout mappings')
     url = flow.repository_url(new['repository'])
     config = flow.read(market / 'marketplace.json')

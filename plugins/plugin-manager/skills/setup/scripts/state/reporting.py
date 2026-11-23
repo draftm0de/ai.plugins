@@ -94,15 +94,16 @@ def conflict_result(operation, target, conflict):
 
 
 GATE_REASONS = {
-    'stop': 'a technical conflict stops all writes',
-    'language': 'the operator language is not saved yet',
-    'configure': 'the workpackage is not configured for this plugin',
-    'skeleton': 'skeleton files, the ignore rule or the skeleton evidence are missing',
-    'sync': 'a managed file needs a keep, adopt or delete decision',
+    'stop': 'something in this folder blocks the setup',
+    'language': 'the language is not set yet',
+    'configure': 'this folder is not configured yet',
+    'skeleton': 'some required files or settings are missing',
+    'sync': 'a managed file needs your decision',
 }
 
 
-STOP_MESSAGE = 'The {action} action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.'  # the one sentence every gated skill reports; translated, never reworded
+STOP_MESSAGE = ('The {action} action was stopped.\nWhy:\nThis folder is not set up yet, or only partly ({reason}).\n'
+                'Solution:\nRun /plugin-manager:setup first.')  # the same structure as every error message (messages.md)
 
 
 def gate(ctx, target, action=None):
@@ -112,12 +113,11 @@ def gate(ctx, target, action=None):
         data = status(ctx, target)
     except Conflict as conflict:
         return {'operation': 'gate', 'ok': False, 'ready': False, 'next': 'stop', 'target': str(target),
-                'reason': GATE_REASONS['stop'] + ': ' + str(conflict.reason), 'run': '/plugin-manager:setup',
-                'message': STOP_MESSAGE.format(action=action or 'requested'), 'target_code_executed': False}
+                'reason': GATE_REASONS['stop'], 'detail': str(conflict.reason), 'run': '/plugin-manager:setup',
+                'message': STOP_MESSAGE.format(action=action or 'requested', reason=GATE_REASONS['stop']), 'target_code_executed': False}
     ready = bool(data['ok']) and data['next'] == 'ready'
     reason = '' if ready else GATE_REASONS.get(data['next'], 'the state is not ready')
-    if data['conflicts']:
-        reason += ': ' + '; '.join(str(c.get('reason', '')) for c in data['conflicts'])
+    detail = '; '.join(str(c.get('reason', '')) for c in data['conflicts']) or None
     return {'operation': 'gate', 'ok': ready, 'ready': ready, 'next': data['next'], 'target': data['target'],
-            'reason': reason, 'run': None if ready else '/plugin-manager:setup',
-            'message': None if ready else STOP_MESSAGE.format(action=action or 'requested'), 'target_code_executed': False}
+            'reason': reason, 'detail': detail, 'run': None if ready else '/plugin-manager:setup',
+            'message': None if ready else STOP_MESSAGE.format(action=action or 'requested', reason=reason), 'target_code_executed': False}

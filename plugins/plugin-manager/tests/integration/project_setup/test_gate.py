@@ -1,4 +1,5 @@
 """R23 state rule: the read-only `gate` answers whether a writing skill (docs, publish) may start."""
+import re
 import unittest
 
 from tests.integration.project_setup.test_sync import SyncBase
@@ -13,7 +14,7 @@ class GateTests(SyncBase):
         self.assertEqual(1, code, result.stderr + result.stdout)
         self.assertEqual((False, 'language'), (data['ready'], data['next']))
         self.assertTrue(data['reason'])
-        self.assertEqual('The requested action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.', data['message'])
+        self.assertEqual('The requested action was stopped.\nWhy:\nThis folder is not set up yet, or only partly (the language is not set yet).\nSolution:\nRun /plugin-manager:setup first.', data['message'])
         self.assertEqual(before, tree(self.box.project))
 
     def test_gate_names_the_open_flow_for_every_state_before_ready(self):
@@ -36,14 +37,15 @@ class GateTests(SyncBase):
         self.assertEqual((1, False, 'sync'), (code, data['ready'], data['next']))
         self.assertEqual(before, tree(self.p))
 
-    def test_the_message_names_the_gated_skill_and_is_the_same_sentence_for_every_cause(self):
-        sentences = set()
+    def test_the_message_names_the_gated_skill_and_has_the_same_structure_for_every_cause(self):
+        shapes = set()
         for action in ('docs', 'modify', 'publish'):
             code, data, _ = self.box.call('gate', '--action', action)
             self.assertEqual(1, code)
-            self.assertIn('The ' + action + ' action was stopped', data['message'])
-            sentences.add(data['message'].replace(action, '<action>'))
-        self.assertEqual(1, len(sentences))
+            self.assertTrue(data['message'].startswith('The ' + action + ' action was stopped.\nWhy:\n'))
+            shapes.add(re.sub(r'\(.*?\)', '(...)', data['message']).replace(action, '<action>'))
+        self.assertEqual(1, len(shapes))
+        self.assertIn('\nSolution:\nRun /plugin-manager:setup first.', data['message'])
         self.assertEqual(2, self.box.call('gate', '--action', 'verify')[0])  # only gated skills are known
 
     def test_gate_reports_conflicts_as_closed(self):
@@ -51,7 +53,9 @@ class GateTests(SyncBase):
         (self.p / '.project/plugins/plugin-manager/config.json').write_text('{bad')
         code, data, _ = self.box.call('gate')
         self.assertEqual((1, False, 'stop'), (code, data['ready'], data['next']))
-        self.assertIn('was stopped because this folder is not set up yet, or only partly', data['message'])
+        self.assertIn('Why:\nThis folder is not set up yet, or only partly (something in this folder blocks the setup)', data['message'])
+        self.assertIn('configuration evidence', data['detail'])  # the technical detail is kept, but stays out of the message
+        self.assertNotIn('evidence', data['message'])
 
 
 if __name__ == '__main__':

@@ -4,7 +4,8 @@
     "skill": "docs",
     "sources": [
       "skills/docs/SKILL.md",
-      "skills/_shared/flows/gate.md"
+      "skills/_shared/flows/gate.md",
+      "skills/_shared/references/messages.md"
     ],
     "history": [
       {
@@ -15,7 +16,7 @@
     "observed": [
       {
         "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action docs",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the operator language is not saved yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\"\n}"
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the language is not set yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped.\\nWhy:\\nThis folder is not set up yet, or only partly (the language is not set yet).\\nSolution:\\nRun /plugin-manager:setup first.\",\n  \"detail\": null\n}"
       }
     ],
     "expect": {
@@ -35,15 +36,18 @@
         "publish_plan\\.py",
         "documentation\\.py"
       ],
-      "contains": [
-        "The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.",
-        "Reason:"
-      ],
+      "contains": [],
       "options": [
         "Yes, run it",
         "No, stop"
       ],
-      "hands_over_to": "none"
+      "hands_over_to": "none",
+      "in_order": [
+        "The docs action was stopped.",
+        "Why:",
+        "Solution:",
+        "/plugin-manager:setup"
+      ]
     }
   },
   {
@@ -51,7 +55,8 @@
     "skill": "docs",
     "sources": [
       "skills/docs/SKILL.md",
-      "skills/_shared/flows/gate.md"
+      "skills/_shared/flows/gate.md",
+      "skills/_shared/references/messages.md"
     ],
     "history": [
       {
@@ -62,7 +67,7 @@
     "observed": [
       {
         "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action docs",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"sync\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"a managed file needs a keep, adopt or delete decision\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\"\n}"
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"sync\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"a managed file needs your decision\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped.\\nWhy:\\nThis folder is not set up yet, or only partly (a managed file needs your decision).\\nSolution:\\nRun /plugin-manager:setup first.\",\n  \"detail\": null\n}"
       }
     ],
     "expect": {
@@ -80,15 +85,22 @@
         "setup_state\\.py.*\\b(setup|record|sync|language)\\b",
         "documentation\\.py"
       ],
-      "contains": [
-        "Die Aktion docs wurde abgebrochen, weil dieser Ordner noch nicht oder nur teilweise eingerichtet ist. Bitte zuerst /plugin-manager:setup ausführen.",
-        "Grund:"
-      ],
+      "contains": [],
       "options": [
         "Ja, ausführen",
         "Nein, abbrechen"
       ],
-      "hands_over_to": "none"
+      "hands_over_to": "none",
+      "in_order": [
+        "Die Aktion docs wurde abgebrochen.",
+        "Warum:",
+        "Lösung:",
+        "/plugin-manager:setup"
+      ],
+      "forbidden_text": [
+        "\\b(Öffnen|Führen|Rufen|Prüfen|Starten|Wählen|Verwenden|Geben|Nutzen|Legen|Setzen) Sie\\b",
+        "\\b(Ihr|Ihre|Ihrem|Ihren|Ihrer|Ihnen)\\b"
+      ]
     }
   },
   {
@@ -96,7 +108,8 @@
     "skill": "docs",
     "sources": [
       "skills/docs/SKILL.md",
-      "skills/_shared/flows/gate.md"
+      "skills/_shared/flows/gate.md",
+      "skills/_shared/references/messages.md"
     ],
     "history": [
       {
@@ -105,7 +118,7 @@
       },
       {
         "role": "agent",
-        "text": "The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\nReason: the operator language is not saved yet.\nQuestion: Run /plugin-manager:setup now? [Yes, run it] [No, stop]"
+        "text": "The docs action was stopped.\nWhy:\nThis folder is not set up yet, or only partly (the language is not set yet).\nSolution:\nRun /plugin-manager:setup first.\nQuestion: Run /plugin-manager:setup now? [Yes, run it] [No, stop]"
       },
       {
         "role": "person",
@@ -115,7 +128,7 @@
     "observed": [
       {
         "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action docs",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the operator language is not saved yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\"\n}"
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the language is not set yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped.\\nWhy:\\nThis folder is not set up yet, or only partly (the language is not set yet).\\nSolution:\\nRun /plugin-manager:setup first.\",\n  \"detail\": null\n}"
       }
     ],
     "expect": {
@@ -136,7 +149,8 @@
     "skill": "docs",
     "sources": [
       "skills/docs/SKILL.md",
-      "skills/_shared/flows/gate.md"
+      "skills/_shared/flows/gate.md",
+      "skills/_shared/references/messages.md"
     ],
     "history": [
       {
@@ -145,7 +159,7 @@
       },
       {
         "role": "agent",
-        "text": "The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\nReason: the operator language is not saved yet.\nQuestion: Run /plugin-manager:setup now? [Yes, run it] [No, stop]"
+        "text": "The docs action was stopped.\nWhy:\nThis folder is not set up yet, or only partly (the language is not set yet).\nSolution:\nRun /plugin-manager:setup first.\nQuestion: Run /plugin-manager:setup now? [Yes, run it] [No, stop]"
       },
       {
         "role": "person",
@@ -155,7 +169,7 @@
     "observed": [
       {
         "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action docs",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the operator language is not saved yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\"\n}"
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"language\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"the language is not set yet\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The docs action was stopped.\\nWhy:\\nThis folder is not set up yet, or only partly (the language is not set yet).\\nSolution:\\nRun /plugin-manager:setup first.\",\n  \"detail\": null\n}"
       }
     ],
     "expect": {
@@ -176,7 +190,8 @@
     "skill": "publish",
     "sources": [
       "skills/publish/SKILL.md",
-      "skills/_shared/flows/gate.md"
+      "skills/_shared/flows/gate.md",
+      "skills/_shared/references/messages.md"
     ],
     "history": [
       {
@@ -187,7 +202,7 @@
     "observed": [
       {
         "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action publish",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"stop\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"a technical conflict stops all writes: Unsupported evidence file\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The publish action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\"\n}"
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"stop\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"something in this folder blocks the setup\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The publish action was stopped.\\nWhy:\\nThis folder is not set up yet, or only partly (something in this folder blocks the setup).\\nSolution:\\nRun /plugin-manager:setup first.\",\n  \"detail\": \"Unsupported evidence file\"\n}"
       }
     ],
     "expect": {
@@ -207,15 +222,18 @@
         "gh ",
         "setup_state\\.py.*\\b(setup|record|sync|language)\\b"
       ],
-      "contains": [
-        "The publish action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.",
-        "Reason:"
-      ],
+      "contains": [],
       "options": [
         "Yes, run it",
         "No, stop"
       ],
-      "hands_over_to": "none"
+      "hands_over_to": "none",
+      "in_order": [
+        "The publish action was stopped.",
+        "Why:",
+        "Solution:",
+        "/plugin-manager:setup"
+      ]
     }
   },
   {
@@ -223,7 +241,8 @@
     "skill": "modify",
     "sources": [
       "skills/modify/SKILL.md",
-      "skills/_shared/flows/gate.md"
+      "skills/_shared/flows/gate.md",
+      "skills/_shared/references/messages.md"
     ],
     "history": [
       {
@@ -234,7 +253,7 @@
     "observed": [
       {
         "command": "python3 -B \"setup_state.py\" gate --target <folder> --plugin plugin-manager --action modify",
-        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"skeleton\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"skeleton files, the ignore rule or the skeleton evidence are missing\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The modify action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\"\n}"
+        "output": "{\n  \"operation\": \"gate\",\n  \"ok\": false,\n  \"ready\": false,\n  \"next\": \"skeleton\",\n  \"target\": \"/work/fictional-plugin\",\n  \"reason\": \"some required files or settings are missing\",\n  \"run\": \"/plugin-manager:setup\",\n  \"target_code_executed\": false,\n  \"message\": \"The modify action was stopped.\\nWhy:\\nThis folder is not set up yet, or only partly (some required files or settings are missing).\\nSolution:\\nRun /plugin-manager:setup first.\",\n  \"detail\": null\n}"
       }
     ],
     "expect": {
@@ -252,15 +271,18 @@
         "modify\\.py",
         "setup_state\\.py.*\\b(setup|record|sync|language)\\b"
       ],
-      "contains": [
-        "The modify action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.",
-        "Reason:"
-      ],
+      "contains": [],
       "options": [
         "Yes, run it",
         "No, stop"
       ],
-      "hands_over_to": "none"
+      "hands_over_to": "none",
+      "in_order": [
+        "The modify action was stopped.",
+        "Why:",
+        "Solution:",
+        "/plugin-manager:setup"
+      ]
     }
   },
   {
@@ -377,6 +399,174 @@
         "setup_state\\.py.*\\b(setup|record|sync)\\b",
         "workflows\\.py",
         "git "
+      ]
+    }
+  },
+  {
+    "id": "setup_failure_is_explained_in_plain_words",
+    "skill": "setup",
+    "sources": [
+      "skills/setup/SKILL.md",
+      "skills/setup/flows/configure.md",
+      "skills/_shared/references/messages.md"
+    ],
+    "history": [
+      {
+        "role": "person",
+        "text": "/plugin-manager:setup"
+      },
+      {
+        "role": "agent",
+        "text": "Welche Sprache soll ich für dieses Projekt verwenden? Deutsch oder English?"
+      },
+      {
+        "role": "person",
+        "text": "Deutsch"
+      },
+      {
+        "role": "agent",
+        "text": "Plugin oder Marketplace?"
+      },
+      {
+        "role": "person",
+        "text": "Plugin"
+      },
+      {
+        "role": "agent",
+        "text": "Ich habe alle Angaben (Name demo-plugin-a, Beschreibung, Herausgeber, Lizenz MIT, Marketplace-Ordner) und starte jetzt die Erstellung. Passt das?"
+      },
+      {
+        "role": "person",
+        "text": "Ja, bitte ausführen."
+      }
+    ],
+    "observed": [
+      {
+        "command": "python3 -B \"workflows.py\" create --kind plugin --skeleton --root /Users/demo/tests/demo.plugin.a --marketplace /Users/demo/market --name demo-plugin-a --display-name \"Demo Plugin A\" --description \"Ein Demo-Plugin\" --author \"Demo\" --license MIT --copyright-holder \"Demo\" --copyright-year 2026",
+        "output": "exit status 1\nERROR: The folder /Users/demo/tests/demo.plugin.a is not a Git repository. In your IDE (for example VS Code) or in a terminal, run `git init` in that folder."
+      },
+      {
+        "command": "python3 -B \"setup_state.py\" status --target /Users/demo/tests/demo.plugin.a --plugin plugin-manager",
+        "output": "{\"operation\":\"status\",\"ok\":true,\"state\":\"unconfigured\",\"next\":\"configure\",\"language\":{\"operator_language\":\"de\",\"needs_choice\":false},\"conflicts\":[]}"
+      }
+    ],
+    "expect": {
+      "language": "de",
+      "mentions": [
+        "git init"
+      ],
+      "next_step": "reports_only",
+      "writes": false,
+      "max_questions": 0,
+      "forbidden_text": [
+        "\\bexit\\b",
+        "\\bchecks?\\b",
+        "\\bjson\\b",
+        "stderr",
+        "conflicts",
+        "traceback",
+        "schema",
+        "evidence",
+        "non-zero",
+        "generator",
+        "\\bok\\b",
+        "status code",
+        "\\b(Öffnen|Führen|Rufen|Prüfen|Starten|Wählen|Verwenden|Geben|Nutzen|Legen|Setzen) Sie\\b",
+        "\\b(Ihr|Ihre|Ihrem|Ihren|Ihrer|Ihnen)\\b"
+      ],
+      "forbidden_commands": [
+        "workflows\\.py",
+        "setup_state\\.py.*\\b(setup|record|sync)\\b"
+      ],
+      "in_order": [
+        "konnte nicht abgeschlossen werden",
+        "Warum:",
+        "Lösung",
+        "/plugin-manager:setup"
+      ]
+    }
+  },
+  {
+    "id": "setup_unknown_failure_is_not_guessed",
+    "skill": "setup",
+    "sources": [
+      "skills/setup/SKILL.md",
+      "skills/setup/flows/configure.md",
+      "skills/_shared/references/messages.md"
+    ],
+    "history": [
+      {
+        "role": "person",
+        "text": "/plugin-manager:setup"
+      },
+      {
+        "role": "agent",
+        "text": "Welche Sprache soll ich für dieses Projekt verwenden? Deutsch oder English?"
+      },
+      {
+        "role": "person",
+        "text": "Deutsch"
+      },
+      {
+        "role": "agent",
+        "text": "Plugin oder Marketplace?"
+      },
+      {
+        "role": "person",
+        "text": "Plugin"
+      },
+      {
+        "role": "agent",
+        "text": "Ich habe alle Angaben (Name demo-plugin-a, Beschreibung, Herausgeber, Lizenz MIT, Marketplace-Ordner) und starte jetzt die Erstellung. Passt das?"
+      },
+      {
+        "role": "person",
+        "text": "Ja, bitte ausführen."
+      }
+    ],
+    "observed": [
+      {
+        "command": "python3 -B \"workflows.py\" create --kind plugin --skeleton --root /Users/demo/tests/demo.plugin.a --marketplace /Users/demo/market --name demo-plugin-a --display-name \"Demo Plugin A\" --description \"Ein Demo-Plugin\" --author \"Demo\" --license MIT --copyright-holder \"Demo\" --copyright-year 2026",
+        "output": "exit status 1\nERROR: internal failure code 17 (no further details)"
+      }
+    ],
+    "expect": {
+      "language": "de",
+      "in_order": [
+        "konnte nicht abgeschlossen werden",
+        "Warum:",
+        "Lösung",
+        "/plugin-manager:verify"
+      ],
+      "mentions_any": [
+        "nicht bekannt",
+        "unbekannt"
+      ],
+      "next_step": [
+        "asks_question",
+        "asks_confirmation"
+      ],
+      "options": [
+        "Technische Details anzeigen",
+        "Nein, danke"
+      ],
+      "hands_over_to": "none",
+      "writes": false,
+      "max_questions": 1,
+      "forbidden_text": [
+        "code 17",
+        "\\bexit\\b",
+        "\\bchecks?\\b",
+        "\\bjson\\b",
+        "stderr",
+        "traceback",
+        "generator",
+        "\\b(Öffnen|Führen|Rufen|Prüfen|Starten|Wählen|Verwenden|Geben|Nutzen|Legen|Setzen) Sie\\b",
+        "\\b(Ihr|Ihre|Ihrem|Ihren|Ihrer|Ihnen)\\b"
+      ],
+      "forbidden_commands": [
+        "workflows\\.py",
+        "setup_state\\.py.*\\b(setup|record|sync)\\b"
       ]
     }
   }

@@ -22,9 +22,8 @@ def read_evidence(ctx, root):
         raise Conflict(path, 'Template base is missing for kind ' + repr(data['kind']) + ' (no manifests/<kind>.json)', 'template_base')
     identity = data['marketplace']
     if ctx.kinds[data['kind']]['requires_marketplace']:
-        valid = (isinstance(identity, dict) and set(identity) == {'name', 'repository'} and isinstance(identity['name'], str)
-                 and NAME.fullmatch(identity['name']) and isinstance(identity['repository'], str) and identity['repository'].strip() != '')
-        message = 'A plugin belongs to exactly one marketplace: marketplace {name, repository} is required for kind ' + data['kind']
+        valid = isinstance(identity, dict) and set(identity) == {'name'} and isinstance(identity['name'], str) and NAME.fullmatch(identity['name'])
+        message = 'A plugin belongs to exactly one marketplace: marketplace {name} is required for kind ' + data['kind']
     else:
         valid, message = identity is None, 'marketplace must be null for kind ' + data['kind']
     if not valid:

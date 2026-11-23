@@ -7,7 +7,7 @@ from tests.support.project_setup_fixture import Sandbox, tree
 
 LOCAL = '.project/plugins/plugin-manager/local.json'
 REPO = 'https://github.com/fictional/demo-plugin'
-IDENTITY = {'name': 'fictional-market', 'repository': 'https://github.com/fictional/market.git'}
+IDENTITY = {'name': 'fictional-market'}  # the identity of a marketplace is its name
 
 
 class AssociationStatusTests(unittest.TestCase):
@@ -64,7 +64,6 @@ class AssociationStatusTests(unittest.TestCase):
     def test_mismatch_when_the_checkout_or_its_catalog_entry_does_not_fit_the_identity(self):
         self.point()
         cases = {'another marketplace name': dict(name='other-market'),
-                 'another repository': dict(repository='https://github.com/fictional/elsewhere.git'),
                  'plugin not listed': dict(plugins=[]),
                  'plugin listed for another repository': dict(plugins=[{'name': 'demo-plugin', 'repository': 'https://github.com/x/y.git'}])}
         for label, change in cases.items():
@@ -73,9 +72,9 @@ class AssociationStatusTests(unittest.TestCase):
                 data = self.status()
                 self.assertEqual(('mismatch', 'ready', True), (data['association']['state'], data['next'], data['ok']))  # a hint, never a gate
 
-    def test_repository_urls_compare_without_dot_git_and_case(self):
+    def test_plugin_repository_urls_compare_without_dot_git_and_case(self):
         self.point()
-        self.catalog(repository='HTTPS://github.com/Fictional/Market', plugins=[{'name': 'demo-plugin', 'repository': REPO}])
+        self.catalog(plugins=[{'name': 'demo-plugin', 'repository': REPO.upper().replace('HTTPS', 'https')}])
         self.assertEqual('ok', self.status()['association']['state'])
 
     def test_unsupported_local_formats_are_a_hint_not_a_conflict(self):

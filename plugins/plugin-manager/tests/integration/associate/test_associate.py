@@ -44,8 +44,7 @@ class AssociateTests(AssociateBase):
         self.assertEqual({'schema_version': 1, 'marketplace_path': os.path.relpath(self.market, self.plugin)}, self.local())
         config = self.config()
         self.assertEqual(2, config['schema_version'])
-        self.assertEqual({'name': 'fictional-market', 'repository': 'https://github.com/example/market'},
-                         {'name': config['marketplace']['name'], 'repository': config['marketplace']['repository'].removesuffix('.git')})
+        self.assertEqual({'name': 'fictional-market'}, config['marketplace'])  # the identity of a marketplace is its name
         self.assertFalse((self.plugin / '.local/marketplace.json').exists())  # the plugin-side .local file is gone
 
     def test_association_with_the_same_marketplace_is_idempotent(self):
@@ -158,14 +157,14 @@ class AssociateTests(AssociateBase):
             flow.associate(self.plugin, second)
         self.assertEqual(before, snapshot(self.plugin, self.market, second))
 
-    def test_same_marketplace_name_with_another_repository_is_an_identity_conflict(self):
+    def test_a_second_checkout_with_the_same_name_is_the_same_marketplace(self):
         self.configured()
-        impostor = self.repo('impostor')
-        flow.create_marketplace(impostor, 'fictional-market', 'Fictional Market', 'Fictional Publisher')
-        before = snapshot(self.plugin, self.market, impostor)
-        with self.assertRaisesRegex(ValueError, 'Marketplace identity conflicts'):
-            flow.associate(self.plugin, impostor)
-        self.assertEqual(before, snapshot(self.plugin, self.market, impostor))
+        moved = self.repo('moved-market')
+        flow.create_marketplace(moved, 'fictional-market', 'Fictional Market', 'Fictional Publisher')
+        result = flow.associate(self.plugin, moved)  # the name is the identity: a moved or fresh checkout only gets the new path
+        self.assertEqual(('fictional-market', 'fictional-market'), (result['from']['name'], result['to']['name']))
+        self.assertEqual(os.path.relpath(moved, self.plugin), self.local()['marketplace_path'])
+        self.assertEqual('fictional-market', self.config()['marketplace']['name'])
 
     def test_target_must_be_a_marketplace_and_separate_from_the_plugin(self):
         self.configured()

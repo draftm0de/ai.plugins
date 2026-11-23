@@ -66,22 +66,54 @@ def read(path, default=None):
 
 
 def repository_url(value):
-    if not isinstance(value, str):
-        raise ValueError('GitHub repository URL required')
-    value = value.removesuffix('.git')
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError('A GitHub address is needed, for example https://github.com/<owner>/<name>.git')
+    value = value.strip().removesuffix('.git')
     match = re.fullmatch(r'(?:https://github\.com/|git@github\.com:)([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)', value)
     if not match:
-        raise ValueError('Use a credential-free GitHub repository URL')
+        raise ValueError('The address ' + value + ' is not a plain GitHub address. Use the form https://github.com/<owner>/<name>.git, without a user name or password.')
     return 'https://github.com/' + match[1]
 
 
-def git_repository(root, supplied=None):
-    actual = subprocess.check_output(['git', '-C', str(root), 'rev-parse', '--show-toplevel'], text=True).strip()
+def git(root, *args):
+    """Run Git in `root`; returns its output, or None when Git exits with an error. A missing Git is a plain message."""
+    try:
+        return subprocess.check_output(['git', '-C', str(root), *args], text=True, stderr=subprocess.DEVNULL).strip()
+    except FileNotFoundError:
+        raise ValueError('Git is not installed or cannot be found. Install Git and try again.') from None
+    except subprocess.CalledProcessError:
+        return None
+
+
+NOT_A_REPOSITORY = 'The folder {root} is not a Git repository. In your IDE (for example VS Code) or in a terminal, run `git init` in that folder.'
+
+
+def git_root(root):
+    """The folder must itself be the root of a Git repository (a marketplace needs no origin)."""
+    actual = git(root, 'rev-parse', '--show-toplevel')
+    if actual is None:
+        raise ValueError(NOT_A_REPOSITORY.format(root=root))
     if Path(actual).resolve() != root.resolve():
-        raise ValueError('Select the exact separate repository root')
-    origin = repository_url(subprocess.check_output(['git', '-C', str(root), 'config', '--get', 'remote.origin.url'], text=True).strip())
+        raise ValueError('The folder ' + str(root) + ' lies inside the Git repository ' + actual + '. Choose the folder that is itself the repository.')
+
+
+def git_tracked(root, path):
+    """Whether Git tracks anything at `path` in the repository at `root`."""
+    listing = git(root, 'ls-files', '--', path)
+    if listing is None:
+        raise ValueError(NOT_A_REPOSITORY.format(root=root))
+    return bool(listing)
+
+
+def git_repository(root, supplied=None):
+    git_root(root)
+    configured = git(root, 'config', '--get', 'remote.origin.url')
+    if not configured:
+        raise ValueError('The folder ' + str(root) + ' has no GitHub address yet. In your IDE or in a terminal, run '
+                         '`git remote add origin https://github.com/<owner>/<name>.git` in that folder. The repository does not have to exist yet.')
+    origin = repository_url(configured)
     if supplied and repository_url(supplied) != origin:
-        raise ValueError('Explicit repository URL conflicts with Git origin')
+        raise ValueError('The given address ' + supplied + ' differs from the GitHub address of the folder (' + origin + ').')
     return origin
 
 
@@ -194,9 +226,9 @@ def template_files(kind, root):
     return files
 
 
-def create_marketplace(root, name=None, display_name=None, owner=None, repository=None):
+def create_marketplace(root, name=None, display_name=None, owner=None):
     root = safe_path(root)
-    origin = git_repository(root, repository)
+    git_root(root)
     if (root/'plugin.json').exists():
         raise ValueError('A plugin repository cannot become a marketplace')
     existing = read(root/'marketplace.json', {})
@@ -208,7 +240,7 @@ def create_marketplace(root, name=None, display_name=None, owner=None, repositor
         raise ValueError('Confirmed marketplace owner is required; Git author is not a publisher decision')
     if existing and (existing['name'] != name or existing['displayName'] != display_name or existing['owner'] != publisher):
         raise ValueError('Existing marketplace identity conflicts; creation does not migrate it')
-    config = existing or {'name': name, 'displayName': display_name, 'owner': publisher, 'repository': origin, 'plugins': []}
+    config = existing or {'name': name, 'displayName': display_name, 'owner': publisher, 'plugins': []}
     files = template_files('marketplace', root)
     # Synced skeleton files (manifests/marketplace.sync.json) belong to the skeleton and sync flows: an existing regular
     # file is neither judged nor replaced here, a missing one is created.
@@ -222,13 +254,13 @@ def create_marketplace(root, name=None, display_name=None, owner=None, repositor
     # Keep existing project prose and licensing untouched.
     for lang, filename in (('de', 'README.md'), ('en', 'README.en.md')):
         if not (root/filename).exists():
-            text = (f'# {display_name}\n\nMarketplace `{name}`: {origin}\n\n' +
+            text = (f'# {display_name}\n\nMarketplace `{name}`\n\n' +
                 ('Plugin-Repositories werden in `marketplace.json` eingetragen. Lokale Pfade stehen ausschließlich in `.local/marketplace.json`.\n\n' if lang == 'de' else 'Plugin repositories are registered in `marketplace.json`. Local paths belong only in `.local/marketplace.json`.\n\n') +
                 '```sh\npython3 -B scripts/verify.py --source .\npython3 -B scripts/marketplace.py check\nmake install-local TARGET=claude\n```\n\n' +
                 ('Ein frischer Clone benötigt für lokale Installation zuerst Checkout-Zuordnungen über die Plugin-Zuordnung von plugin-manager. local-marketplace.example.json ist nur eine optionale manuelle Kopiervorlage; nur .local/marketplace.json wird zur Laufzeit gelesen und bleibt uncommitted. Snapshots verwenden den aktuellen Checkout einschließlich uncommitteter Änderungen auf jedem Branch. Nach Änderungen oder Branchwechsel install-local und eine neue Host-Sitzung; kein Commit/Push/PR und kein Marketplace pro Branch. [Voraussetzungen](docs/prerequisites.md): Git und Python 3.10+, Make optional, Host-CLI nur für automatische lokale Installation. Strukturprüfung ist keine GitHub-/GUI-Abnahme.\n' if lang == 'de' else 'A fresh clone needs checkout associations through the plugin association of plugin-manager before local installation. local-marketplace.example.json is only an optional manual template; only .local/marketplace.json is read at runtime and stays uncommitted. Snapshots use the current checkout including uncommitted edits on any branch. After edits or branch switches run install-local and open a new host session; no commit/push/PR or per-branch marketplace. [Prerequisites](docs/prerequisites.md): Git and Python 3.10+, optional Make, host CLI only for automatic local installation. Structural verification is not GitHub/GUI acceptance.\n'))
             files[root/filename] = text.encode()
     ignore, content = ignore_file(root); files[ignore] = content
-    return {'action': 'create-marketplace', 'changed': apply(files, [ignore]), 'repository': origin, 'published': False}
+    return {'action': 'create-marketplace', 'changed': apply(files, [ignore]), 'published': False}
 
 
 def checkout_path(base, value):
@@ -254,13 +286,9 @@ def plugin_local_association(plugin_root):
 
 def market_identity(path):
     config = read(path/'marketplace.json')
-    if not isinstance(config.get('repository'), str) or not config['repository'].strip():
-        raise ValueError('The marketplace needs a repository URL in marketplace.json to be associated: ' + str(path/'marketplace.json'))
-    return {'name': config['name'], 'repository': config['repository']}
-
-
-def same_repository(a, b):
-    return repository_url(a) == repository_url(b)
+    if not isinstance(config.get('name'), str) or not config['name'].strip():
+        raise ValueError('The marketplace needs a name in marketplace.json to be associated: ' + str(path/'marketplace.json'))
+    return {'name': config['name']}
 
 
 def plugin_entry(manifest, url):
@@ -271,9 +299,10 @@ def plugin_entry(manifest, url):
 
 def association_files(plugin_root, market, manifest, new_plugin=False, allow_change=False):
     market = safe_path(market)
-    git_repository(market)
+    git_root(market)
     verifier = module(SKILL/'scripts/verify.py', 'trusted_verify')
     verifier.marketplace(market)
+    market_identity(market)  # the name at the root, checked before any file of this change is written
     config = read(market/'marketplace.json')
     name = manifest['name']
     url = repository_url(manifest['repository'])
@@ -289,7 +318,7 @@ def association_files(plugin_root, market, manifest, new_plugin=False, allow_cha
     if not found:
         config['plugins'].append(entry)
     for checkout, tracked in ((market, '.local'), (plugin_root, LOCAL_FILE)):
-        if subprocess.check_output(['git', '-C', str(checkout), 'ls-files', '--', tracked]).strip():
+        if git_tracked(checkout, tracked):
             raise ValueError('Local configuration is tracked; review before writing private checkout mappings')
     previous = plugin_local_association(plugin_root)
     if previous and not allow_change and checkout_path(plugin_root, previous).resolve() != market.resolve():
@@ -312,10 +341,10 @@ def association_files(plugin_root, market, manifest, new_plugin=False, allow_cha
 
 def release_old_marketplace(old, plugin_root, manifest):
     """Files that remove exactly this plugin from its previous marketplace checkout (name and repository must match)."""
-    git_repository(old)
+    git_root(old)
     verifier = module(SKILL/'scripts/verify.py', 'trusted_verify')
     verifier.marketplace(old)
-    if subprocess.check_output(['git', '-C', str(old), 'ls-files', '--', '.local']).strip():
+    if git_tracked(old, '.local'):
         raise ValueError('Local configuration is tracked; review before writing private checkout mappings')
     config = read(old/'marketplace.json')
     name, url = manifest['name'], repository_url(manifest['repository'])
@@ -386,11 +415,10 @@ def associate(root, marketplace, repository=None, drop_missing_old=False, plugin
     declared = evidence['marketplace']
     target = market_identity(market)
     same = target['name'] == declared['name']
-    if same and not same_repository(target['repository'], declared['repository']):
-        raise ValueError('Marketplace identity conflicts: ' + declared['name'] + ' is bound to another repository in the configuration')
     previous = plugin_local_association(root)
     old = None
-    renamed = (not same) and same_repository(target['repository'], declared['repository'])
+    # the same checkout under a new name (the marketplace was renamed, R24): found through the path the plugin already records
+    renamed = (not same) and previous is not None and checkout_path(root, previous).resolve() == market.resolve()
     if renamed:  # the same marketplace under a new name (R24): only the identity in config.json follows, no catalog change
         url = repository_url(manifest['repository'])
         verifier.marketplace(market)
@@ -571,10 +599,10 @@ def main():
         plugin_only = ('marketplace', 'skeleton', 'description', 'author', 'languages', 'default_language', 'license',
                        'license_file', 'copyright_year', 'copyright_holder')
         if kind == 'marketplace':
-            misplaced = [key for key in plugin_only if args[key] not in (None, False)]
+            misplaced = [key for key in plugin_only + ('repository',) if args[key] not in (None, False)]
             if misplaced:
                 parser.error('create --kind marketplace does not accept ' + ', '.join('--' + key.replace('_', '-') for key in misplaced))
-            for key in plugin_only:
+            for key in plugin_only + ('repository',):
                 del args[key]
             action = 'create_marketplace'
         else:

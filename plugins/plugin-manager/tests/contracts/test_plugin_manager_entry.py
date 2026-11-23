@@ -27,11 +27,11 @@ class EntryTextTests(unittest.TestCase):
 
     def test_stop_rules_no_endless_loops_and_ready_waits(self):
         for needle in ('Stop and report instead of repeating', 'same `next` without progress', 'do not ask again in a loop',
-                       'wait for input', 'no endless re-sync', 'name each concrete reason', 'partial changes that actually happened'):
+                       'wait for input', 'no endless re-sync', 'in the plain words of', 'what was already changed'):
             self.assertIn(needle, self.text)
         for name in ('language', 'skeleton'):
             self.assertIn('Check `ok` and the exit code', self.flow(name))
-            self.assertIn('partial changes that actually happened', self.flow(name))
+            self.assertIn('messages.md', self.flow(name))  # failures are told in plain words (R25)
 
     def test_read_only_precedence(self):
         for needle in ('Read-only requests', 'exactly one `status`', 'ask nothing, save nothing, start no flow'):
@@ -69,6 +69,11 @@ class EntryTextTests(unittest.TestCase):
         self.assertLess(text.index('Guided dialogue'), text.index('Only an explicit request'))
         self.assertIn('exactly one `status`', self.text)  # read-only unchanged
 
+    def test_a_run_that_stopped_at_record_is_resumed_without_the_generator(self):  # R15, R21
+        text = self.flow('configure')
+        for needle in ('do not run the generator again', 'then run `record` again', 'stopped at `record`', 'marketplace.json without `repository`'):
+            self.assertIn(needle, text)
+
     def test_marketplace_selection_tool_errors_and_generator_timing(self):
         text = self.flow('configure')
         for needle in ('suggestion is never a selection',
@@ -92,7 +97,7 @@ class EntryTextTests(unittest.TestCase):
     def test_entry_reads_common_language_rule_instead_of_duplicating_it(self):
         reference = (ROOT / 'skills/_shared/references/operator-language.md').read_text()
         self.assertIn('## Language of all visible text', reference)
-        for needle in ('read and apply `../../_shared/references/operator-language.md`', 'Language of all visible text',
+        for needle in ('and `../../_shared/references/operator-language.md`', 'read and apply `../../_shared/references/messages.md`', 'Language of all visible text',
                        'closing or next-step card fields'):
             self.assertIn(needle, self.text)
         for duplicated in ('Apply the language before output', 'Fixed labels the host itself supplies', 'JSON keys are not translated'):
@@ -111,7 +116,7 @@ class EntryTextTests(unittest.TestCase):
                        'nothing is written or stored', 'sync --target', '--decision keep|adopt', '--source-hash', '--local-hash',
                        'records both current hashes', 'replaces only this file', 'Only the explicitly chosen file is touched',
                        '`stale_decision`', 'not applied', 'run `status` again', 'never mean `matches_template`',
-                       'Check `ok` and the exit code', 'partial changes that actually happened'):
+                       'Check `ok` and the exit code', 'what was already written or removed'):
             self.assertIn(needle, text)
         self.assertLess(text.index('Ask explicitly'), text.index('sync --target'))
 
@@ -169,8 +174,8 @@ class EntryTextTests(unittest.TestCase):
             self.assertIn(needle, sync)
         self.assertNotIn('keep|adopt|delete', sync)
         skeleton = self.flow('skeleton')
-        self.assertIn('`removed.files`, `removed.directories`', skeleton.split('2. Check')[1].split('3.')[0])
-        self.assertIn('`removed.*`', sync)
+        self.assertIn('which files and settings were already written or removed', skeleton.split('2. Check')[1].split('3.')[0])
+        self.assertIn('already written or removed', sync)  # plain words, no field names (R25)
         self.assertNotIn('every other flow leave its bytes unchanged', self.text)
         for needle in ('never replace its bytes', 'only the automatic removal and the explicit `delete` decision',
                        'Never show, quote or describe the content', 'not for `ready`', 'not for accepted deviations or kept files',
@@ -182,7 +187,7 @@ class EntryTextTests(unittest.TestCase):
                        '`changed`', 'only after that success', 'cannot be shown as `ready`'):
             self.assertIn(needle, self.text)
         text = self.flow('configure')
-        for needle in ('no `ok`', 'exit 0 **and** `checks.status == "passed"`', 'needs_attention', 'files actually listed in `changed`',
+        for needle in ('no `ok`', 'exit 0 **and** `checks.status == "passed"`', 'needs_attention', 'what was already created',
                        'do not say "ready"', 'do not derive success from a plugin.json that now exists',
                        'Only after a passed run write the evidence'):
             self.assertIn(needle, text)

@@ -4,7 +4,7 @@ Used when the person chose "marketplace" in `flows/configure.md` (the `kind` is 
 
 ## Preconditions
 
-- The GitHub repository already exists and is cloned; the flow never creates repositories, sets remotes, commits, pushes, installs or publishes. The `origin` supplies the repository URL; an explicit repository URL given by the person is only checked against it.
+- The Git repository already exists (cloned or initialized); the flow never creates repositories, sets remotes, commits, pushes, installs or publishes. A marketplace needs a Git repository but no `origin`: its name is its identity and it records no repository of its own.
 - The folder is not a plugin repository: a root plugin.json makes the generator refuse ("a plugin repository cannot become a marketplace"). Report it and stop.
 - No marketplace is embedded and no plugin is created here.
 
@@ -15,12 +15,12 @@ Used when the person chose "marketplace" in `flows/configure.md` (the `kind` is 
 
    ```sh
    python3 -B "<shared>/scripts/workflows.py" create --kind marketplace --root "<folder>" \
-     --name <technical-name> --display-name "<Display Name>" --owner "<Owner>" [--repository <url>]
+     --name <technical-name> --display-name "<Display Name>" --owner "<Owner>"
    ```
 
    It creates the canonical `marketplace.json`, both derived host catalogs (`.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json`), the standalone scripts, the Makefile (`install-local`, `test`), the starter instructions, the starter READMEs and `local-marketplace.example.json`. Existing README files, licenses and other prose are preserved. It neither judges nor replaces an existing synced skeleton file (also a deviating one): such a file stays byte-identical and is decided later by the sync flow. Repeating the operation is idempotent (`changed` stays empty); an identity conflict with an existing `marketplace.json` stops without writes, and nothing is migrated.
-3. Judge the result by the generator's own answer, which has `action`, `changed`, `repository` and `published: false` but no `ok` and no `checks`: success means exit 0. On a non-zero exit report the error text and the files actually listed in `changed` (if any), and stop; do not run `record`.
-4. Only after exit 0 write the evidence: `python3 -B "<helper>" record --target "<folder>" --plugin plugin-manager --kind marketplace --artifact <technical-name>`. `record` checks that the root `marketplace.json` exists with exactly that name and writes `.project/plugins/plugin-manager/config.json`; judge it by exit 0 and `ok: true`, on failure report `conflicts`/`errors` and stop.
+3. Judge the result by the generator's own answer, which has `action`, `changed` and `published: false` but no `ok` and no `checks`: success means exit 0. On a non-zero exit report the failure in the plain words of `../../_shared/references/messages.md` (what is wrong with which folder, what was already created, what to do next), and stop; do not run `record`.
+4. Only after exit 0 write the evidence: `python3 -B "<helper>" record --target "<folder>" --plugin plugin-manager --kind marketplace --artifact <technical-name>`. `record` checks that the root `marketplace.json` exists with exactly that name and writes `.project/plugins/plugin-manager/config.json`; judge it by exit 0 and `ok: true`; on failure report it in the plain words of `../../_shared/references/messages.md` and stop.
 5. Run `status` again (see SKILL.md). The skeleton flow now records the hash evidence of the synced files of the kind marketplace, then `ready`. Report what was created and that publishing, installation and plugin registration are separate steps; the local checkout mappings (`.local/marketplace.json`, never committed) are created when plugins are associated, and `local-marketplace.example.json` is only an optional manual template.
 
 ## Boundaries

@@ -25,7 +25,7 @@ class WorkpackageBase(unittest.TestCase):
 
     def evidence(self, path=EVIDENCE, **override):
         data = {'schema_version': 2, 'plugin': PLUGIN, 'kind': 'plugin', 'artifact': 'demo-plugin',
-                'configured_at': '2026-11-22T10:00:00Z', 'marketplace': {'name': 'fictional-market', 'repository': 'https://github.com/fictional/market.git'}}
+                'configured_at': '2026-11-22T10:00:00Z', 'marketplace': {'name': 'fictional-market'}}
         data.update(override)
         target = self.p / path
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -70,10 +70,10 @@ class ConfigurationEvidenceTests(WorkpackageBase):
         for override in ({'kind': 'website'}, {'extra': 1}, {'schema_version': 1}, {'plugin': 'other-plugin'},
                          {'artifact': 5}, {'configured_at': 'yesterday'},
                          # R21: a plugin belongs to exactly one marketplace; the identity is required and strict
-                         {'marketplace': None}, {'marketplace': {'name': 'fictional-market'}}, {'marketplace': 'fictional-market'},
-                         {'marketplace': {'name': 'Bad Name', 'repository': 'https://github.com/fictional/market.git'}},
-                         {'marketplace': {'name': 'fictional-market', 'repository': ' '}},
-                         {'marketplace': {'name': 'fictional-market', 'repository': 'https://github.com/f/m.git', 'path': '../m'}}):
+                         {'marketplace': None}, {'marketplace': {}}, {'marketplace': 'fictional-market'},
+                         {'marketplace': {'name': 'Bad Name'}},
+                         {'marketplace': {'name': 'fictional-market', 'repository': 'https://github.com/fictional/market.git'}},  # the name is the identity
+                         {'marketplace': {'name': 'fictional-market', 'path': '../m'}}):
             with self.subTest(override=override):
                 self.evidence(**override)
                 before = tree(self.p)
@@ -84,7 +84,7 @@ class ConfigurationEvidenceTests(WorkpackageBase):
 
     def test_schema_1_evidence_and_a_marketplace_on_a_marketplace_kind_are_unsupported(self):
         self.language()
-        self.evidence(kind='marketplace', artifact='demo-marketplace', marketplace={'name': 'a-market', 'repository': 'https://github.com/f/m.git'})
+        self.evidence(kind='marketplace', artifact='demo-marketplace', marketplace={'name': 'a-market'})
         code, data, _ = self.status()
         self.assertEqual((1, 'stop'), (code, data['next']))
         self.assertIn('marketplace must be null', data['conflicts'][0]['reason'])

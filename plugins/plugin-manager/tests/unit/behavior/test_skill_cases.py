@@ -18,7 +18,7 @@ def answer(reply, commands=(), next_step='reports_only', writes=False, options=(
 
 class CaseDefinitionTests(unittest.TestCase):
     def test_every_case_names_existing_skill_texts_and_valid_patterns(self):
-        self.assertGreaterEqual(len(CASES), 9)
+        self.assertGreaterEqual(len(CASES), 10)
         for case in CASES.values():
             with self.subTest(case=case['id']):
                 self.assertTrue((ROOT / 'skills' / case['skill'] / 'SKILL.md').is_file())
@@ -42,23 +42,23 @@ class CaseDefinitionTests(unittest.TestCase):
 class GradingTests(unittest.TestCase):
     def test_a_good_gate_stop_in_english_passes(self):
         case = CASES['docs_bare_gate_closed_language']
-        good = answer('The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\nReason: the operator language is not saved yet.\nRun /plugin-manager:setup now?',
+        good = answer('The docs action was stopped.\nWhy:\nThis folder is not set up yet, or only partly (the language is not set yet).\nSolution:\nRun /plugin-manager:setup first.\nRun /plugin-manager:setup now?',
                       next_step='asks_confirmation', options=['Yes, run it', 'No, stop'])
         self.assertEqual([], run_skills.grade(case, good))
         self.assertIn('options are', ' '.join(run_skills.grade(case, answer(good['reply'], next_step='asks_confirmation'))))  # no buttons offered
-        reworded = answer('The documentation is not updated: the operator language is not saved yet. Please run /plugin-manager:setup first.', next_step='asks_confirmation', options=['Yes, run it', 'No, stop'])
-        self.assertIn('reply does not contain', ' '.join(run_skills.grade(case, reworded)))
+        unstructured = answer('The documentation is not updated: the language is not set yet. Please run /plugin-manager:setup first.', next_step='asks_confirmation', options=['Yes, run it', 'No, stop'])
+        self.assertIn('in the required order', ' '.join(run_skills.grade(case, unstructured)))
 
     def test_wrong_language_missing_pointer_questions_and_forbidden_commands_are_found(self):
         case = CASES['docs_bare_gate_closed_language']
         bad = answer('Die Dokumentation wird nicht erstellt. Soll ich das Setup starten?\nUnd welchen Ordner meinst du?', ['python3 -B setup_state.py setup --target x'], 'reports_only', True)
         errors = ' | '.join(run_skills.grade(case, bad))
-        for expected in ('not in en', 'does not mention /plugin-manager:setup', 'next_step', 'writes', 'question', 'forbidden command'):
+        for expected in ('not in en', 'required order', 'next_step', 'writes', 'question', 'forbidden command'):
             self.assertIn(expected, errors)
 
     def test_either_question_label_is_accepted_for_the_yes_no_question_and_a_bilingual_question_counts_once(self):
         case = CASES['docs_bare_gate_closed_language']
-        reply = 'The docs action was stopped because this folder is not set up yet, or only partly. Please run /plugin-manager:setup first.\nReason: x'
+        reply = 'The docs action was stopped.\nWhy:\nThis folder is not set up yet, or only partly (x).\nSolution:\nRun /plugin-manager:setup first.'
         for label in ('asks_question', 'asks_confirmation'):
             self.assertEqual([], run_skills.grade(case, answer(reply, next_step=label, options=['Yes, run it', 'No, stop'])))
         self.assertIn('next_step', ' '.join(run_skills.grade(case, answer(reply, next_step='reports_only', options=['Yes, run it', 'No, stop']))))
@@ -69,8 +69,8 @@ class GradingTests(unittest.TestCase):
 
     def test_german_text_expects_a_german_stop(self):
         case = CASES['docs_german_text_gate_closed_sync']
-        self.assertEqual([], run_skills.grade(case, answer('Die Aktion docs wurde abgebrochen, weil dieser Ordner noch nicht oder nur teilweise eingerichtet ist. Bitte zuerst /plugin-manager:setup ausführen.\nGrund: Eine verwaltete Datei braucht noch eine Entscheidung.\nSoll ich /plugin-manager:setup jetzt ausführen?', next_step='asks_confirmation', options=['Ja, ausführen', 'Nein, abbrechen'])))
-        self.assertIn('reply is not in de', run_skills.grade(case, answer('The documentation is not updated. Please run /plugin-manager:setup first.')))
+        self.assertEqual([], run_skills.grade(case, answer('Die Aktion docs wurde abgebrochen.\nWarum:\nDieser Ordner ist noch nicht oder nur teilweise eingerichtet (eine verwaltete Datei braucht deine Entscheidung).\nLösung:\nFühre zuerst /plugin-manager:setup aus.\nSoll ich /plugin-manager:setup jetzt ausführen?', next_step='asks_confirmation', options=['Ja, ausführen', 'Nein, abbrechen'])))
+        self.assertIn('reply is not in de', ' '.join(run_skills.grade(case, answer('The docs action was stopped. Why: this folder is not set up yet. Solution: please run /plugin-manager:setup first.'))))
 
     def test_a_yes_hands_over_to_setup_without_running_anything_and_a_no_ends(self):
         yes, no = CASES['docs_gate_closed_yes_hands_over_to_setup'], CASES['docs_gate_closed_no_ends_without_a_step']
@@ -79,6 +79,32 @@ class GradingTests(unittest.TestCase):
         self.assertIn('forbidden command', ' '.join(run_skills.grade(yes, answer('Running setup.', ['python3 -B setup_state.py setup --target x'], hands_over_to='setup'))))
         self.assertEqual([], run_skills.grade(no, answer('Understood, I stop here.')))
         self.assertIn('hands_over_to', ' '.join(run_skills.grade(no, answer('Starting setup.', hands_over_to='setup'))))
+
+    def test_a_failure_must_be_told_in_plain_words_with_the_command(self):
+        case = CASES['setup_failure_is_explained_in_plain_words']
+        good = answer('Das Setup konnte nicht abgeschlossen werden.\nWarum:\nDer Ordner /Users/demo/tests/demo.plugin.a ist kein Git-Repository.\nLösung(en):\na) Initialisiere es in einer IDE (zum Beispiel VS Code).\noder\nb) Führe in einem Terminal in diesem Ordner `git init` aus.\n\nRufe danach /plugin-manager:setup erneut auf. Die Sprache wurde gespeichert.')
+        self.assertEqual([], run_skills.grade(case, good))
+        technical = answer('Der Generator lief mit Exit 1 und checks.status != passed. Der Ordner ist kein Git-Repository: `git init`. Das JSON zeigt conflicts.')
+        errors = ' '.join(run_skills.grade(case, technical))
+        self.assertIn('technical wording', errors)
+        self.assertIn('reply is not in de', ' '.join(run_skills.grade(case, answer('The folder is not a Git repository. Run `git init` in it.'))))
+
+    def test_a_german_message_uses_du_not_sie(self):
+        case = CASES['setup_failure_is_explained_in_plain_words']
+        formal = answer('Das Setup konnte nicht abgeschlossen werden.\nWarum:\nDer Ordner ist kein Git-Repository.\nLösung:\nFühren Sie `git init` aus und rufen Sie /plugin-manager:setup erneut auf.')
+        self.assertIn('technical wording', ' '.join(run_skills.grade(case, formal)))
+        informal = answer('Das Setup konnte nicht abgeschlossen werden.\nWarum:\nDer Ordner ist kein Git-Repository.\nLösung:\nFühre `git init` aus und rufe danach /plugin-manager:setup erneut auf.')
+        self.assertNotIn('technical wording', ' '.join(run_skills.grade(case, informal)))
+
+    def test_an_unknown_failure_is_not_guessed_and_offers_the_details(self):
+        case = CASES['setup_unknown_failure_is_not_guessed']
+        good = answer('Das Setup konnte nicht abgeschlossen werden.\nWarum:\nDie Ursache ist nicht bekannt (ein unerwarteter Fehler). Es wurde nichts geändert.\nLösung(en):\na) Rufe /plugin-manager:setup erneut auf.\noder\nb) Prüfe den Ordner mit /plugin-manager:verify.\nMöchtest du die technischen Details sehen?',
+                      next_step='asks_question', options=['Technische Details anzeigen', 'Nein, danke'])
+        self.assertEqual([], run_skills.grade(case, good))
+        guessed = answer('Das Setup konnte nicht abgeschlossen werden.\nWarum:\nDer Fehlercode 17 bedeutet, dass der Speicher voll ist.\nLösung:\nRäume auf.', next_step='reports_only')
+        errors = ' '.join(run_skills.grade(case, guessed))
+        self.assertIn('technical wording', errors)
+        self.assertIn('mentions none of', errors)
 
     def test_modify_must_show_the_dry_run_and_ask_before_any_real_write(self):
         case = CASES['modify_shows_consequences_and_asks_before_writing']

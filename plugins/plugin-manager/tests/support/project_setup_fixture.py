@@ -72,7 +72,7 @@ class Sandbox:
         return self
 
     requires_marketplace = True  # the real kind plugin belongs to exactly one marketplace (R21)
-    MARKETPLACE = {'name': 'fictional-market', 'repository': 'https://github.com/fictional/market.git'}
+    MARKETPLACE = {'name': 'fictional-market'}  # the identity of a marketplace is its name
 
     def configure(self, artifact='demo-plugin', kind='plugin', marketplace=...):
         """Configuration evidence (schema 2) of the running plugin (R15); unconfigure() removes it again."""

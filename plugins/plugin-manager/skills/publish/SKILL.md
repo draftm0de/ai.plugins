@@ -11,6 +11,8 @@ Read the initial-publication contract before handling an unborn HEAD. No automat
 
 Regular publication: prepare → concrete approval → approved descriptive feature branch → commit → push → PR → checks → merge. No claude/ or codex/ prefix; never publish directly on the default branch except the separately approved empty-repository bootstrap. Use start-branch only after approval and reuse the verified journal-owned branch on resume. Read the canonical prerequisites and verify provider capabilities before preparing.
 
+Messages to the person (failures, stops, results) follow `../_shared/references/messages.md`: outcome first, the cause in plain words, one concrete next step, no technical terms.
+
 ## State gate
 
-Before preparing a plan follow `../_shared/flows/gate.md` (`setup_state.py gate --action publish`). When the gate is closed, stop as that flow says: the two lines (the fixed sentence and the reason), then the question whether to run `/plugin-manager:setup`; no plan, journal, branch or commit is created and publish writes nothing then.
+Before preparing a plan follow `../_shared/flows/gate.md` (`setup_state.py gate --action publish`). When the gate is closed, stop as that flow says: the structured message (headline, Why, Solution), then the question whether to run `/plugin-manager:setup`; no plan, journal, branch or commit is created and publish writes nothing then.

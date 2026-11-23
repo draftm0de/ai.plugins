@@ -124,7 +124,7 @@ class PluginCreateWorkflowTests(WorkflowFixture, unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'Existing content differs'):self.create()
         self.assertFalse((self.plugin/'plugin.json').exists())
         self.assertEqual(before,(self.market/'marketplace.json').read_bytes())
-        with self.assertRaisesRegex(ValueError,'conflicts'):
+        with self.assertRaises(TypeError):  # a marketplace has no repository of its own to supply
             flow.create_marketplace(self.market,repository='https://github.com/example/wrong')
 
 

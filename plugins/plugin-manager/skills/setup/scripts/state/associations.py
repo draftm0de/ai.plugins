@@ -9,7 +9,7 @@ from .constants import Conflict
 def resolve_association(ctx, root, artifact):
     """Look at the local marketplace checkout of a plugin. Returns (state, path, identity): state is ok, path_missing,
     path_invalid, mismatch (identity of the checkout or the catalog entry of the plugin differs) or unsupported;
-    identity is the {name, repository} the checkout declares (None unless readable)."""
+    identity is the {name} the checkout declares (None unless readable)."""
     local, value = evidence_files.read_local(ctx, root)
     if local == 'missing':
         return 'path_missing', None, None
@@ -22,10 +22,9 @@ def resolve_association(ctx, root, artifact):
         market = fsafe.strict_json(fsafe.read_regular(checkout, 'marketplace.json').decode('utf-8'))
     except (Conflict, ValueError, UnicodeDecodeError, OSError):
         return 'path_invalid', value, None
-    if not (isinstance(market, dict) and isinstance(market.get('name'), str) and isinstance(market.get('repository'), str)
-            and isinstance(market.get('plugins'), list)):
+    if not (isinstance(market, dict) and isinstance(market.get('name'), str) and isinstance(market.get('plugins'), list)):
         return 'path_invalid', value, None
-    identity = {'name': market['name'], 'repository': market['repository']}
+    identity = {'name': market['name']}
     try:
         plugin_repo = fsafe.strict_json(fsafe.read_regular(root, 'plugin.json').decode('utf-8')).get('repository')
     except (Conflict, ValueError, UnicodeDecodeError, OSError, AttributeError):
@@ -43,6 +42,6 @@ def association_report(ctx, root, evidence):
         return None
     state, path, identity = resolve_association(ctx, root, evidence['artifact'])
     declared = evidence['marketplace']
-    if state == 'ok' and (identity['name'] != declared['name'] or evidence_files.norm_repo(identity['repository']) != evidence_files.norm_repo(declared['repository'])):
+    if state == 'ok' and identity['name'] != declared['name']:
         state = 'mismatch'
     return {'marketplace': declared, 'path': path, 'state': state}

@@ -56,7 +56,7 @@ class SkillSetTests(unittest.TestCase):
                 self.assertIn('writes nothing', skill)
         self.assertTrue((ROOT / 'skills/_shared/flows/gate.md').is_file())
         gate = text('skills/_shared/flows/gate.md')
-        for needle in ('setup_state.py', 'gate --target', '`ready`', '/plugin-manager:setup', 'writes nothing', 'in English', 'never guess a language', '--action', 'Die Aktion', 'two lines', 'Yes, run it', 'No, stop', 'Ja, ausführen', 'hand over to the skill `setup`'):
+        for needle in ('setup_state.py', 'gate --target', '`ready`', '/plugin-manager:setup', 'writes nothing', 'in English', 'never guess a language', '--action', 'Die Aktion', 'Why:', 'Warum:', 'Lösung:', 'Yes, run it', 'No, stop', 'Ja, ausführen', 'hand over to the skill `setup`'):
             self.assertIn(needle, gate)
 
     def test_verify_stays_read_only_and_reports_pending_setup_as_finding(self):
@@ -74,6 +74,16 @@ class SkillSetTests(unittest.TestCase):
         self.assertTrue((ROOT / 'skills/setup/flows').is_dir())
         for name in ('configure', 'marketplace', 'associate'):
             self.assertTrue((ROOT / 'skills/setup/flows' / (name + '.md')).is_file(), name)
+
+    def test_every_skill_and_failure_flow_follows_the_plain_message_rules(self):  # R25
+        rules = text('skills/_shared/references/messages.md')
+        for needle in ('Mandatory structure', 'Why:', 'Solution(s):', 'Warum:', 'raw error text', 'git init', 'git remote add origin', 'Known causes', 'Unknown causes', 'Never invent a cause', 'Technische Details anzeigen', '## Address', 'German uses "du"'):
+            self.assertIn(needle, rules)
+        for name in SKILLS:
+            self.assertIn('../_shared/references/messages.md', text('skills/%s/SKILL.md' % name), name)
+        for flow in ('language', 'skeleton', 'sync', 'configure', 'marketplace', 'associate', 'entry'):
+            self.assertIn('_shared/references/messages.md', text('skills/setup/flows/%s.md' % flow), flow)
+        self.assertIn('messages.md', text('skills/_shared/flows/gate.md'))
 
     def test_setup_description_says_it_may_be_called_repeatedly(self):
         description = text('skills/setup/SKILL.md').split('---')[1]

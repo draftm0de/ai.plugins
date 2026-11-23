@@ -85,6 +85,17 @@ def grade(case, report):
     for needle in expect.get('contains', []):
         if needle.casefold() not in reply.casefold():
             errors.append('reply does not contain ' + needle)
+    if expect.get('in_order'):
+        position = 0
+        for part in expect['in_order']:
+            found = reply.casefold().find(part.casefold(), position)
+            if found < 0:
+                errors.append('reply lacks "' + part + '" in the required order')
+                break
+            position = found + len(part)
+    for pattern in expect.get('forbidden_text', []):
+        if re.search(pattern, reply, re.IGNORECASE):
+            errors.append('reply contains technical wording matching ' + pattern)
     if expect.get('mentions_any') and not any(n.casefold() in reply.casefold() for n in expect['mentions_any']):
         errors.append('reply mentions none of ' + ', '.join(expect['mentions_any']))
     if 'next_step' in expect:
