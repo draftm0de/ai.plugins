@@ -25,7 +25,7 @@ Specialised actions stay in their own skills. Helper: `../scripts/setup_state.py
 
 ## Ready output
 
-On `ready` write exactly one line in the operator language and nothing else (no greeting, no list of skeleton deviations unless the person asks): English `Plugin <name> Status: fully configured`, German `Plugin <name> Status: vollständig konfiguriert`; for another language translate only the status words. `<name>` is the field `plugin` of the status answer, the name of the configured plugin or marketplace repository (never the name of the running Manager unless the Manager itself is the target). Add no remark, note or explanation about this line or the rules behind it. Then wait for input.
+On `ready` write exactly one line in the operator language and nothing else (no greeting, no list of skeleton deviations unless the person asks): English `Plugin <name> Status: fully configured`, German `Plugin <name> Status: vollständig konfiguriert`; for another language translate only the status words. `<name>` is the field `plugin` of the status answer, the name of the configured plugin or marketplace repository (never the name of the running Manager unless the Manager itself is the target). Add no remark, note or explanation about this line or the rules behind it. Write it exactly once as your whole answer: no second copy, no recap and no closing-summary or next-step card of the host for this line (a card would repeat it). Then wait for input.
 
 ## Read-only requests
 

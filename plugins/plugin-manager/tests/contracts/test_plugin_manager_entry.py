@@ -201,7 +201,7 @@ class EntryTextTests(unittest.TestCase):
             self.assertIn(needle, self.text)
 
     def test_ready_is_one_status_line_in_the_operator_language(self):  # R18
-        for needle in ('Plugin <name> Status: fully configured', 'Plugin <name> Status: vollständig konfiguriert', 'field `plugin` of the status answer', 'Add no remark',
+        for needle in ('Plugin <name> Status: fully configured', 'Plugin <name> Status: vollständig konfiguriert', 'field `plugin` of the status answer', 'Add no remark', 'exactly once as your whole answer', 'no closing-summary or next-step card',
                        'exactly one line', 'nothing else'):
             self.assertIn(needle, self.text)
 
