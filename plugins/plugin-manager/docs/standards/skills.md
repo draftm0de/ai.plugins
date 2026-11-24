@@ -24,7 +24,8 @@ Managed by the plugin manager and identical in every plugin. Do not edit it here
 
 ## Text
 
-- Every skill loads the operator-language reference before it talks to the person, and follows `messages.md` for every
-  failure and stop.
+- Every skill loads the operator-language reference before it talks to the person and follows its section "How a skill
+  uses the language" (language from the helper only, everything the person reads in it, passed on to scripts that print
+  text); the skill text does not repeat these rules. It follows `messages.md` for every failure and stop.
 - Skill and flow texts do not duplicate wording that belongs to the message catalogue or to this standard.
 - Instruction texts are not product behavior. Test them with contracts and model cases, never as acceptance.

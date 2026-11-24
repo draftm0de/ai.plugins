@@ -97,6 +97,8 @@ class EntryTextTests(unittest.TestCase):
     def test_entry_reads_common_language_rule_instead_of_duplicating_it(self):
         reference = (ROOT / 'skills/_shared/references/operator-language.md').read_text()
         self.assertIn('## Language of all visible text', reference)
+        self.assertIn('## How a skill uses the language', reference)  # R9: the four rules every skill follows, once
+        self.assertEqual(4, sum(reference.split('## How a skill uses the language')[1].split('Details and the helper follow.')[0].count('\n%d. ' % n) for n in (1, 2, 3, 4)))
         for needle in ('and `../../_shared/references/operator-language.md`', 'read and apply `../../_shared/references/messages.md`', 'Language of all visible text',
                        'closing or next-step card fields'):
             self.assertIn(needle, self.text)

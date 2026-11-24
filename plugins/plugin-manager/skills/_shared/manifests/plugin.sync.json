@@ -18,7 +18,7 @@
       "executable": false
     },
     "docs/standards/skills.md": {
-      "sha256": "f2b7c0694687070241844cd1cb22f3f4f267dd56260e565328faa7550ad1e151",
+      "sha256": "534d52168c26b25c1a313aa0549f5fbcce6b851dc8e93acc4c8d854821d4d55a",
       "executable": false
     },
     "docs/standards/testing.md": {
@@ -38,7 +38,7 @@
       "executable": false
     },
     "skills/_shared/references/operator-language.md": {
-      "sha256": "d55bcdf0db3d9d6b70c683c78e05fdcd2cf8dea450d50ac1507f222f3d38d80b",
+      "sha256": "5b4850dce3b864265c459264b72e65b5a97894d9bb15b38000bb8ccf8a3ca161",
       "executable": false
     },
     "skills/_shared/scripts/messages_base.py": {

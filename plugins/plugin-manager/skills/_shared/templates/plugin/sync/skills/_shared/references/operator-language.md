@@ -1,5 +1,20 @@
 # Operator language (binding)
 
+## How a skill uses the language
+
+Every skill follows these four rules and does not repeat them in its own text:
+
+1. The language comes from `operator_language` in the output of the helper below and from nowhere else: not from the
+   language of the skill text, of a file or folder name, of the command or of the person's first message. The one
+   exception is a failure of the helper itself, before any language is saved: it uses the language of the person's text.
+2. Everything the person reads is written in that language: previews, questions, answer labels, results and every
+   finished failure message. Paths, commands and identifiers stay unchanged.
+3. A script that prints text for the person receives the language: pass the operator language to `--language` or
+   `--message-language`, whichever the script offers.
+4. While no language is known, resolve it first (below) before anything else is shown.
+
+Details and the helper follow.
+
 Before any domain/setup questions or actions, resolve the operator preference in the
 explicitly selected project root, never the installed plugin or a global profile.
 Use the loaded skill's sibling `../_shared/scripts/operator_language.py` with
