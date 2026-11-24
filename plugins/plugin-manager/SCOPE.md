@@ -83,6 +83,7 @@ Status: confirmed
 Acceptance: Every newly generated plugin ships the shared operator-language helper and its reference. Before setup/domain interaction, a missing project preference is asked alone and persisted only after an explicit answer. Later calls reuse it, including bare slash commands and new sessions. An explicit change updates only that project's preference. Content/documentation languages remain independent; invalid state is rejected without mutation. Future skills preserve the same gate. The reference opens with the section "How a skill uses the language": the language comes only from the helper's `operator_language`, everything the person reads (previews, questions, answer labels, results, finished failure messages) is written in it, a script that prints text for the person receives it, and an unknown language is resolved first; the standards (`skills.md`) make this section binding for every skill, whose own text does not repeat it.
 Source: skills/_shared/templates/plugin/sync/skills/_shared/scripts/operator_language.py
 Source: skills/_shared/templates/plugin/sync/skills/_shared/references/operator-language.md
+Source: skills/_shared/templates/plugin/sync/skills/_shared/references/operator-language-helper.md
 Source: skills/_shared/scripts/workflows.py
 Test: tests/integration/plugin_create/test_workflows.py
 Test: tests/behavior/operator_language_acceptance.md

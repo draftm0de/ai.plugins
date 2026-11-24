@@ -2,7 +2,7 @@
   "schema_version": 1,
   "files": {
     "AGENTS.md": {
-      "sha256": "daeafd3413d937865b1ecd7702fa5cfff0941a9d8d8ed83dbc6ce257d501746e",
+      "sha256": "c0648468e0e3744b2c08e1e1c025b91614e373735663b840d104735a1c54b3c0",
       "executable": false
     },
     "CLAUDE.md": {
@@ -37,8 +37,12 @@
       "sha256": "1091dd93ba94bf53697ef5634935c79638d8ee3e5939db447044aaf2d5fd81a1",
       "executable": false
     },
+    "skills/_shared/references/operator-language-helper.md": {
+      "sha256": "53bb1b1b5184bf241de6e0c7bacb64b2a32e3ad41b8f97a6f4b7be9585b75f27",
+      "executable": false
+    },
     "skills/_shared/references/operator-language.md": {
-      "sha256": "5b4850dce3b864265c459264b72e65b5a97894d9bb15b38000bb8ccf8a3ca161",
+      "sha256": "608c81480295570eb14e8eb59cfd53dca25fdf438ae33a846255dec915107933",
       "executable": false
     },
     "skills/_shared/scripts/messages_base.py": {
