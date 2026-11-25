@@ -5,6 +5,14 @@
       "source_hash": "d50241a8f54f9b9dc16bcc0c741754b2f3b9017c0dd4e9358068c74f6a31a638",
       "local_hash": "d50241a8f54f9b9dc16bcc0c741754b2f3b9017c0dd4e9358068c74f6a31a638"
     },
+    "docs/de/concepts.md": {
+      "source_hash": "d4d32642bc2f67d666b472eb14d30b9ae3e6e90467ae75d804069c37c43ed160",
+      "local_hash": "d4d32642bc2f67d666b472eb14d30b9ae3e6e90467ae75d804069c37c43ed160"
+    },
+    "docs/en/concepts.md": {
+      "source_hash": "ea8c9409c1bbf92bf008aebd793f5b970c38a9460178633b33ec7a3c90ae5b53",
+      "local_hash": "ea8c9409c1bbf92bf008aebd793f5b970c38a9460178633b33ec7a3c90ae5b53"
+    },
     "scripts/local_plugins.py": {
       "source_hash": "e43812e571110587816617f6ba81f9fc8b579a9baf236bef6e190cb5120e50d3",
       "local_hash": "e43812e571110587816617f6ba81f9fc8b579a9baf236bef6e190cb5120e50d3"
@@ -24,6 +32,22 @@
     "scripts/verify.py": {
       "source_hash": "cb4938a3ea52c767a87bab4b036b120b6e6241fe64ce980d4fa72e98e7d765e4",
       "local_hash": "cb4938a3ea52c767a87bab4b036b120b6e6241fe64ce980d4fa72e98e7d765e4"
+    },
+    "tests/contracts/test_local_plugins.py": {
+      "source_hash": "e6cb9786c61a7b9f4b488845bb38cdc1d697d50de4aedda4a975d99f4aaecdc6",
+      "local_hash": "e6cb9786c61a7b9f4b488845bb38cdc1d697d50de4aedda4a975d99f4aaecdc6"
+    },
+    "tests/contracts/test_marketplace_catalogs.py": {
+      "source_hash": "1677a4be32fb4473dfd6c5cce77afa08aeb0508c3ca07e992276fbfd30fcd318",
+      "local_hash": "1677a4be32fb4473dfd6c5cce77afa08aeb0508c3ca07e992276fbfd30fcd318"
+    },
+    "tests/contracts/test_plugin_payload.py": {
+      "source_hash": "a07f858ffb4d30df60e3bcfe00a46262aa2a76f986154e9b2d2a12d502c2b774",
+      "local_hash": "a07f858ffb4d30df60e3bcfe00a46262aa2a76f986154e9b2d2a12d502c2b774"
+    },
+    "tests/contracts/test_run_tests.py": {
+      "source_hash": "82e098ba8e638adcce487ba9ad187681684b69a92bdd649a9c288855825873ea",
+      "local_hash": "82e098ba8e638adcce487ba9ad187681684b69a92bdd649a9c288855825873ea"
     }
   }
 }
