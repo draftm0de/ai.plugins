@@ -26,20 +26,24 @@
       "local_hash": "18aafd74ae5f1cdb4b7a841886b89ab20ea3850e9f0bfebc61274cd9042083a0"
     },
     "docs/de/development.md": {
-      "source_hash": "60a5e3d5bacae05db718a7b90fc727f105a842f9bdb265a0ff4cb8bc0c0c3fb2",
-      "local_hash": "60a5e3d5bacae05db718a7b90fc727f105a842f9bdb265a0ff4cb8bc0c0c3fb2"
+      "source_hash": "b1daade413ba76856a84f591d96b063f422989af6509c7ee2d2a7327ba2096ac",
+      "local_hash": "b1daade413ba76856a84f591d96b063f422989af6509c7ee2d2a7327ba2096ac"
     },
     "docs/en/concepts.md": {
       "source_hash": "7f3bf83a8cc3310ce62c3bd9252c831e6fb60d87925e13b987737f802b18faa8",
       "local_hash": "7f3bf83a8cc3310ce62c3bd9252c831e6fb60d87925e13b987737f802b18faa8"
     },
     "docs/en/development.md": {
-      "source_hash": "e5141605a9da232f0da4960c5e34fd1d4a186e03a1756156738e00cf408fdff5",
-      "local_hash": "e5141605a9da232f0da4960c5e34fd1d4a186e03a1756156738e00cf408fdff5"
+      "source_hash": "82d0bd1429dc3afe5f4b206f41ccd3dc54fcaea5062c2bdb18ac8de949533345",
+      "local_hash": "82d0bd1429dc3afe5f4b206f41ccd3dc54fcaea5062c2bdb18ac8de949533345"
     },
     "docs/prerequisites.md": {
       "source_hash": "bd31c420a6b66e58e16e7abea1d653301d14c44c2ee12e2ae700652fcf92ae32",
       "local_hash": "bd31c420a6b66e58e16e7abea1d653301d14c44c2ee12e2ae700652fcf92ae32"
+    },
+    "scripts/docs_rules.py": {
+      "source_hash": "70946e077cd64dd5fa5863e4f46f8bd5271b682dd55279649af22eb23fda1ae1",
+      "local_hash": "70946e077cd64dd5fa5863e4f46f8bd5271b682dd55279649af22eb23fda1ae1"
     },
     "scripts/local_plugins.py": {
       "source_hash": "e43812e571110587816617f6ba81f9fc8b579a9baf236bef6e190cb5120e50d3",
@@ -58,8 +62,8 @@
       "local_hash": "210e1c86b5c90ce9770fc2f1bc5df1724315187a8b3c0999cf01e9db79e5f96d"
     },
     "scripts/verify.py": {
-      "source_hash": "1b375b48940ae49e192318c847f5643df9406ea89d1cadb65618dc6655c9bdc4",
-      "local_hash": "1b375b48940ae49e192318c847f5643df9406ea89d1cadb65618dc6655c9bdc4"
+      "source_hash": "15c3e9d8db08e899590cde66d6ca33a962ed48570859e303fdfebab25610960a",
+      "local_hash": "15c3e9d8db08e899590cde66d6ca33a962ed48570859e303fdfebab25610960a"
     },
     "tests/README.md": {
       "source_hash": "94b486e08d21e6c06e3e789fb46379b12e1ea83cbb5065b06ccfd9dc0396d5d1",

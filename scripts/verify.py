@@ -2,7 +2,9 @@
 """Read-only repository verification. Never execute repository code or change files."""
 import argparse
 import hashlib
+import importlib.util
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -177,6 +179,60 @@ def conventions(root):
         problems.append('docs/style.md is missing (the writing style of the documentation; /plugin-manager:setup creates it)')
     if problems:
         raise ValueError('The plugin does not follow the standards: ' + '; '.join(sorted(set(problems))) + '. See docs/standards/.')
+
+
+def documentation(root):
+    """R37: the pages of the kind exist in every selected language with their headings, and local links resolve.
+    Without docs/documentation.json no language is selected yet: nothing is checked, and the result says so."""
+    manifest = root / 'docs/documentation.json'
+    if not manifest.exists() and not manifest.is_symlink():
+        return 'not_created'
+    sys.dont_write_bytecode = True  # verify writes nothing, also no cache next to the rules
+    spec = importlib.util.spec_from_file_location('docs_rules', Path(__file__).resolve().with_name('docs_rules.py'))
+    rules = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(rules)
+    errors = rules.validate(root)
+    if errors:
+        raise ValueError('The documentation does not match the structure: ' + '; '.join(errors)
+                         + '. Run /plugin-manager:setup for the shared pages and /plugin-manager:docs for the others.')
+    return 'checked'
+
+
+def template_hashes(root):
+    """R47: where a plugin keeps files in sync (skills/<skill>/templates/<kind>/sync/), the hash file
+    skills/<skill>/manifests/<kind>.sync.json names exactly these files with their hash and executable bit."""
+    problems = []
+    for base in sorted(path for path in (root / 'skills').glob('*') if path.is_dir()):
+        kinds = {path.parent.name for path in base.glob('templates/*/sync')}
+        kinds |= {path.name[:-len('.sync.json')] for path in base.glob('manifests/*.sync.json')}
+        for kind in sorted(kinds):
+            relative = str((base / 'manifests' / (kind + '.sync.json')).relative_to(root))
+            folder = base / 'templates' / kind / 'sync'
+            actual = {}
+            for current, directories, names in os.walk(folder):
+                for name in [*directories, *names]:
+                    path = Path(current) / name
+                    if path.is_symlink():
+                        problems.append(str(path.relative_to(root)) + ' is a symlink')
+                    elif name in names and '__pycache__' not in path.parts:
+                        actual[path.relative_to(folder).as_posix()] = (hashlib.sha256(path.read_bytes()).hexdigest(),
+                                                                       bool(path.stat().st_mode & 0o111))
+            if not (root / relative).is_file():
+                problems.append(relative + ' is missing')
+                continue
+            data = read(root, relative)
+            listed = {name: (entry['sha256'], entry['executable']) for name, entry in data['files'].items()}
+            for name in sorted(set(actual) | set(listed)):
+                if name not in listed:
+                    problems.append(relative + ' does not list ' + name)
+                elif name not in actual:
+                    problems.append(relative + ' lists the missing file ' + name)
+                elif actual[name] != listed[name]:
+                    problems.append(name + ' differs from its hash in ' + relative)
+            problems += [relative + ' lists ' + name + ' as file and as removed' for name in data.get('removed', []) if name in listed]
+    if problems:
+        raise ValueError('The sync templates and their hash files do not fit: ' + '; '.join(problems)
+                         + '. Rebuild the hash files; they are never edited by hand.')
 
 
 def plugin(root):
@@ -405,7 +461,10 @@ def verify(source, kind='auto'):
         result = plugin(root) if selected == 'plugin' else marketplace(root)
         if selected == 'marketplace':
             standards(root, 'marketplace')  # not part of marketplace(): a plugin only reads its marketplace's catalog
-        return dict(result, kind=selected, source=str(root), structure_valid=True,
+        else:
+            template_hashes(root)
+        pages = documentation(root)
+        return dict(result, documentation=pages, kind=selected, source=str(root), structure_valid=True,
                     local_development=local_configuration(root, selected), target_code_executed=False,
                     limitations=['Structural verification only; host acceptance and remote repository contents require separate checks.'])
     except (ValueError, OSError, KeyError, TypeError, AttributeError, IndexError) as exc:
