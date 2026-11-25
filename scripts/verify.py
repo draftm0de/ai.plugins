@@ -71,7 +71,10 @@ def skeleton_marker(text, python=False):
             return line_number
     return None
 
-STANDARDS = ('coding.md', 'messages.md', 'testing.md', 'skills.md')
+# The managed standard files of each kind, what the managed AGENTS.md must name, and the files that never copy them.
+STANDARDS = {'plugin': (tuple('docs/standards/' + n + '.md' for n in ('coding', 'messages', 'testing', 'skills')),
+                        'docs/standards', ('SCOPE.md', 'CUSTOM.AGENTS.md')),
+             'marketplace': (('SCOPE.md',), 'SCOPE.md', ('CUSTOM.AGENTS.md',))}  # R41: its scope is its standard
 
 
 def recorded_hashes(root):
@@ -89,27 +92,28 @@ def recorded_hashes(root):
     return found
 
 
-def standards(root):
-    """R27/R28: the four managed standards and the managed AGENTS.md are in the plugin, unchanged, and not copied into SCOPE.md or CUSTOM.AGENTS.md.
-    Next to the Manager's own runtime the hashes of the managed files are known; a copy of this script inside a repository
-    checks presence, the reference and the copy rule only."""
+def standards(root, kind='plugin'):
+    """R27/R28/R41: the managed standards of the kind and the managed AGENTS.md are in the repository, unchanged, and not
+    copied into SCOPE.md or CUSTOM.AGENTS.md. Next to the Manager's own runtime the hashes of the managed files are known;
+    a copy of this script inside a repository checks presence, the reference and the copy rule only."""
+    files, named, writable = STANDARDS[kind]
     problems = []
-    manifest = Path(__file__).resolve().parents[1] / 'manifests' / 'plugin.sync.json'
+    manifest = Path(__file__).resolve().parents[1] / 'manifests' / (kind + '.sync.json')
     if manifest.is_file():
         known = strict_json(manifest.read_text(encoding='utf-8')).get('files', {})
     else:  # a copy of this script inside a repository (for example in CI): compare with what setup recorded in the committed lock
         known = recorded_hashes(root)
     texts = []
-    for name in STANDARDS:
-        path = root / 'docs/standards' / name
+    for name in files:
+        path = root / name
         if path.is_symlink() or not path.is_file():
-            problems.append('docs/standards/' + name + ' is missing')
+            problems.append(name + ' is missing')
             continue
         data = path.read_bytes()
         texts.append(data.decode('utf-8', 'replace'))
-        expected = known.get('docs/standards/' + name, {}).get('sha256')
+        expected = known.get(name, {}).get('sha256')
         if expected and hashlib.sha256(data).hexdigest() != expected:
-            problems.append('docs/standards/' + name + ' differs from the managed standard')
+            problems.append(name + ' differs from the managed standard')
     agents = root / 'AGENTS.md'
     agents_data = agents.read_bytes() if agents.is_file() and not agents.is_symlink() else None
     if agents_data is None:
@@ -117,10 +121,10 @@ def standards(root):
     else:
         expected = known.get('AGENTS.md', {}).get('sha256')
         if expected and hashlib.sha256(agents_data).hexdigest() != expected:
-            problems.append('AGENTS.md differs from the managed one (plugin-specific instructions belong into CUSTOM.AGENTS.md)')
-        if b'docs/standards' not in agents_data:
-            problems.append('AGENTS.md does not tell to read docs/standards/')
-    own = [root / name for name in ('SCOPE.md', 'CUSTOM.AGENTS.md')]
+            problems.append('AGENTS.md differs from the managed one (own instructions belong into CUSTOM.AGENTS.md)')
+        if named.encode() not in agents_data:
+            problems.append('AGENTS.md does not tell to read ' + named)
+    own = [root / name for name in writable]
     own_texts = {path.name: path.read_text(encoding='utf-8', errors='replace') for path in own if path.is_file() and not path.is_symlink()}
     copied = [(name, line.strip()) for text in texts for line in text.splitlines() if len(line.strip()) >= 60
               for name, own_text in own_texts.items() if line.strip() in own_text]
@@ -128,7 +132,7 @@ def standards(root):
         problems.append(copied[0][0] + ' copies standard text: ' + copied[0][1][:60] + '...')
     if problems:
         raise ValueError('The managed standards are not in place: ' + '; '.join(problems)
-                         + '. A standard is never edited in a plugin; run /plugin-manager:setup to bring the managed files back.')
+                         + '. A standard is never edited in a repository; run /plugin-manager:setup to bring the managed files back.')
 
 
 LAYOUT_PHRASES = ('could not be completed' + ', because', 'was stopped' + ', because',  # written in two pieces: this file builds no message
@@ -344,7 +348,7 @@ def local_configuration(root, kind):
                     raise ValueError(
                         f"Marketplace catalog entry '{entry.get('name')}' ('{entry.get('displayName')}') does not match plugin.json "
                         f"'{manifest['name']}' ('{display}'). A plugin repository does not own the catalog: update the entry "
-                        "(name, displayName, description) in the marketplace repository and run its sync-marketplace.")
+                        "(name, displayName, description) in the marketplace repository and run its make sync.")
             sources = read(market, '.local/marketplace.json').get('sources', {})
             selected_path = sources.get(manifest['name'])
             if not selected_path:
@@ -399,6 +403,8 @@ def verify(source, kind='auto'):
         if selected == 'marketplace' and not has_marketplace:
             raise ValueError('--kind marketplace requires a marketplace repository root containing marketplace.json')
         result = plugin(root) if selected == 'plugin' else marketplace(root)
+        if selected == 'marketplace':
+            standards(root, 'marketplace')  # not part of marketplace(): a plugin only reads its marketplace's catalog
         return dict(result, kind=selected, source=str(root), structure_valid=True,
                     local_development=local_configuration(root, selected), target_code_executed=False,
                     limitations=['Structural verification only; host acceptance and remote repository contents require separate checks.'])

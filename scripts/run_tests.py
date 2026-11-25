@@ -14,7 +14,7 @@ KINDS = ('unit', 'integration', 'contracts', 'native')
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--kind', choices=('deterministic',) + KINDS, default='deterministic')
-    parser.add_argument('--group', help='Optional skill/component, e.g. plugin-create or publish')
+    parser.add_argument('--group', help='Optional skill/component, e.g. plugin-create or setup')
     parser.add_argument('--list', action='store_true', help='Collect tests without executing them')
     args = parser.parse_args()
     group = args.group.replace('-', '_') if args.group else None

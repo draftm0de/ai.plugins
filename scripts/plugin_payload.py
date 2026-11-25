@@ -1,18 +1,11 @@
 #!/usr/bin/env python3
-"""Validate repository imports and manage local development snapshots. Never publish implicitly."""
-import argparse
+"""Package a plugin checkout in memory for the local development marketplace. Writes and installs nothing."""
 import hashlib
-import importlib.util
 import json
-from pathlib import Path
 import re
-import shutil
-import subprocess
-import sys
-import tempfile
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MARKER = '.zyris-generated'
 CONFIG_KEY = 'io.zyris.distribution'
 
 
@@ -109,56 +102,23 @@ def configuration(root=None):
     return manifest, source, market, extra
 
 
-def repository_files(manifest=None):
-    """Derive committed host metadata from the portable identity; no version pins."""
-    manifest = manifest or configuration()[0]
-    if 'version' in manifest:
-        raise ValueError('Repository distribution follows commits; remove version from plugin.json')
-    name = manifest['name']
-    config = manifest.get('extensions', {}).get(CONFIG_KEY, {})
-    market = name
-    if 'marketplace' in config:
-        raise ValueError('Unsupported distribution configuration: marketplace')
-    interface = manifest.get('extensions', {}).get('com.openai', {}).get('interface', {})
-    claude = {key: manifest[key] for key in ('name', 'description', 'author', 'homepage', 'repository', 'license', 'keywords') if key in manifest}
-    display_name = manifest.get('extensions', {}).get('com.openai', {}).get('interface', {}).get('displayName')
-    if display_name:
-        claude['displayName'] = display_name
-    if config.get('catalogs', False):
-        raise ValueError('Plugin repositories must not own marketplace catalogs')
-    return {'.claude-plugin/plugin.json': claude}
-
-
-def repository_metadata(check=False):
-    expected = repository_files()
-    for relative in ('.claude-plugin/marketplace.json', '.agents/plugins/marketplace.json'):
-        if (ROOT / relative).exists():
-            raise ValueError('Plugin repository must not own marketplace catalogs: ' + relative)
-    targets = {relative: source_path(ROOT, relative) for relative in expected}
-    drift = []
-    for relative, data in expected.items():
-        path = targets[relative]
-        if not path.is_file() or strict_json(read_file(path)) != data:
-            drift.append(relative)
-    if check and drift:
-        raise ValueError('Repository metadata missing or stale: ' + ', '.join(drift) + '; run make sync-plugin')
-    if not check:
-        for relative in drift:
-            path = targets[relative]
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps(expected[relative], ensure_ascii=False, indent=2) + '\n')
-    return {'valid': True, 'files': list(expected), 'updated': [] if check else drift}
-
-
 # Dot-named files that skeleton templates legitimately need. Exact names, files only,
-# and only below a `templates` folder of a skill; every other dot path stays excluded.
+# and only below a `templates` folder of a skill, plus the workflow folder of a template;
+# every other dot path stays excluded.
 TEMPLATE_DOT_FILES = frozenset({'.gitignore.tpl', '.gitkeep'})
 
 
 def allowed_resource(destination, relative, part):
     parts = relative.parts
-    return (destination == 'skills' and part in TEMPLATE_DOT_FILES and part == parts[-1]
-            and 'templates' in parts[:-1] and not any(p.startswith('.') for p in parts[:-1]))
+    if destination != 'skills' or 'templates' not in parts[:-1]:
+        return False
+    dotted = [index for index, name in enumerate(parts) if name.startswith('.')]
+    if len(dotted) != 1:
+        return False
+    index = dotted[0]
+    if part == '.github':  # the CI workflow a template delivers: only <kind>/sync/.github/workflows/<file>
+        return parts.index('templates') < index and parts[index - 1] == 'sync' and parts[index + 1:-1] == ('workflows',)
+    return part in TEMPLATE_DOT_FILES and part == parts[-1]
 
 
 def payload():
@@ -236,75 +196,3 @@ def codex_payload(portable):
     files = {name: content for name, content in portable.items() if name != 'plugin.json'}
     files['.codex-plugin/plugin.json'] = (json.dumps(codex, ensure_ascii=False, indent=2) + '\n').encode()
     return files
-
-
-# Ignored, machine-specific path of the one marketplace this plugin belongs to (written by plugin-manager associate).
-LOCAL_ASSOCIATION = '.project/plugins/plugin-manager/local.json'
-
-
-def install_local(target, dry_run=False):
-    """Resolve the one marketplace of this plugin from its local association; no override, no fallback."""
-    if target not in ('claude', 'codex'):
-        raise ValueError('Local development supports claude or codex')
-    selected = None
-    path = source_path(ROOT, LOCAL_ASSOCIATION)
-    if path.exists():
-        local = strict_json(read_file(path))
-        if (not isinstance(local, dict) or set(local) != {'schema_version', 'marketplace_path'} or type(local['schema_version']) is not int
-                or local['schema_version'] != 1 or not isinstance(local['marketplace_path'], str) or not local['marketplace_path'].strip()):
-            raise ValueError('Unsupported ' + LOCAL_ASSOCIATION + '; run plugin-manager (associate) to write it again')
-        selected = local['marketplace_path']
-    if selected:
-        selected = Path(selected).expanduser()
-        if not selected.is_absolute():
-            selected = ROOT / selected
-    if not selected:
-        raise ValueError('Local marketplace unavailable; run plugin-manager (associate)')
-    selected = Path(selected).resolve()
-    helper = selected / 'scripts/local_plugins.py'
-    if not helper.is_file() or helper.is_symlink():
-        raise ValueError('Selected marketplace is unavailable or lacks local development tooling')
-    catalog = strict_json(read_file(selected / 'marketplace.json'))
-    name = configuration()[0]['name']
-    local_file = selected / '.local/marketplace.json'
-    sources = strict_json(read_file(local_file)).get('sources', {}) if local_file.exists() else {}
-    linked = False
-    for entry in catalog['plugins']:
-        path = entry.get('path') if 'path' in entry else sources.get(entry.get('name'))
-        if path:
-            candidate = Path(path).expanduser()
-            candidate = candidate if candidate.is_absolute() else selected / candidate
-            if candidate.resolve() == ROOT.resolve() and (entry.get('name', name) == name):
-                linked = True
-    if not linked:
-        raise ValueError('Plugin is not locally associated with the selected marketplace; run plugin-manager (associate)')
-    spec = importlib.util.spec_from_file_location('selected_local_marketplace', helper)
-    shared = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(shared)
-    return shared.install_local(target, dry_run, root=selected)
-
-
-def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__, epilog='Git + Python 3.10+ management tools; Make optional. Local snapshots use the current checkout on any branch. After edits/branch switches run install-local and start a new host session. No commit/push/PR; host CLI only for automatic installation.')
-    sub = parser.add_subparsers(dest='command', required=True)
-    for command in ('install-local',):
-        action = sub.add_parser(command)
-        action.add_argument('--target', choices=('claude', 'codex'), default='claude')
-        action.add_argument('--dry-run', action='store_true')
-    check = sub.add_parser('check')
-    sub.add_parser('sync')
-    args = parser.parse_args(argv)
-    try:
-        if args.command in ('check', 'sync'):
-            result = repository_metadata(check=args.command == 'check')
-        else:
-            result = install_local(args.target, args.dry_run)
-        print(json.dumps(result, indent=2))
-        return 0
-    except (OSError, ValueError, KeyError, subprocess.CalledProcessError) as exc:
-        print(f'ERROR: {exc}', file=sys.stderr)
-        return 1
-
-
-if __name__ == '__main__':
-    sys.exit(main())

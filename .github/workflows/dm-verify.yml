@@ -1,0 +1,16 @@
+# Managed by the plugin manager: do not edit. Put own steps into another file under .github/workflows/.
+name: dm-verify
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python3 -B scripts/run_tests.py
+      - run: python3 -B scripts/marketplace.py check
+      - run: python3 -B scripts/verify.py --source . --kind marketplace

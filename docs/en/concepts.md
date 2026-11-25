@@ -1,6 +1,6 @@
 # Concepts
 
-[Installation](installation.md) · [Plugins](plugins.md)
+[Installation](installation.md) · [Plugins](plugins.md) · [Development](development.md)
 
 ## Marketplace
 

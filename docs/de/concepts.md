@@ -1,6 +1,6 @@
 # Begriffe
 
-[Installation](installation.md) · [Plugins](plugins.md)
+[Installation](installation.md) · [Plugins](plugins.md) · [Entwicklung](development.md)
 
 ## Marketplace
 

@@ -18,7 +18,9 @@ class PluginPayloadTests(unittest.TestCase):
             files = {'SKILL.md': '---\nname: example\ndescription: Fictional.\n---\n# Example\n',
                      'templates/site/.gitignore.tpl': 'dist/\n', 'templates/site/public/.gitkeep': '',
                      'templates/site/.secret': 'x', 'templates/site/.hidden/inner.txt': 'x',
-                     'templates/site/.gitignore': 'x', 'other/.gitignore.tpl': 'x', 'templates/site/.env.tpl': 'x'}
+                     'templates/site/.gitignore': 'x', 'other/.gitignore.tpl': 'x', 'templates/site/.env.tpl': 'x',
+                     'templates/site/sync/.github/workflows/ci.yml': 'x', 'templates/site/sync/.github/other.yml': 'x',
+                     'templates/site/.github/workflows/ci.yml': 'x', 'other/sync/.github/workflows/ci.yml': 'x'}
             for relative, text in files.items():
                 path = root / 'skills/example' / relative
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -34,7 +36,9 @@ class PluginPayloadTests(unittest.TestCase):
             names = set(payload_module.payload()[2])
             self.assertIn('skills/example/templates/site/.gitignore.tpl', names)
             self.assertIn('skills/example/templates/site/public/.gitkeep', names)
-            for blocked in ('templates/site/.secret', 'templates/site/.hidden/inner.txt',
+            self.assertIn('skills/example/templates/site/sync/.github/workflows/ci.yml', names)
+            for blocked in ('templates/site/sync/.github/other.yml', 'templates/site/.github/workflows/ci.yml',
+                            'other/sync/.github/workflows/ci.yml', 'templates/site/.secret', 'templates/site/.hidden/inner.txt',
                             'templates/site/.gitignore', 'other/.gitignore.tpl'):
                 self.assertNotIn('skills/example/' + blocked, names)
 

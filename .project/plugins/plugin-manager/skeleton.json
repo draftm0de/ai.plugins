@@ -1,17 +1,45 @@
 {
   "schema_version": 2,
   "files": {
+    ".github/workflows/dm-verify.yml": {
+      "source_hash": "621a4e31297cc5ca8831ba242d1eaa48b4286437bbd20effef7bf03c4aadf765",
+      "local_hash": "621a4e31297cc5ca8831ba242d1eaa48b4286437bbd20effef7bf03c4aadf765"
+    },
+    "AGENTS.md": {
+      "source_hash": "959056d4e31df3022dfde254c82bada637ada0c149a303b8785dbf2a463bfe2b",
+      "local_hash": "959056d4e31df3022dfde254c82bada637ada0c149a303b8785dbf2a463bfe2b"
+    },
     "CLAUDE.md": {
       "source_hash": "d50241a8f54f9b9dc16bcc0c741754b2f3b9017c0dd4e9358068c74f6a31a638",
       "local_hash": "d50241a8f54f9b9dc16bcc0c741754b2f3b9017c0dd4e9358068c74f6a31a638"
     },
+    "Makefile": {
+      "source_hash": "37fb5c70da38a2fcf53863c7730a4a6cb588bcffbe259334686a325159d2d56e",
+      "local_hash": "37fb5c70da38a2fcf53863c7730a4a6cb588bcffbe259334686a325159d2d56e"
+    },
+    "SCOPE.md": {
+      "source_hash": "aa5615c7c86317ef590fcef1c9862d81e91edc6da3d246c2764938ca46cb13ba",
+      "local_hash": "aa5615c7c86317ef590fcef1c9862d81e91edc6da3d246c2764938ca46cb13ba"
+    },
     "docs/de/concepts.md": {
-      "source_hash": "d4d32642bc2f67d666b472eb14d30b9ae3e6e90467ae75d804069c37c43ed160",
-      "local_hash": "d4d32642bc2f67d666b472eb14d30b9ae3e6e90467ae75d804069c37c43ed160"
+      "source_hash": "18aafd74ae5f1cdb4b7a841886b89ab20ea3850e9f0bfebc61274cd9042083a0",
+      "local_hash": "18aafd74ae5f1cdb4b7a841886b89ab20ea3850e9f0bfebc61274cd9042083a0"
+    },
+    "docs/de/development.md": {
+      "source_hash": "60a5e3d5bacae05db718a7b90fc727f105a842f9bdb265a0ff4cb8bc0c0c3fb2",
+      "local_hash": "60a5e3d5bacae05db718a7b90fc727f105a842f9bdb265a0ff4cb8bc0c0c3fb2"
     },
     "docs/en/concepts.md": {
-      "source_hash": "ea8c9409c1bbf92bf008aebd793f5b970c38a9460178633b33ec7a3c90ae5b53",
-      "local_hash": "ea8c9409c1bbf92bf008aebd793f5b970c38a9460178633b33ec7a3c90ae5b53"
+      "source_hash": "7f3bf83a8cc3310ce62c3bd9252c831e6fb60d87925e13b987737f802b18faa8",
+      "local_hash": "7f3bf83a8cc3310ce62c3bd9252c831e6fb60d87925e13b987737f802b18faa8"
+    },
+    "docs/en/development.md": {
+      "source_hash": "e5141605a9da232f0da4960c5e34fd1d4a186e03a1756156738e00cf408fdff5",
+      "local_hash": "e5141605a9da232f0da4960c5e34fd1d4a186e03a1756156738e00cf408fdff5"
+    },
+    "docs/prerequisites.md": {
+      "source_hash": "bd31c420a6b66e58e16e7abea1d653301d14c44c2ee12e2ae700652fcf92ae32",
+      "local_hash": "bd31c420a6b66e58e16e7abea1d653301d14c44c2ee12e2ae700652fcf92ae32"
     },
     "scripts/local_plugins.py": {
       "source_hash": "e43812e571110587816617f6ba81f9fc8b579a9baf236bef6e190cb5120e50d3",
@@ -22,16 +50,20 @@
       "local_hash": "e289c268468e33ec2d06a8340316a4e1d3a016bc165b5abeeb550e97bab910b3"
     },
     "scripts/plugin_payload.py": {
-      "source_hash": "c9023a6afbce46cd67c0c422911aa515deb639f24f25f8ae6abf591964ab9661",
-      "local_hash": "c9023a6afbce46cd67c0c422911aa515deb639f24f25f8ae6abf591964ab9661"
+      "source_hash": "dcfae767d3c354e8320feb84142e7c9f1a06adeb951ee271e8c312f2c9599ec1",
+      "local_hash": "dcfae767d3c354e8320feb84142e7c9f1a06adeb951ee271e8c312f2c9599ec1"
     },
     "scripts/run_tests.py": {
-      "source_hash": "1e8c301250633b36ae4123f2b35454a5ce57e0792a746d910cf9afd3f882344c",
-      "local_hash": "1e8c301250633b36ae4123f2b35454a5ce57e0792a746d910cf9afd3f882344c"
+      "source_hash": "210e1c86b5c90ce9770fc2f1bc5df1724315187a8b3c0999cf01e9db79e5f96d",
+      "local_hash": "210e1c86b5c90ce9770fc2f1bc5df1724315187a8b3c0999cf01e9db79e5f96d"
     },
     "scripts/verify.py": {
-      "source_hash": "cb4938a3ea52c767a87bab4b036b120b6e6241fe64ce980d4fa72e98e7d765e4",
-      "local_hash": "cb4938a3ea52c767a87bab4b036b120b6e6241fe64ce980d4fa72e98e7d765e4"
+      "source_hash": "1b375b48940ae49e192318c847f5643df9406ea89d1cadb65618dc6655c9bdc4",
+      "local_hash": "1b375b48940ae49e192318c847f5643df9406ea89d1cadb65618dc6655c9bdc4"
+    },
+    "tests/README.md": {
+      "source_hash": "94b486e08d21e6c06e3e789fb46379b12e1ea83cbb5065b06ccfd9dc0396d5d1",
+      "local_hash": "94b486e08d21e6c06e3e789fb46379b12e1ea83cbb5065b06ccfd9dc0396d5d1"
     },
     "tests/contracts/test_local_plugins.py": {
       "source_hash": "e6cb9786c61a7b9f4b488845bb38cdc1d697d50de4aedda4a975d99f4aaecdc6",
@@ -42,8 +74,8 @@
       "local_hash": "1677a4be32fb4473dfd6c5cce77afa08aeb0508c3ca07e992276fbfd30fcd318"
     },
     "tests/contracts/test_plugin_payload.py": {
-      "source_hash": "a07f858ffb4d30df60e3bcfe00a46262aa2a76f986154e9b2d2a12d502c2b774",
-      "local_hash": "a07f858ffb4d30df60e3bcfe00a46262aa2a76f986154e9b2d2a12d502c2b774"
+      "source_hash": "f977bbff456bde97d023baefa3279766451be40f43e51831844b4c88e613ff41",
+      "local_hash": "f977bbff456bde97d023baefa3279766451be40f43e51831844b4c88e613ff41"
     },
     "tests/contracts/test_run_tests.py": {
       "source_hash": "82e098ba8e638adcce487ba9ad187681684b69a92bdd649a9c288855825873ea",
