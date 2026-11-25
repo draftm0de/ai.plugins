@@ -559,6 +559,9 @@ def create_plugin(root, marketplace, *, name=None, display_name=None, descriptio
         association = association_files(root, market, manifest, new_plugin=True)
         files.update(association)
         changes = apply(files, association.keys())
+        for relative, meta in common.items():  # a managed file created here keeps its executable bit
+            if meta['executable'] and str(root/relative) in changes:
+                os.chmod(root/relative, 0o755)
     checks = creation_checks(root, market, license_decision)
     next_step = 'Confirm SCOPE.md, implement agreed behavior under skills/, add tests, then run verify --review. No functional acceptance is claimed.'
     if checks['status'] != 'passed':

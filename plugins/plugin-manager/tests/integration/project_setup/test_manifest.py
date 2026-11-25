@@ -81,7 +81,7 @@ class ManifestTests(unittest.TestCase):
     def test_plugin_classes_follow_the_scope(self):
         sync = set(load('plugin.sync.json')['files'])
         self.assertTrue({'CLAUDE.md', 'scripts/plugin.py', 'scripts/verify.py', 'scripts/run_tests.py',
-                         'skills/_shared/scripts/operator_language.py', 'skills/_shared/references/operator-language.md', 'skills/_shared/references/operator-language-helper.md', 'skills/_shared/scripts/messages_base.py', 'tests/behavior/run_cases.py', 'tests/contracts/test_operator_language.py', 'AGENTS.md',
+                         'skills/_shared/scripts/operator_language.py', 'skills/_shared/references/operator-language.md', 'skills/_shared/references/operator-language-helper.md', 'skills/_shared/scripts/messages_base.py', 'tests/behavior/run_cases.py', 'tests/contracts/test_operator_language.py', 'githooks/pre-commit', 'AGENTS.md',
                          'docs/standards/coding.md', 'docs/standards/messages.md', 'docs/standards/testing.md', 'docs/standards/skills.md'} == sync)  # R16: no setup flow; R27: the standards
         seed = set(files_below(TEMPLATES / 'plugin/seed'))
         self.assertTrue({'CUSTOM.AGENTS.md', 'SCOPE.md', 'assets/icon.png', 'Makefile', 'ci.yml', 'gitignore.txt', 'docs/architecture.md',

@@ -25,6 +25,10 @@
       "sha256": "e90ced5fb5f676a0d543be0173ac8497880e6af60a7cb40f625d59c518ca039f",
       "executable": false
     },
+    "githooks/pre-commit": {
+      "sha256": "d9c541efb33dd9303b6c8f9b50fc40d7060f249ac848dfd82d5667a60554d517",
+      "executable": true
+    },
     "scripts/plugin.py": {
       "sha256": "c9023a6afbce46cd67c0c422911aa515deb639f24f25f8ae6abf591964ab9661",
       "executable": false
@@ -34,7 +38,7 @@
       "executable": false
     },
     "scripts/verify.py": {
-      "sha256": "a6dea952e23cab9943eb3fd522f09986275d288bdf096b14f518ac39ebe75479",
+      "sha256": "08210254677c9e419ad3c2f56174b540214723c2491a7c832c74619c4d455b45",
       "executable": false
     },
     "skills/_shared/references/operator-language-helper.md": {

@@ -212,6 +212,7 @@ def scaffold_plugin(source, output, languages=None, default_language=None, repos
     for relative, data in engine.repository_files(manifest).items():
         files[relative] = (json.dumps(data, indent=2) + '\n').encode()
     files['plugin.json'] = (json.dumps(manifest, indent=2) + '\n').encode()
+    executables = set()
     for part in ('sync', 'seed'):
         folder = SKILL / 'templates/plugin' / part
         for path in folder.rglob('*'):
@@ -220,6 +221,8 @@ def scaffold_plugin(source, output, languages=None, default_language=None, repos
                 if part == 'seed' and relative == 'gitignore.txt': relative = '.gitignore'
                 if part == 'seed' and relative == 'ci.yml': relative = '.github/workflows/validate.yml'
                 files[relative] = path.read_bytes()
+                if path.stat().st_mode & 0o111:
+                    executables.add(relative)
     for relative in files:
         target = output / relative
         if target.exists() or target.is_symlink():
@@ -229,6 +232,8 @@ def scaffold_plugin(source, output, languages=None, default_language=None, repos
         target.parent.mkdir(parents=True, exist_ok=True)
         with target.open('xb') as handle:
             handle.write(content)
+        if relative in executables:  # keep the executable bit of a managed file (for example the pre-commit hook)
+            target.chmod(target.stat().st_mode | 0o111)
     scaffold(output / 'skills' / name, output, name, languages, default_language)
     return {'initialized': str(output), 'source_preserved': str(source), 'production_ready': None,
             'next': 'Verify structure, author confirmed behavior, test and separately validate host acceptance.'}

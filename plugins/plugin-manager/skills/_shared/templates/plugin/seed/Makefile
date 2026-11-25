@@ -15,6 +15,10 @@ TEST_GROUP ?=
 .PHONY: test test-unit test-integration test-contracts test-native test-behavior
 test test-unit test-integration test-contracts test-native:
 	$(PYTHON) -B scripts/run_tests.py --kind $(if $(filter test,$@),deterministic,$(patsubst test-%,%,$@)) $(if $(TEST_GROUP),--group "$(TEST_GROUP)",)
+# Activates the managed pre-commit check for this clone (it replaces other hooks of this clone).
+.PHONY: install-hooks
+install-hooks:
+	git config core.hooksPath githooks
 CLI ?= claude
 test-behavior:
 	$(PYTHON) -B tests/behavior/run_cases.py --cli $(CLI)

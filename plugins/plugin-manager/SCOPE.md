@@ -352,3 +352,16 @@ Source: skills/_shared/scripts/verify.py
 Source: skills/_shared/templates/plugin/sync/docs/standards/skills.md
 Source: skills/_shared/templates/plugin/sync/docs/standards/testing.md
 Test: tests/contracts/verify/test_standards.py
+
+## R33: The standards are checked in CI and, if the person activates it, before a commit
+
+Status: confirmed
+Acceptance: The CI workflow of a new plugin runs `verify` (`python3 -B scripts/verify.py --source . --kind plugin`) in addition to its tests, so a missing, changed or violated standard fails the run. The copy of `verify` inside a plugin compares the standards and `AGENTS.md` with the source hashes recorded in the plugin's committed skeleton lock; without a readable lock it checks presence and the other rules only. Every plugin receives the managed, executable hook `githooks/pre-commit`, which runs the same check and stays silent when it passes. Nothing activates the hook: only the person does, once per clone, with `git config core.hooksPath githooks` (`make install-hooks` in a new plugin); the Manager changes no Git configuration. Existing plugins add the CI step and the make target by hand, because both files are seeded once.
+Source: skills/_shared/templates/plugin/seed/ci.yml
+Source: skills/_shared/templates/plugin/seed/Makefile
+Source: skills/_shared/templates/plugin/sync/githooks/pre-commit
+Source: skills/_shared/scripts/verify.py
+Source: skills/_shared/scripts/plugin_audit.py
+Test: tests/contracts/verify/test_standards.py
+Test: tests/integration/project_setup/test_manifest.py
+

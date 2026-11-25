@@ -1,5 +1,9 @@
 """R27: the standards come with every plugin, identical, and verify finds a missing, changed or copied standard."""
+import hashlib
+import json
+import os
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -124,6 +128,47 @@ class StandardsTests(unittest.TestCase):
         (self.plugin / 'tests/unit/__init__.py').write_text('')
         (nested / '__init__.py').write_text('')
         self.assertTrue(skill_verify.verify(self.plugin, 'plugin')['structure_valid'])
+
+    def run_copy(self, *command):
+        return subprocess.run(list(command), cwd=self.plugin, capture_output=True, text=True)
+
+    def lock_standards(self):
+        files = {}
+        for relative in ['docs/standards/' + name for name in NAMES] + ['AGENTS.md']:
+            digest = hashlib.sha256((self.plugin / relative).read_bytes()).hexdigest()
+            files[relative] = {'source_hash': digest, 'local_hash': digest}
+        lock = self.plugin / '.project/plugins/plugin-manager/skeleton.json'
+        lock.parent.mkdir(parents=True, exist_ok=True)
+        lock.write_text(json.dumps({'schema_version': 2, 'files': files}))
+
+    def test_the_plugin_copy_of_the_verifier_finds_a_changed_standard_through_the_committed_lock(self):  # R33
+        self.lock_standards()
+        command = (sys.executable, '-B', 'scripts/verify.py', '--source', '.', '--kind', 'plugin')
+        self.assertEqual(0, self.run_copy(*command).returncode, self.run_copy(*command).stdout)
+        standard = self.plugin / 'docs/standards/testing.md'
+        standard.write_text(standard.read_text() + 'my own rule\n')
+        result = self.run_copy(*command)
+        self.assertEqual(1, result.returncode)
+        self.assertIn('docs/standards/testing.md differs from the managed standard', result.stdout)
+
+    def test_the_ci_of_a_new_plugin_runs_the_verifier(self):  # R33
+        workflow = (self.plugin / '.github/workflows/validate.yml').read_text()
+        self.assertIn('run: python3 -B scripts/verify.py --source . --kind plugin', workflow)
+
+    def test_the_managed_pre_commit_hook_is_silent_when_valid_and_stops_with_the_findings_when_not(self):  # R33
+        hook = self.plugin / 'githooks/pre-commit'
+        self.assertTrue(os.access(hook, os.X_OK))
+        good = self.run_copy('sh', 'githooks/pre-commit')
+        self.assertEqual((0, '', ''), (good.returncode, good.stdout, good.stderr))
+        (self.plugin / 'docs/standards/coding.md').unlink()
+        bad = self.run_copy('sh', 'githooks/pre-commit')
+        self.assertEqual(1, bad.returncode)
+        self.assertIn('docs/standards/coding.md is missing', bad.stderr)
+
+    def test_nothing_activates_the_hook_without_the_person(self):  # R33
+        self.assertIn('git config core.hooksPath githooks', (self.plugin / 'Makefile').read_text())
+        for path in (R / 'skills').rglob('*.py'):
+            self.assertNotIn('core.hooksPath githooks', path.read_text(), path)
 
 
 if __name__ == '__main__':

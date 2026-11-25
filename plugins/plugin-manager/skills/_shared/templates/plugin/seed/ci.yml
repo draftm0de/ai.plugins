@@ -12,3 +12,4 @@ jobs:
           python-version: '3.12'
       - run: make test
       - run: make check-plugin
+      - run: python3 -B scripts/verify.py --source . --kind plugin

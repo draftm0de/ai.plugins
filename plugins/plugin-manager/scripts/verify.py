@@ -74,13 +74,31 @@ def skeleton_marker(text, python=False):
 STANDARDS = ('coding.md', 'messages.md', 'testing.md', 'skills.md')
 
 
+def recorded_hashes(root):
+    """{path: {sha256}} of the managed files as the plugin's committed skeleton lock records their source; empty when
+    there is no readable lock (setup reports a damaged one)."""
+    found = {}
+    for lock in sorted((root / '.project/plugins').glob('*/skeleton.json')):
+        if lock.is_symlink():
+            continue
+        try:
+            files = strict_json(lock.read_text(encoding='utf-8'))['files']
+            found.update({path: {'sha256': entry['source_hash']} for path, entry in files.items() if entry.get('source_hash')})
+        except (OSError, ValueError, KeyError, TypeError, AttributeError):
+            continue
+    return found
+
+
 def standards(root):
     """R27/R28: the four managed standards and the managed AGENTS.md are in the plugin, unchanged, and not copied into SCOPE.md or CUSTOM.AGENTS.md.
     Next to the Manager's own runtime the hashes of the managed files are known; a copy of this script inside a repository
     checks presence, the reference and the copy rule only."""
     problems = []
     manifest = Path(__file__).resolve().parents[1] / 'manifests' / 'plugin.sync.json'
-    known = strict_json(manifest.read_text(encoding='utf-8')).get('files', {}) if manifest.is_file() else {}
+    if manifest.is_file():
+        known = strict_json(manifest.read_text(encoding='utf-8')).get('files', {})
+    else:  # a copy of this script inside a repository (for example in CI): compare with what setup recorded in the committed lock
+        known = recorded_hashes(root)
     texts = []
     for name in STANDARDS:
         path = root / 'docs/standards' / name
