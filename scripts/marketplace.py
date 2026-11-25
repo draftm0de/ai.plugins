@@ -41,37 +41,20 @@ def expected(root=ROOT, config=None):
     for entry in config['plugins']:
         if 'version' in entry:
             raise ValueError('Marketplace entries must not pin a version')
-        allowed = {'path'} if 'path' in entry else {'name', 'displayName', 'description', 'repository'}
-        if set(entry) - allowed:
-            raise ValueError('Unsupported marketplace entry fields: ' + ', '.join(sorted(set(entry) - allowed)))
-        if ('path' in entry) == ('repository' in entry):
-            raise ValueError('Each plugin needs exactly one path or repository')
-        if 'repository' in entry:
-            if 'path' in entry:
-                raise ValueError('Choose either a local path or remote repository')
-            repository=entry['repository']
-            if not re.fullmatch(r'https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\.git', repository):
-                raise ValueError('Remote source must be a GitHub HTTPS clone URL')
-            name=entry['name']
-            description=entry['description']
-            display_name=entry['displayName']
-            claude_source={'source':'url','url':repository}
-            codex_source={'source':'url','url':repository}
-        else:
-            relative = entry['path']
-            if config['name'] != 'draftmode-ai-plugins' or relative != './plugins/plugin-manager':
-                raise ValueError('Only the existing draftmode-ai-plugins plugin-manager may be embedded')
-            path = root/relative
-            if any(part.is_symlink() for part in (path, *path.parents)) or not path.resolve().is_relative_to(root.resolve()):
-                raise ValueError('Plugin path must not escape the repository or use symlinks')
-            manifest = strict_json((path/'plugin.json').read_text())
-            name = manifest['name']
-            if name != 'plugin-manager':
-                raise ValueError('Embedded exception requires plugin-manager identity')
-            description=manifest['description']
-            display_name=manifest.get('extensions', {}).get('com.openai', {}).get('interface', {}).get('displayName', name)
-            claude_source=relative
-            codex_source={'source':'local','path':relative}
+        if 'path' in entry:
+            raise ValueError('A marketplace embeds no plugin: each entry names the repository of a separate plugin')
+        if set(entry) - {'name', 'displayName', 'description', 'repository'}:
+            raise ValueError('Unsupported marketplace entry fields: ' + ', '.join(sorted(set(entry) - {'name', 'displayName', 'description', 'repository'})))
+        if 'repository' not in entry:
+            raise ValueError('Each plugin needs its remote repository')
+        repository=entry['repository']
+        if not re.fullmatch(r'https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\.git', repository):
+            raise ValueError('Remote source must be a GitHub HTTPS clone URL')
+        name=entry['name']
+        description=entry['description']
+        display_name=entry['displayName']
+        claude_source={'source':'url','url':repository}
+        codex_source={'source':'url','url':repository}
         if name in seen or not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', name):
             raise ValueError('Duplicate or invalid plugin name')
         seen.add(name)

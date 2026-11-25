@@ -273,30 +273,19 @@ def marketplace(root):
     for entry in config['plugins']:
         if 'version' in entry:
             raise ValueError('Marketplace entries must not pin a version')
-        allowed = {'path'} if 'path' in entry else {'name', 'displayName', 'description', 'repository'}
+        if 'path' in entry:
+            raise ValueError('A marketplace embeds no plugin: each entry names the repository of a separate plugin')
+        allowed = {'name', 'displayName', 'description', 'repository'}
         if set(entry) - allowed:
             raise ValueError('Unsupported marketplace entry fields: ' + ', '.join(sorted(set(entry) - allowed)))
-        if ('path' in entry) == ('repository' in entry):
-            raise ValueError('Each plugin needs exactly one local path or remote repository')
-        if 'path' in entry:
-            path = entry['path']
-            if name != 'draftmode-ai-plugins' or path != './plugins/plugin-manager':
-                raise ValueError('New plugins require separate repositories; only draftmode-ai-plugins/plugins/plugin-manager is embedded')
-            directory = safe(root, path)
-            result = plugin(directory)
-            if result['name'] != 'plugin-manager':
-                raise ValueError('Embedded exception is only plugin-manager')
-            manifest = read(directory, 'plugin.json')
-            display = manifest.get('extensions', {}).get('com.openai', {}).get('interface', {}).get('displayName', result['name'])
-            description = manifest['description']
-            sources = (path, {'source':'local', 'path':path})
-        else:
-            repository = entry['repository']
-            if not re.fullmatch(r'https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\.git', repository):
-                raise ValueError('Invalid remote GitHub source')
-            result = {'name':entry['name'], 'valid':True, 'remote_content_verified':False}
-            display, description = entry['displayName'], entry['description']
-            sources = ({'source':'url', 'url':repository},) * 2
+        if 'repository' not in entry:
+            raise ValueError('Each plugin needs its remote repository')
+        repository = entry['repository']
+        if not re.fullmatch(r'https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\.git', repository):
+            raise ValueError('Invalid remote GitHub source')
+        result = {'name':entry['name'], 'valid':True, 'remote_content_verified':False}
+        display, description = entry['displayName'], entry['description']
+        sources = ({'source':'url', 'url':repository},) * 2
         if not isinstance(display, str) or not display.strip() or not isinstance(description, str) or not description.strip():
             raise ValueError('Plugin catalog displayName and description must be nonempty strings')
         plugin_name = result['name']

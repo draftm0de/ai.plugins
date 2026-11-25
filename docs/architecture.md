@@ -25,4 +25,4 @@ Die Struktur ist eine Entwicklungsregel, keine Garantie für LLM-Verhalten. Das
 bestätigte Zielbild bleibt maßgeblich. Fehlende Belege und tatsächliche Widersprüche
 getrennt berichten; fachliche Erfüllung braucht Source-Review und passende Tests.
 
-Existing exception: plugins/plugin-manager is the approved embedded Manager. New plugins always use separate repositories. Manager rules and scope live within that plugin.
+The marketplace embeds no plugin. Every plugin, the Plugin Manager included, has its own repository with its rules and scope.

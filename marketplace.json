@@ -7,7 +7,10 @@
   },
   "plugins": [
     {
-      "path": "./plugins/plugin-manager"
+      "name": "plugin-manager",
+      "displayName": "Plugin Manager",
+      "description": "Manage marketplaces and separate skill plugins: creation, association, documentation, validation and approval-gated publication.",
+      "repository": "https://github.com/draftm0de/ai.plugin.plugin-manager.git"
     },
     {
       "name": "interview-coach",

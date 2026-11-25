@@ -20,25 +20,10 @@ class MarketplaceTests(MarketplaceTestsFixture, unittest.TestCase):
                 self.assertEqual(before, {str(p):p.read_bytes() for p in root.rglob('*') if p.is_file()})
                 del entry['version']
 
-    def test_catalogs_point_to_local_manager(self):
-        self.assertTrue(engine.sync(check=True)['valid'])
-        for catalog in engine.expected().values():
-            self.assertEqual('draftmode-ai-plugins',catalog['name'])
-            self.assertEqual('plugin-manager',catalog['plugins'][0]['name'])
-        self.assertEqual('Plugin Manager', engine.expected()['.claude-plugin/marketplace.json']['plugins'][0]['displayName'])
-        manifest=json.loads((ROOT/'plugins/plugin-manager/.claude-plugin/plugin.json').read_text())
-        self.assertEqual('Plugin Manager', manifest['displayName'])
-        source=engine.expected()['.agents/plugins/marketplace.json']['plugins'][0]['source']
-        self.assertEqual({'source':'local','path':'./plugins/plugin-manager'},source)
-        plugin=ROOT/'plugins/plugin-manager'
-        self.assertTrue((plugin/'skills/_shared/WORKFLOWS.md').is_file())
-        self.assertFalse((plugin/'.claude-plugin/marketplace.json').exists())
-
-
     def test_external_coach_entry_has_remote_source_and_no_version_pin(self):
         for catalog in engine.expected().values():
             entries = {entry['name']: entry for entry in catalog['plugins']}
-            self.assertIn('plugin-manager', entries)
+            self.assertEqual({'source':'url','url':'https://github.com/draftm0de/ai.plugin.plugin-manager.git'}, entries['plugin-manager']['source'])
             self.assertIn('interview-coach', entries)
             source=entries['interview-coach']['source']
             self.assertEqual({'source':'url','url':'https://github.com/draftm0de/ai.plugin.interview-coach.git'},source)
@@ -81,11 +66,3 @@ class MarketplaceTests(MarketplaceTestsFixture, unittest.TestCase):
             with self.assertRaises(ValueError):engine.expected(root)
 
 
-    def test_canonical_standalone_runtime_copies_match(self):
-        skill=ROOT/'plugins/plugin-manager/skills/_shared'
-        for name in ('marketplace.py','local_plugins.py','plugin_payload.py','verify.py'):
-            self.assertEqual((skill/'templates/marketplace/sync/scripts'/name).read_bytes(),(ROOT/'scripts'/name).read_bytes(),name)
-        self.assertEqual((skill/'templates/plugin/sync/scripts/plugin.py').read_bytes(),(ROOT/'scripts/plugin_payload.py').read_bytes())
-        self.assertEqual((skill/'scripts/verify.py').read_bytes(),(ROOT/'scripts/verify.py').read_bytes())
-        for kind in ('plugin','marketplace'):
-            self.assertEqual((skill/'references/prerequisites.md').read_bytes(),(skill/'templates'/kind/'seed/docs/prerequisites.md').read_bytes())

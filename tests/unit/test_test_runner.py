@@ -54,8 +54,3 @@ class TestRunnerTests(unittest.TestCase):
         (self.root/'tests/contracts/test_example.py').write_text('import unittest\nclass Example(unittest.TestCase):\n    def test_failure(self): self.fail("fixture")\n')
         self.assertNotEqual(0, self.run_tests().returncode)
 
-    def test_canonical_runner_copies_match(self):
-        shared = ROOT/'plugins/plugin-manager/skills/_shared/templates'
-        for path in (ROOT/'plugins/plugin-manager/scripts/run_tests.py',
-                     shared/'plugin/sync/scripts/run_tests.py', shared/'marketplace/sync/scripts/run_tests.py'):
-            self.assertEqual((ROOT/'scripts/run_tests.py').read_bytes(), path.read_bytes())

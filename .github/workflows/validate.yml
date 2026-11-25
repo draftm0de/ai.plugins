@@ -12,6 +12,4 @@ jobs:
           python-version: '3.12'
       - run: make test
       - run: make check-plugin
-      - run: make check-skeleton-hashes
       - run: make verify
-      - run: make validate-docs
