@@ -365,3 +365,44 @@ Source: skills/_shared/scripts/plugin_audit.py
 Test: tests/contracts/verify/test_standards.py
 Test: tests/integration/project_setup/test_manifest.py
 
+## R34: Documentation structure by kind
+
+Status: confirmed
+Acceptance: The user documentation of a repository is written from its sources (`SCOPE.md`, every `SKILL.md`, flows and source code) in each selected documentation language and has this structure. R4 and R29 apply to this structure.
+
+| Page | Plugin | Marketplace | Required headings (en / de) |
+| --- | --- | --- | --- |
+| `README.md`, `README.<lang>.md` | yes | yes | Plugin: What it does / Was es tut; Who it is for / Für wen; What it solves / Welches Problem es löst; Data and privacy / Daten und Datenschutz; Documentation / Dokumentation. Marketplace: What it offers / Was es bietet; Who it is for / Für wen; Documentation / Dokumentation |
+| `docs/<lang>/installation.md` | yes | yes | Claude (Desktop, CLI); Codex (Desktop, CLI); Update / Aktualisieren; Remove / Entfernen |
+| `docs/<lang>/skills.md` | yes | no | Overview / Überblick; one section per skill with Description / Beschreibung, Workflow / Ablauf, Example / Beispiel, Reads and writes / Liest und schreibt |
+| `docs/<lang>/plugins.md` | no | yes | Overview / Überblick |
+| `docs/<lang>/concepts.md` | yes | yes | Marketplace; Plugin; Skill |
+
+The README starts with the language switch and the links to the pages and then describes the product invitingly in prose; it uses only the Purpose and Non-goals of `SCOPE.md`, confirmed requirements and the skill descriptions and never presents a draft as a feature. `skills.md` starts with a table of all skills (name, one short purpose); `plugins.md` is a table of the plugins of `marketplace.json` (name, description, link to its documentation). The pages `screens`, `faq`, `usage`, `storage`, `development` and `docs/<lang>/README.md` are not part of the structure. Existing user text is never converted, overwritten or deleted by the Manager.
+Source: skills/_shared/templates/outline.json
+Source: skills/_shared/scripts/documentation.py
+Test: tests/integration/update/test_documentation.py
+
+## R35: The installation page comes from the repository's data
+
+Status: confirmed
+Acceptance: `installation.md` is produced from facts, not written freely: the name and repository of a plugin (`plugin.json`), the name of its marketplace (configuration evidence) and the marketplace address. The address is read once from the `origin` of the marketplace checkout named in the local association and recorded as `marketplace_url` in `docs/documentation.json`; without a checkout or `origin` it is asked, never invented. A marketplace uses its own `origin`. Steps that a host supports only through its interface (Claude Desktop) are described as that path, not as commands. Host steps are taken from verified host documentation; an unverified step is not written.
+Source: skills/_shared/scripts/documentation.py
+Test: tests/integration/update/test_documentation.py
+
+## R36: The concepts page is managed
+
+Status: confirmed
+Acceptance: `docs/<lang>/concepts.md` (German and English) explains marketplace, plugin and skill, is identical for every repository of both kinds, and is delivered and kept current by the Manager as a managed file for the selected documentation languages.
+Source: skills/_shared/templates/plugin/sync/docs/en/concepts.md
+Source: skills/_shared/templates/marketplace/sync/docs/en/concepts.md
+Test: tests/integration/project_setup/test_manifest.py
+
+## R37: verify checks the documentation structure
+
+Status: confirmed
+Acceptance: `verify` reads, without executing anything, that the pages of R34 for the kind exist in every selected language with their required headings, that every skill has a table row and a section in `skills.md` (marketplace: every listed plugin a row in `plugins.md`), that no unresolved placeholder remains and that local links resolve. Pages of the former structure are reported. Whether the prose is good is not checked.
+Source: skills/_shared/scripts/verify.py
+Source: skills/_shared/scripts/documentation.py
+Test: tests/contracts/verify/test_standards.py
+

@@ -99,8 +99,8 @@ class DocumentationTests(unittest.TestCase):
 
     def test_scaffold_is_bilingual_preserves_existing_and_references_the_single_icon(self):
         result = doc.scaffold(self.source, self.output, languages=['de','en'])
-        self.assertEqual(len(doc.outline()), 16)
-        self.assertEqual(len(result['created']), 17)
+        self.assertEqual(len(doc.outline()), 8)
+        self.assertEqual(len(result['created']), 9)  # documentation.json, two READMEs and six pages
         self.assertFalse((self.output / 'docs/assets').exists())  # no second copy of the icon
         self.assertIn('assets/icon.png', (self.output / 'README.md').read_text())
         self.assertIn('assets/icon.png is missing', ' '.join(doc.validate(self.output)))
@@ -120,8 +120,8 @@ class DocumentationTests(unittest.TestCase):
     def test_validation_detects_broken_links_missing_locale_and_heading_drift(self):
         doc.scaffold(self.source, self.output, languages=['de','en'])
         self.fill()
-        page = self.output / 'docs/en/usage.md'
-        page.write_text(page.read_text().replace('## Set up', '## Changed heading') + '\n[Broken](missing.md)\n')
+        page = self.output / 'docs/en/installation.md'
+        page.write_text(page.read_text().replace('## Update', '## Changed heading') + '\n[Broken](missing.md)\n')
         (self.output / 'README.en.md').unlink()
         errors = '\n'.join(doc.validate(self.output))
         self.assertIn('missing page', errors)
@@ -131,8 +131,8 @@ class DocumentationTests(unittest.TestCase):
     def test_validation_checks_language_switch_and_anchor(self):
         doc.scaffold(self.source, self.output, languages=['de','en'])
         self.fill()
-        page = self.output / 'docs/en/screens.md'
-        page.write_text(page.read_text().replace('[Deutsch](../de/screens.md)', 'Deutsch') + '\n[Missing section](usage.md#does-not-exist)\n')
+        page = self.output / 'docs/en/installation.md'
+        page.write_text(page.read_text().replace('[Deutsch](../de/installation.md)', 'Deutsch') + '\n[Missing section](concepts.md#does-not-exist)\n')
         errors = '\n'.join(doc.validate(self.output))
         self.assertIn('counterpart', errors)
         self.assertIn('heading anchor', errors)
@@ -148,10 +148,10 @@ class DocumentationTests(unittest.TestCase):
 
     def test_english_and_german_templates_have_localized_headings(self):
         outline = doc.outline()
-        self.assertEqual(outline['README.md'][0], 'Für wen ist das gedacht?')
-        self.assertEqual(outline['README.en.md'][0], 'Who it is for')
-        self.assertEqual(outline['docs/de/screens.md'][0], 'Vorschau')
-        self.assertEqual(outline['docs/en/screens.md'][0], 'Preview')
+        self.assertEqual(outline['README.md'][0], 'Was es tut')
+        self.assertEqual(outline['README.en.md'][0], 'What it does')
+        self.assertEqual(['Überblick'], outline['docs/de/skills.md'])
+        self.assertEqual(['Overview'], outline['docs/en/skills.md'])
 
     def test_every_skill_of_the_repository_and_the_scope_are_documentation_sources(self):  # R29
         repo = self.root / 'repository'
@@ -184,13 +184,13 @@ class DocumentationTests(unittest.TestCase):
                 doc.scaffold(self.source, output, languages=languages, default_language=default)
                 policy = doc.language_policy(output)
                 pages = doc.page_layout(policy)
-                self.assertEqual(8 * len(languages),len(pages))
+                self.assertEqual(4 * len(languages),len(pages))
                 for name in pages:
                     path = output / name
                     path.write_text(re.sub(r'\{\{[^}]+\}\}', 'Fictional example.', path.read_text()))
                 self.give_icon(output)
                 self.assertEqual([],doc.validate(output))
-                self.assertIn('## Who it is for' if default=='en' else '## Für wen ist das gedacht?',(output/'README.md').read_text())
+                self.assertIn('## Who it is for' if default=='en' else '## Für wen',(output/'README.md').read_text())
                 if len(languages)==1:
                     self.assertFalse((output/'README.en.md').exists())
                     self.assertFalse((output/'README.de.md').exists())

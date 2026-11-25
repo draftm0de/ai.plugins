@@ -455,11 +455,14 @@ def associate(root, marketplace, repository=None, drop_missing_old=False, plugin
 def complete_skeleton_documentation(stage, title):
     """Replace the scaffold pages of a newly staged repository by the finished skeleton pages of
     templates/skeleton-docs (real Markdown, same layout as templates/); never touches existing user documentation."""
-    from documentation import language_policy, page_layout, template_text, validate
+    from documentation import fill_listings, language_policy, page_layout, skills_info, template_text, validate
     policy = language_policy(stage)
-    for relative, (template, _, _) in page_layout(policy).items():
+    skills = skills_info(sorted(p.parent for p in (stage/'skills').glob('*/SKILL.md')))
+    for relative, (template, _, language) in page_layout(policy).items():
         text = template_text(template, policy, base=SKILL/'templates/skeleton-docs')
-        (stage/relative).write_text(text.replace('{{TITLE}}', title), encoding='utf-8')
+        pending = 'Noch nicht implementiert.' if language == 'de' else 'Not implemented yet.'
+        (stage/relative).parent.mkdir(parents=True, exist_ok=True)
+        (stage/relative).write_text(fill_listings(text.replace('{{TITLE}}', title), language, skills, section_text=pending), encoding='utf-8')
     errors = validate(stage)
     if errors:
         raise ValueError('Skeleton documentation validation failed: ' + '; '.join(errors))

@@ -4,52 +4,32 @@
 
 <img src="assets/icon.png" alt="draftmode.io" width="48">
 
-## Für wen ist das gedacht?
+[Installation](docs/de/installation.md) · [Skills](docs/de/skills.md) · [Begriffe](docs/de/concepts.md)
 
-Für Entwickler und Teams, die Skills als installierbare Plugins pflegen. Der Manager unterstützt Struktur, Dokumentation, Prüfung und die Veröffentlichung über einen geprüften GitHub-PR.
+Mit dem Plugin Manager entstehen Plugins, die alle gleich aufgebaut sind: eingerichtet, dokumentiert, geprüft und kontrolliert veröffentlicht.
 
-## So sieht es aus
+## Was es tut
 
-[Beispiele und vorhandene Claude-Dialoge](docs/de/screens.md) zeigen die Nutzung. Frühere Importbestätigungen sind keine Abnahme der neuen Create-/Configure-Abläufe.
+Der Manager richtet Plugin- und Marketplace-Repositories ein und hält ihre gemeinsamen Dateien aktuell. Er gibt jedem Plugin dieselben Standards für Code, Meldungen, Tests und Skills, schreibt die Dokumentation aus den Quellen, ändert Namen und Beschreibung, prüft die Struktur und bereitet Veröffentlichungen vor.
 
-## Funktionen und Modi
+## Für wen
 
-**setup** (`/plugin-manager:setup`) richtet einen geklonten Marketplace ein oder erstellt ein separates Plugin und ordnet es zu, als geführte Abläufe; der Skill prüft den Zustand, führt genau den nötigen Flow aus und darf wiederholt aufgerufen werden. Die Marketplace-Zuordnung eines Plugins (genau ein Marketplace) ändert er auf Anfrage im Flow `associate`. **verify** prüft ausschließlich lesend und erkennt selbst, ob ein Plugin oder ein Marketplace vorliegt. **docs** pflegt Dokumentation, **modify** ändert Namen, Anzeigenamen und Beschreibung eines Plugins oder Marketplace (erst Folgen zeigen, dann nach deinem Ja schreiben) und **publish** bereitet getrennte, freigabepflichtige Veröffentlichungen vor; alle drei starten nur, wenn das Arbeitspaket bereit ist, sonst verweisen sie auf `setup`. `init` wird nicht unterstützt. [Abläufe](docs/de/usage.md).
+Für Entwickler und Teams, die Skills als installierbare Plugins für Claude oder Codex pflegen und wollen, dass alle ihre Plugins denselben Regeln folgen.
 
-Die fünf Skills heißen `setup`, `docs`, `modify`, `verify` und `publish`. Gemeinsame Regeln und Werkzeuge liegen in [`skills/_shared/`](skills/_shared/WORKFLOWS.md). Die Art (Plugin oder Marketplace) ist nie ein Aufrufargument; init wird nicht unterstützt.
+## Welches Problem es löst
 
-## Schnellstart
+Jedes neue Plugin beginnt sonst von vorn: eigene Ordner, eigene Regeln, eigene Fehlermeldungen, Doku, die dem Code hinterherläuft. Der Manager legt die gemeinsame Grundlage an, zieht Änderungen daran nach und meldet, was abweicht.
 
-Füge `https://github.com/draftm0de/ai.plugins` in der Plugin-Verwaltung als Marketplace hinzu und installiere **Plugin Manager**. Kein ZIP und kein Tag nötig. [Installationswege](docs/de/installation.md).
+## Daten und Datenschutz
 
-## Nutzung
+Der Manager schreibt nur in das Repository, das du auswählst: Verwaltungsdateien unter `.project/`, die gemeinsamen Dateien, Dokumentation und, nach deinem Ja, Änderungen an Name oder Beschreibung. Er commitet, pusht und veröffentlicht nie ohne deine Freigabe und liest keine Zugangsdaten oder privaten Daten. Was ein Skill liest und schreibt, steht bei jedem Skill. Der KI-Host verarbeitet die Quellen nach seinen eigenen Bedingungen.
 
-Wähle das Plugin und sage: „Prüfe dieses Repository mit verify.“ Für Dokumentation: „Aktualisiere die Dokumentation auf Deutsch und Englisch.“ In Claude Code sind auch `/plugin-manager:verify PFAD` und die weiteren Aktionskommandos verfügbar. [Nutzung](docs/de/usage.md).
+## Dokumentation
 
-`docs` ist der Skill-Einstieg für die Aktion **docs** (`/plugin-manager:docs`). Er aktualisiert gepflegtes Markdown anhand aktueller Quellen und Vorlagen; README wird nicht bei jedem Build automatisch erzeugt. [Dokumentation pflegen](docs/de/development.md#dokumentation-pflegen).
+[Installation](docs/de/installation.md) · [Skills](docs/de/skills.md) · [Begriffe](docs/de/concepts.md)
 
-## Speicherung und Datenschutz
+Weiterführend: [Ablauf der Veröffentlichung](docs/de/publish.md). Lizenz: [MIT](LICENSE).
 
-Der Manager schreibt Dokumentationsdateien und bei `create --kind plugin` ein separates Plugin-Gerüst. Publish-Journals liegen außerhalb von Quelle und Plugin-Installation. Private Daten, Zugangsdaten und fremde Änderungen werden nicht übernommen. Der KI-Host verarbeitet die bereitgestellten Quellen nach seinen Bedingungen.
+---
 
-## Projektstatus
-
-Laut Nutzer sind Manager und Coach im veröffentlichten Marketplace vorhanden. Die aktuellen Manager-Erweiterungen liegen noch lokal vor. Das bestätigt weder sämtliche Funktionen noch automatische Updates oder den vollständigen Publish-Ablauf. Lizenz: [MIT](LICENSE).
-
-## Entwicklung
-
-`create --kind plugin --skeleton` erstellt ausschließlich ein neues Gerüst ohne Fachinhalt. Ein Skill-Import wird nicht angeboten. Das Skeleton enthält eine noch zu bestätigende `SCOPE.md` und Entwicklungsregeln. `verify` bietet einen ausdrücklich gewählten lesenden Zielbild-/Source-Review: statische Belegprüfung mit `REVIEW=1`, danach fachlicher Vergleich durch den Agenten. Keine automatische Reparatur oder Testausführung. [Ablauf und Grenzen](docs/de/usage.md).
-
-Die [Testübersicht](tests/README.md) beschreibt die gemeinsame Struktur nach Testart. `make test` prüft Unit-, Integrations- und Vertragstests; native Host- und Modelltests werden separat gestartet.
-
-```sh
-make sync-plugin
-make check-plugin
-make test
-make verify SOURCE=.
-make validate-docs OUTPUT=.
-```
-
-`make sync-plugin` erzeugt die einzucheckenden Host-Metadaten. `make install-local` testen lokale Änderungen ohne Commit oder Push; die Skill-Aktion **docs** pflegt dagegen Dokumentation. [Entwicklung](docs/de/development.md).
-
-Dokumentation erstellt mit Plugin Manager.
+Dokumentation mit Plugin Manager erstellt.

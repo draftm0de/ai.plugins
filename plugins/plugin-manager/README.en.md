@@ -4,52 +4,32 @@
 
 <img src="assets/icon.png" alt="draftmode.io" width="48">
 
+[Installation](docs/en/installation.md) · [Skills](docs/en/skills.md) · [Concepts](docs/en/concepts.md)
+
+With the Plugin Manager your plugins are all built the same way: set up, documented, checked and published under your control.
+
+## What it does
+
+The Manager sets up plugin and marketplace repositories and keeps their shared files current. It gives every plugin the same standards for code, messages, tests and skills, writes the documentation from the sources, changes names and descriptions, checks the structure and prepares publications.
+
 ## Who it is for
 
-For developers and teams maintaining skills as installable plugins. The Manager supports structure, documentation, validation and publication through a checked GitHub PR.
+For developers and teams who maintain skills as installable plugins for Claude or Codex and want all their plugins to follow the same rules.
 
-## What it looks like
+## What it solves
 
-[Examples and existing Claude dialogs](docs/en/screens.md) show usage. Earlier import confirmations do not certify the new create/configure workflows.
+Otherwise every new plugin starts from scratch: its own folders, its own rules, its own error messages, documentation that lags behind the code. The Manager lays the common ground, carries changes to it into each plugin and reports what deviates.
 
-## Capabilities and modes
+## Data and privacy
 
-**setup** (`/plugin-manager:setup`) configures a cloned marketplace or creates and associates a separate plugin, as guided flows; the skill checks the state, runs exactly the needed flow and may be called repeatedly. It changes the marketplace association of a plugin (exactly one marketplace) on request in the `associate` flow. **verify** is read-only and detects itself whether a plugin or a marketplace is present. **docs** maintains documentation, **modify** changes the name, display name and description of a plugin or marketplace (consequences first, written only after your yes) and **publish** prepares separate approval-gated publications; all three start only when the workpackage is ready and otherwise point to `setup`. `init` is unsupported. [Workflows](docs/en/usage.md).
+The Manager writes only into the repository you select: management files under `.project/`, the shared files, documentation and, after your yes, changes to name or description. It never commits, pushes or publishes without your approval and reads no credentials or private data. What each skill reads and writes is listed with the skill. The AI host processes the sources under its own terms.
 
-The five skills are `setup`, `docs`, `modify`, `verify` and `publish`. Shared rules and tools live in [`skills/_shared/`](skills/_shared/WORKFLOWS.md). The kind (plugin or marketplace) is never a call argument; init is unsupported.
+## Documentation
 
-## Quick start
+[Installation](docs/en/installation.md) · [Skills](docs/en/skills.md) · [Concepts](docs/en/concepts.md)
 
-Add `https://github.com/draftm0de/ai.plugins` as a marketplace in plugin settings and install **Plugin Manager**. No ZIP or tag is needed. [Installation paths](docs/en/installation.md).
+Further reading: [publication workflow](docs/en/publish.md). License: [MIT](LICENSE).
 
-## Usage
-
-Select the plugin and ask: “Verify this repository.” For documentation: “Update the documentation in German and English.” Claude Code also supports `/plugin-manager:verify PATH` and the other action commands. [Usage](docs/en/usage.md).
-
-`docs` is the skill entry point for **docs** (`/plugin-manager:docs`). It refreshes maintained Markdown from current sources and templates; README is not automatically regenerated on every build. [Maintain documentation](docs/en/development.md#maintain-documentation).
-
-## Storage and privacy
-
-The Manager writes documentation and, for `create --kind plugin`, a separate plugin skeleton. Publication journals stay outside the source and plugin installation. Private data, credentials and unrelated changes are excluded. Your AI host processes supplied sources under its own terms.
-
-## Project status
-
-The user confirms Manager and Coach are present in the published marketplace. Current Manager extensions remain local. This does not certify every feature, automatic updates or the entire publication workflow. License: [MIT](LICENSE).
-
-## Development
-
-`create --kind plugin --skeleton` creates only a new scaffold without domain content. Skill import is not offered. The skeleton includes a pending `SCOPE.md` and development rules. `verify` offers an explicit read-only scope/source review: static evidence checks with `REVIEW=1`, followed by semantic comparison by the agent. No automatic repairs or test execution. [Workflow and limits](docs/en/usage.md).
-
-The [test guide](tests/README.md) describes the shared layout by test type. `make test` runs unit, integration and contract tests; native host and model tests are started separately.
-
-```sh
-make sync-plugin
-make check-plugin
-make test
-make verify SOURCE=.
-make validate-docs OUTPUT=.
-```
-
-`make sync-plugin` generates host metadata to commit. `make install-local` test local edits without a commit or push; the **docs** skill action maintains documentation. [Development](docs/en/development.md).
+---
 
 Documentation prepared with Plugin Manager.

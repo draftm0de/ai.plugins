@@ -16,7 +16,7 @@ The host performs Git/GitHub operations; the local helper records the plan, appr
 
 GitHub access and suitable host tools are needed. GitLab MRs are not integrated. Branch rules and required reviews remain binding. Publish the separate plugin first and its marketplace entry afterwards; existing users may need to sync. The full live publication workflow has not been separately accepted.
 
-[Usage](usage.md) · [Installation](installation.md)
+[Usage](skills.md#publish) · [Installation](installation.md)
 
 Plugin and marketplace use separate plans and journals. New or retargeted external sources require `dependencies` in the marketplace plan with observed repository URL, full commit hash and evidence. Failed plugin publication blocks dependent marketplace publication. The helper validates evidence fields; the agent must verify actual GitHub state.
 

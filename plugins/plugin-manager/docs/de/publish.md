@@ -16,7 +16,7 @@ Der Host führt Git und GitHub aus; der lokale Helfer hält Plan, Freigabe und b
 
 GitHub-Zugriff und geeignete Host-Werkzeuge sind nötig. GitLab-MRs sind noch nicht integriert. Branch-Regeln und erforderliche Reviews bleiben verbindlich. Ein neues Plugin wird zuerst in seinem Repository veröffentlicht, anschließend sein Eintrag im separaten Marketplace; bestehende Nutzer müssen gegebenenfalls synchronisieren. Der vollständige Live-Publish-Ablauf ist noch nicht separat abgenommen.
 
-[Usage](usage.md) · [Installation](installation.md)
+[Usage](skills.md#publish) · [Installation](installation.md)
 
 Plugin und Marketplace erhalten eigene Pläne und Journale. Neue oder geänderte externe Quellen erfordern im Marketplace-Plan `dependencies` mit beobachteter Repository-URL, vollständigem Commit-Hash und Nachweis. Ein fehlgeschlagener Plugin-Schritt blockiert die abhängige Marketplace-Veröffentlichung. Der Helfer prüft Nachweisfelder; der Agent muss den tatsächlichen GitHub-Stand prüfen.
 

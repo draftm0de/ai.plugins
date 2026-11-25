@@ -4,15 +4,13 @@
 
 <img src="../../assets/icon.png" alt="draftmode.io" width="48">
 
-[Start](../../README.en.md) · [Guides](README.md)
+[Home](../../README.en.md) · [Installation](installation.md) · [Skills](skills.md) · [Concepts](concepts.md)
 
-## Choose your platform
+You add the marketplace once and install the Plugin Manager from it. Account access, repository permissions and organisational policies apply. The menu steps come from reports and screenshots of 18 November 2026.
 
-Claude Desktop and Codex/GPT support repository imports. The user confirmed both imports on 2026-11-18 for that repository state; this does not certify current local changes. Account access, repository permissions and organizational policies still apply. Menu paths below come from supplied screenshots or user reports; ChatGPT workspace administration is a separate path.
+## Claude
 
-## Install
-
-### Claude Desktop – including the Code tab
+### Desktop
 
 The supplied macOS interface is in German; the labels below match that interface.
 
@@ -27,7 +25,7 @@ In Claude Desktop 5.11492.5, the user reported that `/plugin install …` and `/
 
 Anthropic distinguishes the terminal command from the desktop plugin manager: [Desktop documentation](https://code.claude.com/docs/en/desktop#feature-comparison).
 
-### Claude Code in a terminal – optional alternative
+### CLI
 
 The following slash commands apply inside a terminal session started with `claude`. They are not installation instructions for the Desktop Code tab's input field.
 
@@ -47,7 +45,9 @@ The following slash commands apply inside a terminal session started with `claud
 
 [Official instructions](https://code.claude.com/docs/en/discover-plugins#install-a-plugin).
 
-### Codex Desktop
+## Codex
+
+### Desktop
 
 1. Open the **user icon** and select **Settings**.
 2. Select **Integration → Plugins**.
@@ -55,7 +55,7 @@ The following slash commands apply inside a terminal session started with `claud
 4. Enter `https://github.com/draftm0de/ai.plugins` as the repository URL and confirm adding it.
 5. Select **Plugin Manager** and install it.
 
-### Codex in a terminal – optional alternative
+### CLI
 
 Run the following commands directly in the terminal shell.
 
@@ -73,7 +73,7 @@ Run the following commands directly in the terminal shell.
 
 3. Open a new Codex chat and check that the plugin is available.
 
-### ChatGPT – workspace import by an administrator
+### ChatGPT (workspace administrator)
 
 1. Open **Admin → Plugins**.
 2. Select **Add → Import marketplace**.
@@ -102,8 +102,8 @@ Committed manifests omit the version. Claude Code then uses the commit as its up
 
 ## Remove
 
-Remove the plugin in plugin settings or use `codex plugin remove plugin-manager@draftmode-ai-plugins` or `/plugin uninstall plugin-manager@draftmode-ai-plugins` in a Claude Code terminal session. Keep project files and private journals outside the cache. Remove old Documentation installations only after verifying the Manager.
+Remove the plugin in the plugin settings, in a Claude Code terminal with `/plugin uninstall plugin-manager@draftmode-ai-plugins` or in Codex with `codex plugin remove plugin-manager@draftmode-ai-plugins`. Your project files stay unchanged.
 
-## Verify first use
+---
 
-Open a new chat and request an inventory of a fictional test skill. Confirm the source and output folders. If the plugin is missing, check repository access, the marketplace and app restart. [Usage](usage.md) · [Claude help](https://support.claude.com/en/articles/13837440-use-plugins-in-claude) · [OpenAI](https://developers.openai.com/plugins/build/plugins).
+Documentation prepared with Plugin Manager.

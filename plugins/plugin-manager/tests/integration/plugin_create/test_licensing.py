@@ -25,7 +25,7 @@ class LicensingTests(WorkflowFixture, TestCase):
         self.assertNotIn('Not the copyright holder', text)
         for name in ('plugin.json', '.claude-plugin/plugin.json'):
             self.assertEqual('MIT', json.loads((self.plugin/name).read_text())['license'])
-        for name in ('README.md', 'README.en.md', 'docs/de/README.md', 'docs/en/README.md'):
+        for name in ('README.md', 'README.en.md'):
             text = (self.plugin/name).read_text()
             self.assertIn('MIT', text)
             self.assertIn('license.md)', text)

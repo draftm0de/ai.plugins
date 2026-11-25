@@ -271,7 +271,7 @@ class EntryTextTests(unittest.TestCase):
                        'local.json', 'schema_version 2', 'mandatory `marketplace` identity', 'set, change or move the marketplace'):
             self.assertIn(needle, self.text)
         self.assertNotIn('skills/configure', self.text)
-        for path in ('README.md', 'README.en.md', 'docs/de/usage.md', 'docs/en/usage.md', 'skills/_shared/WORKFLOWS.md',
+        for path in ('README.md', 'README.en.md', 'docs/de/skills.md', 'docs/en/skills.md', 'skills/_shared/WORKFLOWS.md',
                      'skills/_shared/templates/package/README.md', 'skills/_shared/templates/package/README.en.md'):
             text = (ROOT / path).read_text()
             self.assertNotIn('skills/configure/SKILL.md', text, path)

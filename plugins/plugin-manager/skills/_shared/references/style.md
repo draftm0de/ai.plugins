@@ -4,7 +4,7 @@
 
 Use the repository-selected language(s) and default; read `languages.md`. In both languages, write as a practical colleague: clear, calm and direct. Start with what the product does and who benefits. Use second person for user instructions. Use concrete verbs and short paragraphs; avoid marketing superlatives, hype, filler and invented capabilities.
 
-Use a repeatable reader journey: understand → see an example → install → practise/use → handle storage and errors → maintain. Use tables for parallel choices and numbered lists for sequential actions. Separate user tasks from developer internals.
+Use a repeatable reader journey: understand (README) → install → look up each skill (workflow, example, what it reads and writes) → read the concepts. Use tables for parallel choices and numbered lists for sequential actions. Separate user tasks from developer internals.
 
 ## Structure
 

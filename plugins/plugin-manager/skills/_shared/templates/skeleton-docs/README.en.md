@@ -4,41 +4,29 @@
 
 <img src="assets/icon.png" alt="draftmode.io" width="48">
 
-[Documentation](docs/en/README.md) · [Screens](docs/en/screens.md)
+[Installation](docs/en/installation.md) · [Skills](docs/en/skills.md) · [Concepts](docs/en/concepts.md)
 
 Nonfunctional development skeleton. Domain requirements and implementation are pending.
 
+## What it does
+
+Not implemented yet. Confirm purpose and non-goals in SCOPE.md first.
+
 ## Who it is for
 
-For contributors defining the product scope; no end-user functionality is available yet.
+For contributors defining the product scope; there is no end-user function yet.
 
-## What it looks like
+## What it solves
 
-The repository contains a marked skill stub and development documentation. No native screenshots or host acceptance evidence are available.
+Described after SCOPE.md is confirmed.
 
-## Capabilities and modes
+## Data and privacy
 
-Only a nonfunctional skeleton exists. Confirm requirements in SCOPE.md before implementing any domain actions.
+No domain storage is implemented. Local marketplace associations live in ignored files under `.project/`.
 
-## Quick start
+## Documentation
 
-Read SCOPE.md, agree on purpose, non-goals and acceptance criteria, then implement under skills/.
-
-## Usage
-
-The skill stub does not perform domain actions. Continue with requirements clarification in the source repository.
-
-## Storage and privacy
-
-No domain storage behavior is implemented. Local marketplace associations belong to ignored .local/marketplace.json files.
-
-## Project status
-
-Implementation and acceptance are pending. Licensing must be resolved separately; generated documentation does not establish a license. No publication or test success is claimed.
-
-## Development
-
-Use the development guide for checks. Structural validation is separate from behavioral tests and host acceptance.
+[Installation](docs/en/installation.md) · [Skills](docs/en/skills.md) · [Concepts](docs/en/concepts.md)
 
 ---
 

@@ -4,42 +4,30 @@
 
 <img src="assets/icon.png" alt="draftmode.io" width="48">
 
-[Dokumentation](docs/de/README.md) · [Screens](docs/de/screens.md)
+[Installation](docs/de/installation.md) · [Skills](docs/de/skills.md) · [Begriffe](docs/de/concepts.md)
 
-Nicht funktionsfähiges Entwicklungsgerüst. Fachliche Anforderungen und Implementierung stehen noch aus.
+Nicht funktionsfähiges Entwicklungsgerüst; fachliche Anforderungen stehen noch aus.
 
-## Für wen ist das gedacht?
+## Was es tut
 
-Für Mitwirkende, die das Produktzielbild klären; für Endnutzer gibt es noch keine fachlichen Funktionen.
+Noch nicht implementiert. Zweck und Nicht-Ziele zuerst in SCOPE.md bestätigen.
 
-## So sieht es aus
+## Für wen
 
-Das Repository enthält einen markierten Skill-Platzhalter und Entwicklungsdokumentation. Echte Screenshots und Belege einer Host-Abnahme liegen nicht vor.
+Für Mitwirkende, die den Produktumfang festlegen; es gibt noch keine Funktion für Anwender.
 
-## Funktionen und Modi
+## Welches Problem es löst
 
-Es existiert ausschließlich ein nicht funktionsfähiges Skeleton. Vor fachlichen Aktionen die Anforderungen in SCOPE.md bestätigen.
+Wird nach der Bestätigung von SCOPE.md beschrieben.
 
-## Schnellstart
+## Daten und Datenschutz
 
-SCOPE.md lesen, Zweck, Nicht-Ziele und Abnahmekriterien vereinbaren und anschließend unter skills/ implementieren.
+Es ist keine fachliche Speicherung implementiert. Lokale Marketplace-Zuordnungen liegen in ignorierten Dateien unter `.project/`.
 
-## Nutzung
+## Dokumentation
 
-Der Skill-Platzhalter führt keine fachlichen Aktionen aus. Die Anforderungsklärung erfolgt im Quellrepository.
-
-## Speicherung und Datenschutz
-
-Fachliche Speicherung ist nicht implementiert. Lokale Marketplace-Zuordnungen stehen in ignorierten .local/marketplace.json-Dateien.
-
-## Projektstatus
-
-Implementierung und Abnahme stehen aus. Die Lizenz ist separat zu klären; erzeugte Dokumentation legt keine Lizenz fest. Veröffentlichung oder bestandene Tests werden nicht behauptet.
-
-## Entwicklung
-
-Die Entwicklungsanleitung beschreibt die Prüfungen. Strukturprüfung, Verhaltenstests und Host-Abnahme sind getrennte Schritte.
+[Installation](docs/de/installation.md) · [Skills](docs/de/skills.md) · [Begriffe](docs/de/concepts.md)
 
 ---
 
-Dokumentation erstellt mit Plugin Manager. Die Urheberschaft des beschriebenen Produkts bleibt unverändert.
+Dokumentation mit Plugin Manager erstellt. Die Rechte am Quellprodukt bleiben unverändert.

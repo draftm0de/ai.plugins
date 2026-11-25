@@ -38,8 +38,66 @@ def strict_json(text):
     return json.loads(text, object_pairs_hook=unique, parse_constant=invalid_constant, parse_float=finite_number)
 
 
-def outline():
-    return strict_json((TEMPLATES / 'outline.json').read_text(encoding='utf-8'))
+KINDS = ('plugin', 'marketplace')
+SECTION_LABELS = {'de': ('Beschreibung', 'Ablauf', 'Beispiel', 'Liest und schreibt'),
+                  'en': ('Description', 'Workflow', 'Example', 'Reads and writes')}
+# pages of the former structure: reported, never converted or deleted
+FORMER_PAGES = ('README.md', 'usage.md', 'screens.md', 'faq.md', 'storage.md', 'development.md')
+
+
+def outline(kind='plugin'):
+    return strict_json((TEMPLATES / 'outline.json').read_text(encoding='utf-8'))[kind]
+
+
+def kind_of(root):
+    root = Path(root)
+    return 'marketplace' if (root / 'marketplace.json').is_file() and not (root / 'plugin.json').is_file() else 'plugin'
+
+
+def one_line(text):
+    return ' '.join(str(text).split()).replace('|', '\\|')
+
+
+def skills_info(skills):
+    """[(name, description)] from the frontmatter of each skill directory, in the order of the directories."""
+    result = []
+    for skill in skills:
+        text = (Path(skill) / 'SKILL.md').read_text(encoding='utf-8')
+        front = text.split('---', 2)[1] if text.startswith('---') and text.count('---') >= 2 else ''
+        found = {key: re.search('^' + key + r':\s*(.+)$', front, re.MULTILINE) for key in ('name', 'description')}
+        name = found['name'].group(1).strip().strip('"\'') if found['name'] else Path(skill).name
+        description = found['description'].group(1).strip().strip('"\'') if found['description'] else ''
+        result.append((name, description))
+    return result
+
+
+def plugins_info(root):
+    """[(name, description, link)] of the plugins a marketplace lists."""
+    data = strict_json((Path(root) / 'marketplace.json').read_text(encoding='utf-8'))
+    result = []
+    for entry in data.get('plugins', []):
+        link = entry.get('repository') or entry.get('homepage') or ''
+        if not link and isinstance(entry.get('source'), dict):
+            link = entry['source'].get('url', '')
+        result.append((entry.get('name', ''), entry.get('description', ''), link))
+    return result
+
+
+def skill_sections(skills, language, text=None):
+    """One section per skill with the required sub-headings; `text` fills them, else a placeholder to author."""
+    lines = []
+    for number, (name, _) in enumerate(skills, 1):
+        lines += ['## ' + name, '']
+        for part, label in enumerate(SECTION_LABELS[language], 1):
+            lines += ['### ' + label, '', text or '{{SKILL_%d_%d}}' % (number, part), '']
+    return '\n'.join(lines).rstrip('\n')
+
+
+def fill_listings(text, language, skills=(), plugins=(), section_text=None):
+    text = text.replace('{{SKILL_ROWS}}', '\n'.join('| [%s](#%s) | %s |' % (name, slug(name), one_line(description)) for name, description in skills))
+    text = text.replace('{{SKILL_SECTIONS}}', skill_sections(skills, language, section_text))
+    return text.replace('{{PLUGIN_ROWS}}', '\n'.join('| %s | %s | %s |' % (one_line(name), one_line(description), '[' + name + '](' + link + ')' if link else '')
+                                                    for name, description, link in plugins))
 
 
 def check_policy(policy):
@@ -67,10 +125,10 @@ def language_policy(root, languages=None, default_language=None):
     return requested
 
 
-def page_layout(policy):
+def page_layout(policy, kind='plugin'):
     pages = {}
     default = policy['default_language']
-    for template, headings in outline().items():
+    for template, headings in outline(kind).items():
         language = 'en' if template == 'README.en.md' or template.startswith('docs/en/') else 'de'
         if language not in policy['languages']:
             continue
@@ -79,8 +137,8 @@ def page_layout(policy):
     return pages
 
 
-def template_text(template, policy, base=None):
-    text = ((base or TEMPLATES) / template).read_text(encoding='utf-8')
+def template_text(template, policy, base=None, kind='plugin'):
+    text = ((base or TEMPLATES / 'documentation' / kind) / template).read_text(encoding='utf-8')
     if len(policy['languages']) == 1:
         text = '\n'.join(line for line in text.split('\n') if not ('Deutsch' in line and 'English' in line and ' | ' in line))
     if policy['default_language'] == 'en':
@@ -192,8 +250,17 @@ def safe_target(root, relative):
 
 
 def scaffold(source, output, title=None, languages=None, default_language=None):
-    info = inspect(source)
     root = Path(output).expanduser().resolve()
+    source_root = Path(source).expanduser().resolve()
+    kind = kind_of(source_root)
+    skills, plugins = [], []
+    if kind == 'marketplace':
+        data = strict_json((source_root / 'marketplace.json').read_text(encoding='utf-8'))
+        info = {'name': data.get('displayName') or data.get('name') or source_root.name, 'skills': []}
+        plugins = plugins_info(source_root)
+    else:
+        info = inspect(source)
+        skills = skills_info(info['skills'])
     if any(root.is_relative_to(Path(skill)) for skill in info['skills']):
         raise ValueError('Write documentation outside the distributable source skill')
     for skill in info['skills']:  # a skill inside the output repository must lie under skills/
@@ -207,13 +274,13 @@ def scaffold(source, output, title=None, languages=None, default_language=None):
     if not manifest:
         manifest = {'schema_version': 1, 'extra_sources': [], 'open_questions': [], 'documentation': policy}
         plans.append((manifest_path, (json.dumps(manifest, ensure_ascii=False, indent=2) + '\n').encode()))
-    for name, (template, _, _) in page_layout(policy).items():
+    for name, (template, _, language) in page_layout(policy, kind).items():
         target = safe_target(root, name)
         if target.exists() and not target.is_file():
             raise ValueError(f'Expected a file: {target}')
         if not target.exists():
-            text = template_text(template, policy)
-            text = text.replace('{{TITLE}}', title or info['name'])
+            text = template_text(template, policy, kind=kind)
+            text = fill_listings(text.replace('{{TITLE}}', title or info['name']), language, skills, plugins)
             plans.append((target, text.encode('utf-8')))
     for target, content in plans:
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -252,7 +319,14 @@ def validate(output):
         policy = language_policy(root)
     except (OSError, ValueError) as exc:
         return [str(exc)]
-    pages = page_layout(policy)
+    kind = kind_of(root)
+    pages = page_layout(policy, kind)
+    skills = [name for name, _ in skills_info(sorted(p.parent for p in (root / 'skills').glob('*/SKILL.md')))] if kind == 'plugin' else []
+    listed = bool(skills)  # documentation written outside the repository has no skills/ to compare with
+    for language in policy['languages']:
+        for former in FORMER_PAGES:
+            if (root / 'docs' / language / former).is_file():
+                errors.append(f'docs/{language}/{former}: page of the former structure; remove it (nothing is converted)')
     for name, (_, required, language) in pages.items():
         path = safe_target(root, name)
         if not path.is_file():
@@ -265,8 +339,17 @@ def validate(output):
             errors.append(f'{name}: unclosed fenced block')
         prose = re.sub(r'```.*?```', '', text, flags=re.DOTALL)
         headings = re.findall(r'^## (.+)$', prose, re.MULTILINE)
-        if headings != required:
-            errors.append(f'{name}: level-two headings must match outline order')
+        found_skills = skills if listed else headings[len(required):]
+        expected = required + found_skills if name.endswith('/skills.md') else required
+        if headings != expected:
+            errors.append(f'{name}: level-two headings must match outline order' + (' (Overview, then one section per skill)' if name.endswith('/skills.md') else ''))
+        if name.endswith('/skills.md'):
+            sections = re.split(r'^## .+$', prose, flags=re.MULTILINE)[2:]
+            for skill, section in zip(found_skills, sections):
+                if re.findall(r'^### (.+)$', section, re.MULTILINE) != list(SECTION_LABELS[language]):
+                    errors.append(f'{name}: {skill} needs the sections ' + ', '.join(SECTION_LABELS[language]))
+                if listed and '| [' + skill + '](' not in prose:
+                    errors.append(f'{name}: {skill} has no row in the overview table')
         if len(re.findall(r'^# ', prose, re.MULTILINE)) != 1:
             errors.append(f'{name}: expected exactly one page title')
         if re.search(r'(?:/Users/|/home/[^/\s]+/|[A-Za-z]:\\Users\\)', text):
@@ -298,7 +381,7 @@ def validate(output):
     icon = safe_target(root, 'assets/icon.png')  # the plugin's one icon (single source); the documentation only references it
     if not icon.is_file():
         errors.append('assets/icon.png is missing (the single icon of the plugin)')
-    for name in (name for name in pages if name.startswith('README') or name.endswith('/README.md')):
+    for name in (name for name in pages if name.startswith('README')):
         path = safe_target(root, name)
         if path.is_file() and 'assets/icon.png' not in path.read_text(encoding='utf-8'):
             errors.append(f'{name}: the icon assets/icon.png must be referenced')
