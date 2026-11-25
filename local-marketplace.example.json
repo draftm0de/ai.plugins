@@ -1,5 +1,5 @@
 {
   "sources": {
-    "interview-coach": "../ai.plugin.interview-coach"
+    "plugin-manager": "../ai.plugin.plugin-manager"
   }
 }

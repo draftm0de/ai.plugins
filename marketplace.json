@@ -11,24 +11,6 @@
       "displayName": "Plugin Manager",
       "description": "Manage marketplaces and separate skill plugins: creation, association, documentation, validation and approval-gated publication.",
       "repository": "https://github.com/draftm0de/ai.plugin.plugin-manager.git"
-    },
-    {
-      "name": "interview-coach",
-      "displayName": "Interview Coach",
-      "description": "Adaptive job interview coaching with role-specific practice, feedback, interviewer research and private training progress.",
-      "repository": "https://github.com/draftm0de/ai.plugin.interview-coach.git"
-    },
-    {
-      "name": "website-manager",
-      "displayName": "Website Manager",
-      "description": "Create, manage and maintain websites: guided setup of new or existing sites, brief and start page design, local preview, SEO and accessibility audits with reports and work list, editing of the start page. Publishing is not available yet.",
-      "repository": "https://github.com/draftm0de/ai.plugin.website.git"
-    },
-    {
-      "name": "coding-manager",
-      "displayName": "Coding Manager",
-      "description": "Verwaltet Coding-Plugins: Setup, Verifizierung und Updates für Entwicklungsprojekte",
-      "repository": "https://github.com/draftm0de/ai.plugin.coding.git"
     }
   ]
 }
