@@ -84,6 +84,47 @@ class StandardsTests(unittest.TestCase):
         for relative in ('scripts/verify.py', 'skills/_shared/templates/plugin/sync/scripts/verify.py', 'skills/_shared/templates/marketplace/sync/scripts/verify.py'):
             self.assertEqual(canonical, (R / relative).read_bytes(), relative)
 
+    def errors(self):
+        return ' '.join(skill_verify.verify(self.plugin, 'plugin').get('errors', []))
+
+    def test_a_plugin_with_exactly_one_skill_needs_no_command_file_and_with_several_each_skill_needs_one(self):  # R32
+        self.assertTrue(skill_verify.verify(self.plugin, 'plugin')['structure_valid'])
+        second = self.plugin / 'skills/second'
+        second.mkdir()
+        (second / 'SKILL.md').write_text('---\nname: second\ndescription: A fictional second capability.\n---\n# Second\n')
+        self.assertIn('has no commands/', self.errors())
+        (self.plugin / 'commands').mkdir(exist_ok=True)
+        for name in ('fictional-example', 'second'):
+            (self.plugin / 'commands' / (name + '.md')).write_text('Run the skill.\n')
+        self.assertTrue(skill_verify.verify(self.plugin, 'plugin')['structure_valid'])
+
+    def test_the_failure_layout_exists_only_in_the_message_module(self):  # R32
+        script = self.plugin / 'skills/fictional-example/scripts/run.py'
+        script.parent.mkdir(parents=True, exist_ok=True)
+        script.write_text("MESSAGE = 'The count action could not be completed, because x'\n")
+        self.assertIn('builds a failure message itself', self.errors())
+        script.write_text("MESSAGE = 'a plain text'\n")
+        self.assertTrue(skill_verify.verify(self.plugin, 'plugin')['structure_valid'])
+
+    def test_every_failure_code_used_in_the_scripts_needs_a_catalogue_entry(self):  # R32
+        scripts = self.plugin / 'skills/_shared/scripts'
+        (scripts / 'work.py').write_text("from messages_base import Failure\nraise Failure('NO_ENTRY_FOR_THIS')\n")
+        self.assertIn('failure codes without a catalogue entry: NO_ENTRY_FOR_THIS', self.errors())
+        (scripts / 'catalogue.py').write_text("CATALOGUE = {'NO_ENTRY_FOR_THIS': {}}\n")
+        self.assertTrue(skill_verify.verify(self.plugin, 'plugin')['structure_valid'])
+
+    def test_test_folders_follow_the_standard(self):  # R32
+        (self.plugin / 'tests/regression').mkdir()
+        self.assertIn('tests/regression is not a test folder', self.errors())
+        (self.plugin / 'tests/regression').rmdir()
+        nested = self.plugin / 'tests/unit/thing'
+        nested.mkdir(parents=True)
+        (nested / 'test_x.py').write_text('')
+        self.assertIn('has test files but no __init__.py', self.errors())
+        (self.plugin / 'tests/unit/__init__.py').write_text('')
+        (nested / '__init__.py').write_text('')
+        self.assertTrue(skill_verify.verify(self.plugin, 'plugin')['structure_valid'])
+
 
 if __name__ == '__main__':
     unittest.main()

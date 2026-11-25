@@ -18,11 +18,11 @@
       "executable": false
     },
     "docs/standards/skills.md": {
-      "sha256": "534d52168c26b25c1a313aa0549f5fbcce6b851dc8e93acc4c8d854821d4d55a",
+      "sha256": "c74f879c52b7db0db980d33d56481add50483941897614b62c85998f61ed827d",
       "executable": false
     },
     "docs/standards/testing.md": {
-      "sha256": "38607d703a424055cc878df0efd281af2e59eb7d8a846311cb98a324022198f5",
+      "sha256": "e90ced5fb5f676a0d543be0173ac8497880e6af60a7cb40f625d59c518ca039f",
       "executable": false
     },
     "scripts/plugin.py": {
@@ -34,7 +34,7 @@
       "executable": false
     },
     "scripts/verify.py": {
-      "sha256": "1091dd93ba94bf53697ef5634935c79638d8ee3e5939db447044aaf2d5fd81a1",
+      "sha256": "a6dea952e23cab9943eb3fd522f09986275d288bdf096b14f518ac39ebe75479",
       "executable": false
     },
     "skills/_shared/references/operator-language-helper.md": {

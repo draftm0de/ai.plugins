@@ -39,7 +39,7 @@ directories that are needed, and add `__init__.py` to every discovered directory
 - A case holds the real skill texts, the output of the commands the skill starts with, the conversation so far and a
   deterministic expectation (language, required and forbidden text, forbidden commands, next step). The model has no
   tools; grading is deterministic.
-- Add a case for every rule a model must follow, and a unit test for the grading of each case.
+- Model cases are optional. A plugin that adds them tests the grading of each case with a unit test.
 - Report what the run shows: one run on one model shows that the text steers a model, not how often. A host run
   stays separate.
 
