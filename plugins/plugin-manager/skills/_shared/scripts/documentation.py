@@ -204,6 +204,8 @@ def page_layout(policy, kind='plugin'):
 
 
 def template_text(template, policy, base=None, kind='plugin'):
+    if template.endswith('/concepts.md'):  # the managed page (R36): identical in every repository of the kind, never varied
+        return (TEMPLATES / kind / 'sync' / template).read_text(encoding='utf-8')
     text = ((base or TEMPLATES / 'documentation' / kind) / template).read_text(encoding='utf-8')
     if len(policy['languages']) == 1:
         text = '\n'.join(line for line in text.split('\n') if not ('Deutsch' in line and 'English' in line and ' | ' in line))
@@ -428,7 +430,7 @@ def validate(output):
             errors.append(f'{name}: expected exactly one page title')
         if re.search(r'(?:/Users/|/home/[^/\s]+/|[A-Za-z]:\\Users\\)', text):
             errors.append(f'{name}: machine-specific path')
-        if len(policy['languages']) > 1:
+        if len(policy['languages']) > 1 and not name.endswith('/concepts.md'):  # the managed page carries no language switch
             other = 'en' if language == 'de' else 'de'
             if name.startswith('README'):
                 counterpart = 'README.md' if other == policy['default_language'] else f'README.{other}.md'

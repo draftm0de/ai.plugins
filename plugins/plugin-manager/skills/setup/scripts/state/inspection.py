@@ -1,9 +1,26 @@
 """The write-free inspection plan of a target folder."""
+import json
+import re
 from . import fsafe
 from . import preferences
 from . import skeleton_lock
 from . import template_sources
 from .constants import Conflict, LANGUAGE_PATH
+
+
+CONCEPTS_PAGE = re.compile(r'docs/(de|en)/concepts\.md')
+
+
+def documentation_languages(root):
+    """The selected documentation languages of the repository; none when the settings are missing or unreadable."""
+    path = root / 'docs/documentation.json'
+    try:
+        if path.is_symlink():
+            return set()
+        languages = json.loads(path.read_text(encoding='utf-8'))['documentation']['languages']
+        return {value for value in languages if isinstance(value, str)}
+    except (OSError, ValueError, KeyError, TypeError):
+        return set()
 
 
 def inspect(ctx, root, requested_language):
@@ -28,7 +45,11 @@ def inspect(ctx, root, requested_language):
     files, directories, decisions, updates = {}, [], [], []
     removals = {'auto': [], 'decisions': [], 'kept': [], 'unowned': [], 'lock_cleanup': []}
     needed_dirs = set()
+    selected = documentation_languages(root)
     for relative, entry in templates.items():
+        page = CONCEPTS_PAGE.fullmatch(relative)
+        if page and page.group(1) not in selected:
+            continue  # the managed concepts page exists only in the selected documentation languages
         accepted = lock.get(relative)
         exists = fsafe.check_chain(root, relative, 'file') != 'missing'
         if entry is None:  # source removed in the parent: ownership evidence in the lock decides

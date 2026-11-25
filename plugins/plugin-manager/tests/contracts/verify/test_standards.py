@@ -170,6 +170,11 @@ class StandardsTests(unittest.TestCase):
         for path in (R / 'skills').rglob('*.py'):
             self.assertNotIn('core.hooksPath githooks', path.read_text(), path)
 
+    def test_the_manager_documentation_uses_the_managed_concepts_pages(self):  # R36
+        for language in ('de', 'en'):
+            self.assertEqual((R / 'skills/_shared/templates/plugin/sync/docs' / language / 'concepts.md').read_bytes(),
+                             (R / 'docs' / language / 'concepts.md').read_bytes(), language)
+
 
 if __name__ == '__main__':
     unittest.main()

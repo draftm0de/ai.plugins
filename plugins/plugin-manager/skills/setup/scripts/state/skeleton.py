@@ -39,7 +39,7 @@ def setup(ctx, target, requested_language=None):
             preference = {'operator_language': requested_language, 'needs_choice': False}
             saved = True
         for relative in ctx.managed_files:
-            if files[relative] != 'missing':
+            if files.get(relative) != 'missing':
                 continue
             data, executable = templates[relative]
             destination = root / relative

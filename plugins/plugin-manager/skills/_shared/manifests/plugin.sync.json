@@ -9,6 +9,14 @@
       "sha256": "d50241a8f54f9b9dc16bcc0c741754b2f3b9017c0dd4e9358068c74f6a31a638",
       "executable": false
     },
+    "docs/de/concepts.md": {
+      "sha256": "be2ec28363573749552bdf02bd885e660a5155e4c9079d30bb5dabb0d6ef38ac",
+      "executable": false
+    },
+    "docs/en/concepts.md": {
+      "sha256": "dcbecd91b249a4cdaa4f99171eeea832fa4e88be7e9cf8481fb07c63878609cc",
+      "executable": false
+    },
     "docs/standards/coding.md": {
       "sha256": "43da9da322dccb2830af3abac71d1b2324177ebc50fac9a2da851207053dddc8",
       "executable": false

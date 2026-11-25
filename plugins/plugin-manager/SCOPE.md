@@ -393,7 +393,7 @@ Test: tests/integration/update/test_documentation.py
 ## R36: The concepts page is managed
 
 Status: confirmed
-Acceptance: `docs/<lang>/concepts.md` (German and English) explains marketplace, plugin and skill, is identical for every repository of both kinds, and is delivered and kept current by the Manager as a managed file for the selected documentation languages.
+Acceptance: `docs/<lang>/concepts.md` (German and English) explains marketplace, plugin and skill, is identical for every repository of both kinds, and is delivered and kept current by the Manager as a managed file for the selected documentation languages. The page carries no language switch and no link that depends on the default language, because it is identical everywhere; it links the installation page and the skills or plugin list. Setup delivers it only for the languages selected in `docs/documentation.json` (none without that file).
 Source: skills/_shared/templates/plugin/sync/docs/en/concepts.md
 Source: skills/_shared/templates/marketplace/sync/docs/en/concepts.md
 Test: tests/integration/project_setup/test_manifest.py

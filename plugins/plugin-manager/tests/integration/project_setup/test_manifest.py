@@ -67,7 +67,7 @@ class ManifestTests(unittest.TestCase):
     def test_marketplace_classes_follow_the_scope(self):
         sync = load('marketplace.sync.json')
         self.assertEqual({'CLAUDE.md', 'scripts/local_plugins.py', 'scripts/marketplace.py', 'scripts/plugin_payload.py',
-                          'scripts/run_tests.py', 'scripts/verify.py'}, set(sync['files']))
+                          'scripts/run_tests.py', 'scripts/verify.py', 'docs/de/concepts.md', 'docs/en/concepts.md'}, set(sync['files']))
         seed = set(files_below(TEMPLATES / 'marketplace/seed'))
         self.assertEqual({'Makefile', 'AGENTS.md', 'SCOPE.md', 'docs/architecture.md', 'docs/prerequisites.md', 'local-marketplace.example.json',
                           'tests/README.md', 'tests/__init__.py', 'tests/contracts/__init__.py', 'tests/contracts/test_structure.py'}, seed)
@@ -81,7 +81,7 @@ class ManifestTests(unittest.TestCase):
     def test_plugin_classes_follow_the_scope(self):
         sync = set(load('plugin.sync.json')['files'])
         self.assertTrue({'CLAUDE.md', 'scripts/plugin.py', 'scripts/verify.py', 'scripts/run_tests.py',
-                         'skills/_shared/scripts/operator_language.py', 'skills/_shared/references/operator-language.md', 'skills/_shared/references/operator-language-helper.md', 'skills/_shared/scripts/messages_base.py', 'tests/behavior/run_cases.py', 'tests/contracts/test_operator_language.py', 'githooks/pre-commit', 'AGENTS.md',
+                         'skills/_shared/scripts/operator_language.py', 'skills/_shared/references/operator-language.md', 'skills/_shared/references/operator-language-helper.md', 'skills/_shared/scripts/messages_base.py', 'tests/behavior/run_cases.py', 'tests/contracts/test_operator_language.py', 'githooks/pre-commit', 'docs/de/concepts.md', 'docs/en/concepts.md', 'AGENTS.md',
                          'docs/standards/coding.md', 'docs/standards/messages.md', 'docs/standards/testing.md', 'docs/standards/skills.md'} == sync)  # R16: no setup flow; R27: the standards
         seed = set(files_below(TEMPLATES / 'plugin/seed'))
         self.assertTrue({'CUSTOM.AGENTS.md', 'SCOPE.md', 'assets/icon.png', 'Makefile', 'ci.yml', 'gitignore.txt', 'docs/architecture.md',

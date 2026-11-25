@@ -131,6 +131,29 @@ class SupplementTests(Base):
         self.assertEqual(template('AGENTS.md'), (self.p / 'AGENTS.md').read_bytes())
 
 
+class ConceptsPageTests(Base):
+    """R36: the managed concepts page exists only in the selected documentation languages."""
+
+    def documentation(self, *languages):
+        (self.p / 'docs').mkdir(exist_ok=True)
+        (self.p / 'docs/documentation.json').write_text(json.dumps({'schema_version': 1, 'extra_sources': [], 'open_questions': [],
+                                                                   'documentation': {'languages': list(languages), 'default_language': languages[0]}}))
+
+    def test_only_the_selected_languages_get_the_managed_page(self):
+        self.documentation('en')
+        self.setup_ok('--language', 'de')
+        self.assertTrue((self.p / 'docs/en/concepts.md').is_file())
+        self.assertFalse((self.p / 'docs/de').exists())
+        self.documentation('en', 'de')
+        self.setup_ok()
+        self.assertTrue((self.p / 'docs/de/concepts.md').is_file())
+
+    def test_without_documentation_settings_no_page_is_delivered(self):
+        self.setup_ok('--language', 'de')
+        self.assertFalse((self.p / 'docs/en/concepts.md').exists())
+        self.assertFalse((self.p / 'docs/de/concepts.md').exists())
+
+
 class LanguageTests(Base):
     def test_rule_added_before_language_and_existing_ignore_kept(self):
         (self.p / '.gitignore').write_text('build/\n!keep\n')

@@ -169,7 +169,7 @@ def audit(root):
 def scaffold_plugin(source, output, languages=None, default_language=None, repository=None, author=None, plugin_name=None):
     """Internal current `create --kind plugin` builder; not a compatibility entry point."""
     from documentation import language_policy
-    language_policy(Path(output).expanduser().resolve(), languages, default_language)
+    selected = language_policy(Path(output).expanduser().resolve(), languages, default_language)['languages']
     info = inspect(source)
     if len(info['skills']) != 1:
         raise ValueError('A new plugin is created from exactly one skill source')
@@ -218,6 +218,8 @@ def scaffold_plugin(source, output, languages=None, default_language=None, repos
         for path in folder.rglob('*'):
             if path.is_file():
                 relative = str(path.relative_to(folder))
+                if relative.startswith('docs/') and relative.endswith('/concepts.md') and relative.split('/')[1] not in selected:
+                    continue  # the managed concepts page exists only in the selected languages (R36)
                 if part == 'seed' and relative == 'gitignore.txt': relative = '.gitignore'
                 if part == 'seed' and relative == 'ci.yml': relative = '.github/workflows/validate.yml'
                 files[relative] = path.read_bytes()

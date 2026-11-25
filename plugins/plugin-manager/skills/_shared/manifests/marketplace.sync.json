@@ -5,6 +5,14 @@
       "sha256": "d50241a8f54f9b9dc16bcc0c741754b2f3b9017c0dd4e9358068c74f6a31a638",
       "executable": false
     },
+    "docs/de/concepts.md": {
+      "sha256": "d4d32642bc2f67d666b472eb14d30b9ae3e6e90467ae75d804069c37c43ed160",
+      "executable": false
+    },
+    "docs/en/concepts.md": {
+      "sha256": "ea8c9409c1bbf92bf008aebd793f5b970c38a9460178633b33ec7a3c90ae5b53",
+      "executable": false
+    },
     "scripts/local_plugins.py": {
       "sha256": "e43812e571110587816617f6ba81f9fc8b579a9baf236bef6e190cb5120e50d3",
       "executable": false
