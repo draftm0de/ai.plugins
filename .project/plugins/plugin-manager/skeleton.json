@@ -1,0 +1,29 @@
+{
+  "schema_version": 2,
+  "files": {
+    "CLAUDE.md": {
+      "source_hash": "d50241a8f54f9b9dc16bcc0c741754b2f3b9017c0dd4e9358068c74f6a31a638",
+      "local_hash": "d50241a8f54f9b9dc16bcc0c741754b2f3b9017c0dd4e9358068c74f6a31a638"
+    },
+    "scripts/local_plugins.py": {
+      "source_hash": "e43812e571110587816617f6ba81f9fc8b579a9baf236bef6e190cb5120e50d3",
+      "local_hash": "e43812e571110587816617f6ba81f9fc8b579a9baf236bef6e190cb5120e50d3"
+    },
+    "scripts/marketplace.py": {
+      "source_hash": "e289c268468e33ec2d06a8340316a4e1d3a016bc165b5abeeb550e97bab910b3",
+      "local_hash": "e289c268468e33ec2d06a8340316a4e1d3a016bc165b5abeeb550e97bab910b3"
+    },
+    "scripts/plugin_payload.py": {
+      "source_hash": "c9023a6afbce46cd67c0c422911aa515deb639f24f25f8ae6abf591964ab9661",
+      "local_hash": "c9023a6afbce46cd67c0c422911aa515deb639f24f25f8ae6abf591964ab9661"
+    },
+    "scripts/run_tests.py": {
+      "source_hash": "1e8c301250633b36ae4123f2b35454a5ce57e0792a746d910cf9afd3f882344c",
+      "local_hash": "1e8c301250633b36ae4123f2b35454a5ce57e0792a746d910cf9afd3f882344c"
+    },
+    "scripts/verify.py": {
+      "source_hash": "cb4938a3ea52c767a87bab4b036b120b6e6241fe64ce980d4fa72e98e7d765e4",
+      "local_hash": "cb4938a3ea52c767a87bab4b036b120b6e6241fe64ce980d4fa72e98e7d765e4"
+    }
+  }
+}

@@ -15,3 +15,4 @@ node_modules/
 
 # Machine-specific development checkout mapping.
 .local/
+/.project/operator.json

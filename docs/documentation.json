@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "extra_sources": [],
+  "open_questions": [],
+  "documentation": {
+    "languages": [
+      "de",
+      "en"
+    ],
+    "default_language": "de"
+  },
+  "marketplace_url": "https://github.com/draftm0de/ai.plugins"
+}
