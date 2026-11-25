@@ -452,17 +452,27 @@ def associate(root, marketplace, repository=None, drop_missing_old=False, plugin
                     'Review them in their repositories and publish them through publish. Nothing was committed, pushed, installed or published.'}
 
 
-def complete_skeleton_documentation(stage, title):
+def complete_skeleton_documentation(stage, title, marketplace=None):
     """Replace the scaffold pages of a newly staged repository by the finished skeleton pages of
     templates/skeleton-docs (real Markdown, same layout as templates/); never touches existing user documentation."""
-    from documentation import fill_listings, language_policy, page_layout, skills_info, template_text, validate
+    from documentation import fill_installation, fill_listings, installation_facts, language_policy, page_layout, skills_info, template_text, validate
     policy = language_policy(stage)
     skills = skills_info(sorted(p.parent for p in (stage/'skills').glob('*/SKILL.md')))
+    facts = installation_facts(stage, marketplace=marketplace)
+    manifest_path = stage/'docs/documentation.json'
+    if facts['url']:
+        manifest = read(manifest_path)
+        manifest['marketplace_url'] = facts['url']
+        manifest_path.write_bytes(encode(manifest))
     for relative, (template, _, language) in page_layout(policy).items():
         text = template_text(template, policy, base=SKILL/'templates/skeleton-docs')
         pending = 'Noch nicht implementiert.' if language == 'de' else 'Not implemented yet.'
         (stage/relative).parent.mkdir(parents=True, exist_ok=True)
-        (stage/relative).write_text(fill_listings(text.replace('{{TITLE}}', title), language, skills, section_text=pending), encoding='utf-8')
+        text = fill_listings(text.replace('{{TITLE}}', title), language, skills, section_text=pending)
+        if relative.endswith('/installation.md'):
+            unknown = '(noch nicht festgelegt)' if language == 'de' else '(not set yet)'  # a new repository states what is open
+            text = re.sub(r'\{\{[A-Z_]+\}\}', unknown, fill_installation(text, facts, language))
+        (stage/relative).write_text(text, encoding='utf-8')
     errors = validate(stage)
     if errors:
         raise ValueError('Skeleton documentation validation failed: ' + '; '.join(errors))
@@ -544,7 +554,7 @@ def create_plugin(root, marketplace, *, name=None, display_name=None, descriptio
         engine = module(SKILL/'templates/plugin/sync/scripts/plugin.py', 'trusted_payload')
         for path, data in engine.repository_files(manifest).items():
             (stage/path).write_bytes(encode(data))
-        complete_skeleton_documentation(stage, display_name)
+        complete_skeleton_documentation(stage, display_name, market)
         document(stage, license_decision)
         files = {root/p.relative_to(stage): p.read_bytes() for p in stage.rglob('*') if p.is_file()}
         # Managed skeleton files (common list of the kind manifest) belong to the skeleton and sync flows: an existing

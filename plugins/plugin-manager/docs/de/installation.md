@@ -6,7 +6,7 @@
 
 [Start](../../README.md) · [Installation](installation.md) · [Skills](skills.md) · [Begriffe](concepts.md)
 
-Du fügst den Marketplace einmal hinzu und installierst daraus den Plugin Manager. Zugang, Repository-Berechtigungen und Organisationsrichtlinien gelten. Die Menüschritte beruhen auf Angaben und Screenshots vom 18.11.2026.
+Du fügst den Marketplace einmal hinzu und installierst daraus Plugin Manager. Zugang, Repository-Berechtigungen und die Richtlinien deiner Organisation gelten. Die Menübezeichnungen entsprechen der jeweiligen App und können abweichen.
 
 ## Claude
 
@@ -14,34 +14,20 @@ Du fügst den Marketplace einmal hinzu und installierst daraus den Plugin Manage
 
 1. Öffne **Einstellungen**.
 2. Scrolle zu **Anpassungen** und wähle **Plugins**.
-3. Wähle **+ Hinzufügen → Marketplace hinzufügen**.
-4. Wähle **Aus einem Repository hinzufügen**.
-5. Gib `https://github.com/draftm0de/ai.plugins` unter **URL** ein und klicke **Synchronisieren**.
-6. Wähle den Manager im Marketplace und installiere ihn.
+3. Wähle **+ Hinzufügen → Marketplace hinzufügen** und dann **Aus einem Repository hinzufügen**.
+4. Gib `https://github.com/draftm0de/ai.plugins` ein und wähle **Synchronisieren**.
+5. Wähle Plugin Manager im Marketplace und installiere es.
 
-In Claude Desktop 5.11492.5 öffneten beim Nutzer `/plugin install …` und `/plugin marketplace add …` lediglich **Einstellungen → Plugins**; der vollständige Auftrag wurde darüber nicht ausgeführt. Nutze deshalb auch im Reiter **Code** den oben beschriebenen UI-Weg. Das Öffnen der Verwaltung bestätigt keine Installation. Die genaue interne Ursache ist nicht abschließend belegt; Änderungen an der JSON-Einrückung helfen hier nicht.
-
-Anthropic unterscheidet den Terminal-Befehl von der Desktop-Plugin-Verwaltung: [Desktop-Dokumentation](https://code.claude.com/docs/en/desktop#feature-comparison).
+Die `/plugin`-Befehle führen in der Desktop-App nur zu den Plugin-Einstellungen. Nutze deshalb diesen Weg.
 
 ### CLI
 
-Die folgenden Slash-Befehle gelten für eine mit `claude` gestartete Sitzung im Terminal. Sie sind keine Installationsanweisung für das Eingabefeld im Desktop-Code-Reiter.
+In einer mit `claude` gestarteten Sitzung im Terminal:
 
-1. Füge den Marketplace hinzu:
-
-   ```text
-   /plugin marketplace add https://github.com/draftm0de/ai.plugins
-   ```
-
-2. Öffne die Plugin-Details:
-
-   ```text
-   /plugin install plugin-manager@draftmode-ai-plugins
-   ```
-
-3. Wähle den Installationsbereich und bestätige die Installation.
-
-[Offizielle Anleitung](https://code.claude.com/docs/en/discover-plugins#install-a-plugin).
+```text
+/plugin marketplace add https://github.com/draftm0de/ai.plugins
+/plugin install plugin-manager@draftmode-ai-plugins
+```
 
 ## Codex
 
@@ -49,27 +35,17 @@ Die folgenden Slash-Befehle gelten für eine mit `claude` gestartete Sitzung im 
 
 1. Öffne das **Nutzer-Icon** und wähle **Settings**.
 2. Wähle **Integration → Plugins**.
-3. Wähle **+ Add → A Marketplace**.
-4. Gib `https://github.com/draftm0de/ai.plugins` als Repository-URL ein und bestätige das Hinzufügen.
-5. Wähle **Plugin Manager** und installiere ihn.
+3. Wähle **+ Add → A Marketplace** und gib `https://github.com/draftm0de/ai.plugins` ein.
+4. Wähle Plugin Manager und installiere es.
 
 ### CLI
 
-Die folgenden Befehle werden direkt in der Terminal-Shell ausgeführt.
+```sh
+codex plugin marketplace add https://github.com/draftm0de/ai.plugins
+codex plugin add plugin-manager@draftmode-ai-plugins
+```
 
-1. Füge den Marketplace hinzu:
-
-   ```sh
-   codex plugin marketplace add https://github.com/draftm0de/ai.plugins
-   ```
-
-2. Installiere das Plugin:
-
-   ```sh
-   codex plugin add plugin-manager@draftmode-ai-plugins
-   ```
-
-3. Öffne einen neuen Codex-Chat und prüfe, ob das Plugin verfügbar ist.
+Öffne danach einen neuen Chat.
 
 ### ChatGPT (Administrator eines Workspace)
 
@@ -83,25 +59,37 @@ Dieser Admin-Weg ist keine Behauptung identischer Menüs in jeder ChatGPT-Oberfl
 
 ## Aktualisieren
 
-In Claude Desktop verwende die Plugin-Verwaltung zum Aktualisieren beziehungsweise Synchronisieren und öffne danach einen neuen Chat. Die folgenden Befehle sind nur die Alternative für Claude Code im Terminal:
+Claude (Terminal):
 
-```text
-/plugin marketplace update draftmode-ai-plugins
-/plugin update plugin-manager@draftmode-ai-plugins
+```sh
+claude plugin marketplace update draftmode-ai-plugins
+claude plugin update plugin-manager@draftmode-ai-plugins
 ```
 
-In Codex:
+Codex:
 
 ```sh
 codex plugin marketplace upgrade draftmode-ai-plugins
 ```
 
-Die eingecheckten Manifeste enthalten keine Version. Claude Code verwendet dann den Commit als Update-Kennung. Codex aktualisiert beim Git-Marketplace-Upgrade die installierte Kopie; seine angezeigte interne Cache-Version kann trotzdem gleich bleiben. Ein Push allein belegt noch keine Aktualisierung in jedem Desktop-Konto. Ein vollständiger Update-Test ist getrennt vom erfolgreichen Erstimport zu prüfen.
+In den Desktop-Apps aktualisierst du in den Plugin-Einstellungen. Öffne danach einen neuen Chat.
 
 ## Entfernen
 
-Entferne das Plugin in den Plugin-Einstellungen, im Terminal von Claude Code mit `/plugin uninstall plugin-manager@draftmode-ai-plugins` oder bei Codex mit `codex plugin remove plugin-manager@draftmode-ai-plugins`. Deine Projektdateien bleiben unverändert.
+Claude (Terminal):
+
+```sh
+claude plugin uninstall plugin-manager@draftmode-ai-plugins
+```
+
+Codex:
+
+```sh
+codex plugin remove plugin-manager@draftmode-ai-plugins
+```
+
+In den Desktop-Apps entfernst du das Plugin in den Plugin-Einstellungen.
 
 ---
 
-Dokumentation mit Plugin Manager erstellt.
+Dokumentation mit Plugin Manager erstellt. Die Rechte am Quellprodukt bleiben unverändert.

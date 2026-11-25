@@ -2,6 +2,7 @@ import importlib.util
 import json
 from pathlib import Path
 import re
+import subprocess
 import tempfile
 import unittest
 
@@ -224,3 +225,57 @@ class DocumentationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'Choose documentation languages'):
             doc.scaffold(self.source,self.output)
         self.assertFalse(self.output.exists())
+
+    def installation_repo(self, origin='git@github.com:example/market.git'):
+        repo, market = self.root / 'repository', self.root / 'market'
+        (repo / 'skills/one').mkdir(parents=True)
+        (repo / 'skills/one/SKILL.md').write_text('---\nname: one\ndescription: One.\n---\n')
+        (repo / 'plugin.json').write_text(json.dumps({'name': 'demo', 'extensions': {'com.openai': {'interface': {'displayName': 'Demo Tool'}}}}))
+        market.mkdir()
+        (market / 'marketplace.json').write_text(json.dumps({'name': 'demo-market', 'plugins': []}))
+        subprocess.run(['git', 'init', '-q', str(market)], check=True)
+        if origin:
+            subprocess.run(['git', '-C', str(market), 'remote', 'add', 'origin', origin], check=True)
+        evidence = repo / '.project/plugins/plugin-manager'
+        evidence.mkdir(parents=True)
+        (evidence / 'config.json').write_text(json.dumps({'schema_version': 2, 'marketplace': {'name': 'demo-market'}}))
+        (evidence / 'local.json').write_text(json.dumps({'schema_version': 1, 'marketplace_path': '../market'}))
+        self.give_icon(repo)
+        return repo
+
+    def test_the_installation_page_is_filled_from_the_repository_facts_and_the_address_is_recorded(self):  # R35
+        repo = self.installation_repo()
+        result = doc.scaffold(repo, repo, languages=['en', 'de'])
+        self.assertEqual([], result['missing_facts'])
+        self.assertEqual('https://github.com/example/market', json.loads((repo / 'docs/documentation.json').read_text())['marketplace_url'])
+        for language in ('en', 'de'):
+            text = (repo / 'docs' / language / 'installation.md').read_text()
+            self.assertNotIn('{{', text)
+            for line in ('/plugin marketplace add https://github.com/example/market', '/plugin install demo@demo-market',
+                         'codex plugin add demo@demo-market', 'claude plugin marketplace update demo-market',
+                         'claude plugin uninstall demo@demo-market', 'codex plugin remove demo@demo-market', 'Demo Tool'):
+                self.assertIn(line, text, language)
+
+    def test_an_unknown_address_is_reported_and_never_invented(self):  # R35
+        repo = self.installation_repo(origin=None)
+        result = doc.scaffold(repo, repo, languages=['en'])
+        self.assertEqual(['url'], result['missing_facts'])
+        text = (repo / 'docs/en/installation.md').read_text()
+        self.assertIn('{{MARKETPLACE_URL}}', text)
+        self.assertIn('demo@demo-market', text)
+        self.assertNotIn('marketplace_url', json.loads((repo / 'docs/documentation.json').read_text()))
+        self.assertIn('placeholders', ' '.join(doc.validate(repo)))
+
+    def test_the_recorded_address_wins_and_only_a_plain_github_address_is_accepted(self):  # R35
+        repo = self.installation_repo()
+        (repo / 'docs').mkdir()
+        manifest = repo / 'docs/documentation.json'
+        base = {'schema_version': 1, 'extra_sources': [], 'open_questions': [], 'documentation': {'languages': ['en'], 'default_language': 'en'}}
+        manifest.write_text(json.dumps(dict(base, marketplace_url='https://github.com/other/place')))
+        doc.scaffold(repo, repo)
+        self.assertIn('marketplace add https://github.com/other/place', (repo / 'docs/en/installation.md').read_text())
+        for bad in ('https://user:pw@github.com/o/n', 'git@github.com:o/n.git', 'https://example.com/o/n'):
+            manifest.write_text(json.dumps(dict(base, marketplace_url=bad)))
+            with self.assertRaisesRegex(ValueError, 'marketplace_url'):
+                doc.language_policy(repo)
+

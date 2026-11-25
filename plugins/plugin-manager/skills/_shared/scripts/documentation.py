@@ -7,6 +7,7 @@ import argparse
 import json
 from pathlib import Path
 import re
+import subprocess
 import sys
 sys.dont_write_bytecode = True
 from urllib.parse import unquote, urlsplit
@@ -93,6 +94,71 @@ def skill_sections(skills, language, text=None):
     return '\n'.join(lines).rstrip('\n')
 
 
+def repository_address(url):
+    """https://github.com/<owner>/<name> for a GitHub address in any common form, else None."""
+    match = re.fullmatch(r'(?:https://github\.com/|git@github\.com:|ssh://git@github\.com/)([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+?)(?:\.git)?/?', str(url or '').strip())
+    return 'https://github.com/' + match.group(1) + '/' + match.group(2) if match else None
+
+
+def origin_of(folder):
+    """The GitHub address of the origin of a checkout, or None (read-only)."""
+    if not Path(folder).is_dir():
+        return None
+    try:
+        out = subprocess.run(['git', '-C', str(folder), 'config', '--get', 'remote.origin.url'], capture_output=True, text=True, check=False)
+    except OSError:
+        return None
+    return repository_address(out.stdout) if out.returncode == 0 else None
+
+
+def local_json(path):
+    try:
+        data = strict_json(Path(path).read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def installation_facts(root, recorded=None, marketplace=None):
+    """What the installation page states (R35): marketplace address and name, plugin id and label; None where unknown.
+    The address is the recorded one, else the origin of the marketplace checkout (a plugin: the associated or given one;
+    a marketplace: its own). Nothing is invented."""
+    root = Path(root)
+    facts = {'url': repository_address(recorded), 'market': None, 'id': None, 'label': None}
+    if kind_of(root) == 'marketplace':
+        facts['market'] = local_json(root / 'marketplace.json').get('name')
+        facts['url'] = facts['url'] or origin_of(root)
+        facts['id'] = '<plugin>@' + facts['market'] if facts['market'] else None
+        facts['label'] = None
+        return facts
+    manifest = local_json(root / 'plugin.json')
+    name = manifest.get('name')
+    interface = manifest.get('extensions', {}).get('com.openai', {}) if isinstance(manifest.get('extensions'), dict) else {}
+    facts['label'] = (interface.get('interface') or {}).get('displayName') or name
+    for config in sorted((root / '.project/plugins').glob('*/config.json')):
+        identity = local_json(config).get('marketplace')
+        if isinstance(identity, dict) and identity.get('name'):
+            facts['market'] = identity['name']
+            checkout = local_json(config.parent / 'local.json').get('marketplace_path')
+            marketplace = marketplace or (root / checkout if checkout else None)
+    if marketplace:
+        facts['market'] = facts['market'] or local_json(Path(marketplace) / 'marketplace.json').get('name')
+        facts['url'] = facts['url'] or origin_of(marketplace)
+    facts['id'] = name + '@' + facts['market'] if name and facts['market'] else None
+    return facts
+
+
+def fill_installation(text, facts, language):
+    """Replace the variables whose fact is known; an unknown one stays as a placeholder that validate reports."""
+    marketplace_text = {'de': 'das gewünschte Plugin', 'en': 'the plugin you want'}[language]
+    values = {'MARKETPLACE_URL': facts.get('url'), 'MARKETPLACE_NAME': facts.get('market'), 'PLUGIN_ID': facts.get('id'),
+              'PLUGIN_LABEL': facts.get('label') or (marketplace_text if facts.get('id', '') and facts['id'].startswith('<plugin>@') else None)}
+    for key, value in values.items():
+        if value:
+            text = text.replace('{{' + key + '}}', value)
+    return text
+
+
 def fill_listings(text, language, skills=(), plugins=(), section_text=None):
     text = text.replace('{{SKILL_ROWS}}', '\n'.join('| [%s](#%s) | %s |' % (name, slug(name), one_line(description)) for name, description in skills))
     text = text.replace('{{SKILL_SECTIONS}}', skill_sections(skills, language, section_text))
@@ -155,11 +221,13 @@ def read_manifest(root):
     if path.is_symlink():
         raise ValueError('Documentation manifest must not be a symlink')
     data = strict_json(path.read_text(encoding='utf-8'))
-    allowed = {'schema_version', 'extra_sources', 'open_questions', 'documentation'}
+    allowed = {'schema_version', 'extra_sources', 'open_questions', 'documentation', 'marketplace_url'}
     if isinstance(data, dict) and 'source_skill' in data:
         raise ValueError('Unsupported field source_skill in the documentation manifest: the documentation reads every skill of the repository. Remove the field; nothing is converted automatically.')
     if not isinstance(data, dict) or set(data) - allowed or type(data.get('schema_version')) is not int or data.get('schema_version') != 1:
         raise ValueError('Invalid documentation manifest; store source pointers, not duplicated product facts')
+    if 'marketplace_url' in data and repository_address(data['marketplace_url']) != data['marketplace_url']:
+        raise ValueError('marketplace_url must be a plain https://github.com/<owner>/<name> address')
     if 'documentation' not in data:
         raise ValueError('Missing explicit documentation language policy; unsupported manifest, no automatic inference or migration')
     check_policy(data['documentation'])
@@ -271,8 +339,11 @@ def scaffold(source, output, title=None, languages=None, default_language=None):
     manifest_path = safe_target(root, 'docs/documentation.json')
     manifest = read_manifest(root)
     policy = language_policy(root, languages, default_language)
+    facts = installation_facts(source_root, (manifest or {}).get('marketplace_url'))
     if not manifest:
         manifest = {'schema_version': 1, 'extra_sources': [], 'open_questions': [], 'documentation': policy}
+        if facts['url']:
+            manifest['marketplace_url'] = facts['url']
         plans.append((manifest_path, (json.dumps(manifest, ensure_ascii=False, indent=2) + '\n').encode()))
     for name, (template, _, language) in page_layout(policy, kind).items():
         target = safe_target(root, name)
@@ -281,6 +352,8 @@ def scaffold(source, output, title=None, languages=None, default_language=None):
         if not target.exists():
             text = template_text(template, policy, kind=kind)
             text = fill_listings(text.replace('{{TITLE}}', title or info['name']), language, skills, plugins)
+            if name.endswith('/installation.md'):
+                text = fill_installation(text, facts, language)
             plans.append((target, text.encode('utf-8')))
     for target, content in plans:
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -288,6 +361,7 @@ def scaffold(source, output, title=None, languages=None, default_language=None):
             handle.write(content)
     return {'created': [str(p.relative_to(root)) for p, _ in plans],
             'existing_pages_preserved': True,
+            'missing_facts': sorted(key for key in ('url', 'market', 'id') if not facts.get(key)),
             'next': 'Author evidence-based content, replace placeholders, then validate. Scaffold is not finished documentation.'}
 
 

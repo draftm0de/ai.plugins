@@ -14,8 +14,12 @@ class SkeletonDocsTests(unittest.TestCase):
         for template, headings in outline.items():
             with self.subTest(page=template):
                 text = (SHARED / 'templates/skeleton-docs' / template).read_text(encoding='utf-8')
-                expected = ['{{TITLE}}'] if template.startswith('README') else ['{{SKILL_ROWS}}', '{{SKILL_SECTIONS}}'] if template.endswith('/skills.md') else []
-                self.assertEqual(expected, re.findall(r'\{\{[A-Z_0-9]+\}\}', text))
+                found = re.findall(r'\{\{[A-Z_0-9]+\}\}', text)
+                if template.endswith('/installation.md'):  # filled from the facts of the repository (R35)
+                    self.assertEqual({'{{PLUGIN_LABEL}}', '{{MARKETPLACE_URL}}', '{{PLUGIN_ID}}', '{{MARKETPLACE_NAME}}'}, set(found))
+                else:
+                    expected = ['{{TITLE}}'] if template.startswith('README') else ['{{SKILL_ROWS}}', '{{SKILL_SECTIONS}}'] if template.endswith('/skills.md') else []
+                    self.assertEqual(expected, found)
                 self.assertEqual(headings, re.findall(r'^## (.+)$', text, re.M))
 
     def test_json_content_file_is_gone_and_no_page_is_unlisted(self):
