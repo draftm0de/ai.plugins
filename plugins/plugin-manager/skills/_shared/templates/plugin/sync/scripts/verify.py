@@ -169,6 +169,8 @@ def conventions(root):
                     problems.append(str(folder.relative_to(root)) + ' has test files but no __init__.py')
                     break
                 folder = folder.parent
+    if not (root / 'docs/style.md').is_file():
+        problems.append('docs/style.md is missing (the writing style of the documentation; /plugin-manager:setup creates it)')
     if problems:
         raise ValueError('The plugin does not follow the standards: ' + '; '.join(sorted(set(problems))) + '. See docs/standards/.')
 

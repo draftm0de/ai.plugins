@@ -69,7 +69,7 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual({'CLAUDE.md', 'scripts/local_plugins.py', 'scripts/marketplace.py', 'scripts/plugin_payload.py',
                           'scripts/run_tests.py', 'scripts/verify.py', 'docs/de/concepts.md', 'docs/en/concepts.md'}, set(sync['files']))
         seed = set(files_below(TEMPLATES / 'marketplace/seed'))
-        self.assertEqual({'Makefile', 'AGENTS.md', 'SCOPE.md', 'docs/architecture.md', 'docs/prerequisites.md', 'local-marketplace.example.json',
+        self.assertEqual({'Makefile', 'AGENTS.md', 'SCOPE.md', 'docs/architecture.md', 'docs/prerequisites.md', 'docs/style.md', 'local-marketplace.example.json',
                           'tests/README.md', 'tests/__init__.py', 'tests/contracts/__init__.py', 'tests/contracts/test_structure.py'}, seed)
         manifest = load('marketplace.json')
         self.assertEqual('marketplace.json', manifest['product'])

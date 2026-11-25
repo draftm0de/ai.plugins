@@ -11,6 +11,15 @@ from .constants import Conflict, LANGUAGE_PATH
 CONCEPTS_PAGE = re.compile(r'docs/(de|en)/concepts\.md')
 
 
+STYLE_PAGE = 'docs/style.md'
+
+
+def style_state(ctx, root):
+    """R38: the writing style of the documentation is required where the kind ships a template for it."""
+    template = ctx.source_root / ctx.template_base.rsplit('/', 1)[0] / 'seed' / STYLE_PAGE
+    return {'path': STYLE_PAGE, 'required': template.is_file(), 'present': (root / STYLE_PAGE).is_file(), 'template': str(template)}
+
+
 def documentation_languages(root):
     """The selected documentation languages of the repository; none when the settings are missing or unreadable."""
     path = root / 'docs/documentation.json'

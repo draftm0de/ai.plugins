@@ -134,6 +134,8 @@ class SkeletonEvidenceTests(WorkpackageBase):
 
     def test_configured_and_in_sync_is_ready(self):
         self.language(); self.evidence()
+        (self.p / 'docs').mkdir(exist_ok=True)
+        (self.p / 'docs/style.md').write_text('fictional style')  # R38
         self.box.call('setup', '--plugin', PLUGIN)
         _, data, _ = self.status()
         self.assertEqual('ready', data['next'])

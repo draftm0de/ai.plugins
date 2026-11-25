@@ -7,6 +7,7 @@ from . import messages
 from . import recording
 from . import reporting
 from . import skeleton
+from . import style
 from . import syncing
 from .constants import Conflict
 
@@ -35,12 +36,16 @@ def main(argv=None, source_root=None, manager_root=None):
     unknown.add_argument('--action', required=True, choices=tuple(messages.ACTIONS), help='What the person asked for')
     unknown.add_argument('--message-language', choices=messages.LANGUAGES)
     unknown.add_argument('--error', default='', help='The raw error text; it is kept as detail and never put into the message')
+    wording = commands.add_parser('style', help='Create docs/style.md once, from the template or with the text of the person')
+    choice = wording.add_mutually_exclusive_group(required=True)
+    choice.add_argument('--from-template', action='store_true')
+    choice.add_argument('--text', help='The writing style in the person\'s own words, exactly as confirmed')
     decide = commands.add_parser('sync', help='Apply one explicit keep/adopt decision for a deviating managed file')
     decide.add_argument('--decision', required=True, choices=('keep', 'adopt', 'delete'), help='keep: keep local file; adopt: take template (content question); delete: remove the file (removal question)')
     decide.add_argument('--path', required=True, help='Managed file path from status sync.decisions')
     decide.add_argument('--source-hash', required=True, help='source_hash shown by status for this decision, or the literal removed for a removal question')
     decide.add_argument('--local-hash', required=True, help='local_hash shown by status for this decision')
-    for sub in (read, closed, add, only, decide, mark):
+    for sub in (read, closed, add, only, decide, mark, wording):
         sub.add_argument('--target', required=True, help='Explicitly selected folder')
         sub.add_argument('--plugin', required=True, help='Name of the running plugin that owns the evidence (for example plugin-manager)')
     add.add_argument('--language', help='Explicitly selected operator language tag (de, en, pt-BR)')
@@ -53,6 +58,7 @@ def main(argv=None, source_root=None, manager_root=None):
         ctx = Context(args.plugin, source_root, manager_root)
         result = {'status': lambda: reporting.status(ctx, args.target), 'gate': lambda: reporting.gate(ctx, args.target, args.action, args.message_language), 'record': lambda: recording.record(ctx, args.target, args.kind, args.artifact), 'setup': lambda: skeleton.setup(ctx, args.target, args.language),
                   'language': lambda: preferences.language_only(ctx, args.target, args.language),
+                  'style': lambda: style.create(ctx, args.target, None if args.from_template else args.text),
                   'sync': lambda: syncing.sync(ctx, args.target, args.decision, args.path, args.source_hash, args.local_hash)}[args.operation]()
     except Conflict as conflict:
         result = reporting.conflict_result(args.operation, args.target, conflict)

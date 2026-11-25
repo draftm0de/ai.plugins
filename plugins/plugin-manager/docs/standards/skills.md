@@ -27,5 +27,8 @@ Managed by the plugin manager and identical in every plugin. Do not edit it here
 - Every skill loads the operator-language reference before it talks to the person and follows its section "How a skill
   uses the language" (language from the helper only, everything the person reads in it, passed on to scripts that print
   text); the skill text does not repeat these rules. It follows `messages.md` for every failure and stop.
+- If the plugin has `skills/_shared/references/style.md` (how it talks with its user), every skill reads it after the
+  language rules. It never overrides a standard, the operator language or the message layout. The file is optional.
+- `docs/style.md` says how the documentation is written; it is required and read before documentation is written.
 - Skill and flow texts do not duplicate wording that belongs to the message catalogue or to this standard.
 - Instruction texts are not product behavior. Test them with contracts and model cases, never as acceptance.

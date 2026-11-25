@@ -83,10 +83,17 @@ class Sandbox:
             marketplace = dict(self.MARKETPLACE) if kind == 'plugin' and self.requires_marketplace else None
         path.write_text(json.dumps({'schema_version': 2, 'plugin': PLUGIN, 'kind': kind, 'artifact': artifact,
                                     'configured_at': '2026-11-22T10:00:00Z', 'marketplace': marketplace}))
+        style = self.project / 'docs/style.md'  # a configured repository has its writing style (R38)
+        if not style.exists():
+            style.parent.mkdir(parents=True, exist_ok=True)
+            style.write_text('# Documentation style\n\nfictional\n')
 
     def unconfigure(self):
         (self.project / EVIDENCE).unlink(missing_ok=True)
         (self.project / 'plugin.json').unlink(missing_ok=True)
+        (self.project / 'docs/style.md').unlink(missing_ok=True)  # an unconfigured folder has no managed content
+        if (self.project / 'docs').is_dir() and not any((self.project / 'docs').iterdir()):
+            (self.project / 'docs').rmdir()
 
     def close(self):
         for path in self.base.rglob('*'):

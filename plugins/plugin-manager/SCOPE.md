@@ -406,3 +406,15 @@ Source: skills/_shared/scripts/verify.py
 Source: skills/_shared/scripts/documentation.py
 Test: tests/contracts/verify/test_standards.py
 
+## R38: Writing styles of a plugin
+
+Status: confirmed
+Acceptance: Two optional-by-purpose files say how a repository writes; both belong to the repository and the Manager never changes or overwrites them. `docs/style.md` says how the documentation is written and is required: a new plugin or marketplace gets the template, `setup` creates it when it is missing (the person chooses the template or describes the own style, which is shown and saved only after an explicit yes; there is no skip), `docs` stops before any writing while it is missing and points to `setup` with the gate stop of R23 (the other gated skills are not affected), and `verify` reports a plugin repository without it. `skills/_shared/references/style.md` says how the plugin talks with its user, is optional, is read by every skill after the language rules when present, and never overrides the standards, the operator language or the message layout. The Manager's own structure and design rules for documentation live in `references/documentation-layout.md`.
+Source: skills/setup/scripts/state/style.py
+Source: skills/setup/scripts/state/reporting.py
+Source: skills/setup/flows/style.md
+Source: skills/_shared/templates/plugin/seed/docs/style.md
+Source: skills/_shared/scripts/verify.py
+Source: skills/_shared/templates/plugin/sync/docs/standards/skills.md
+Test: tests/integration/project_setup/test_style.py
+Test: tests/contracts/verify/test_standards.py
