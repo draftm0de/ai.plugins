@@ -7,6 +7,7 @@ This is the canonical prerequisite list for the management tools. Templates carr
 ## Deutsch
 
 - **Verwaltungswerkzeuge:** Git und Python 3.10 oder neuer; ausschließlich Python-Standardbibliothek, keine zusätzlichen Python-Pakete.
+- **Repository:** ein Git-Repository je Plugin und Marketplace, mit einer GitHub-Adresse als `origin`. Auf GitHub muss es beim Einrichten noch nicht existieren.
 - **Make:** optionaler Komfortzugang. Die Python-Einstiegspunkte lassen sich direkt aufrufen; Make ist keine Voraussetzung für die Verwaltung.
 - **Host-CLI:** nur für die automatische lokale Installation/Aktualisierung ist die gewählte Claude- oder Codex-CLI erforderlich. Snapshots mit `--dry-run`, Strukturprüfungen und Dokumentationswerkzeuge benötigen keine Host-CLI.
 - **Optionale Modelltests:** ausdrücklich gestartete Review-Evaluationen benötigen eine authentifizierte Claude- oder Codex-CLI und können Credits verbrauchen. Sie gehören nicht zum normalen Testlauf.
@@ -29,6 +30,7 @@ python3 -B scripts/local_plugins.py install-local --target claude
 ## English
 
 - **Management tools:** Git and Python 3.10 or newer; Python standard library only, no additional Python packages.
+- **Repository:** one Git repository per plugin and marketplace, with a GitHub address as `origin`. It does not have to exist on GitHub yet when you set it up.
 - **Make:** optional convenience wrapper. Python entry points can be invoked directly; Make is not a management prerequisite.
 - **Host CLI:** the selected Claude or Codex CLI is required only for automatic local installation/update. Snapshots with `--dry-run`, structural verification and documentation tooling need no host CLI.
 - **Optional model tests:** explicitly started review evaluations require an authenticated Claude or Codex CLI and may consume credits. They are not part of the default test run.
