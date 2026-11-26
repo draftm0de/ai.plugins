@@ -20,7 +20,10 @@ check:
 test:
 	$(PYTHON) -B scripts/run_tests.py --kind deterministic $(if $(TEST_GROUP),--group "$(TEST_GROUP)",)
 verify:
-	$(PYTHON) scripts/verify.py --source "$(SOURCE)" --kind auto $(if $(filter 1,$(REVIEW)),--review,)
+	$(PYTHON) scripts/verify/structure.py --source "$(SOURCE)"
+	$(PYTHON) scripts/verify/standards.py --source "$(SOURCE)"
+	$(PYTHON) scripts/verify/docs.py --source "$(SOURCE)"
+	$(if $(filter 1,$(REVIEW)),$(PYTHON) scripts/verify/scope.py --source "$(SOURCE)",)
 install-local:
 	$(PYTHON) scripts/local_plugins.py install-local --target "$(TARGET)" $(if $(filter 1,$(DRY_RUN)),--dry-run,)
 

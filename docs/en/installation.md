@@ -1,53 +1,55 @@
-# Installation
+# ⚡ Installation
 
 [Deutsch](../de/installation.md) | **English**
 
-<img src="../../assets/icon.png" alt="draftmode.io" width="48">
+[Home](../../README.en.md) · [Installation](installation.md) · [Concepts](concepts.md) · [Development](development.md)
 
-[Home](../../README.en.md) · [Installation](installation.md) · [Plugins](plugins.md) · [Concepts](concepts.md)
-
-You add the marketplace once and install the plugin you want from it. Account access, repository permissions and your organisation's policies apply. Menu labels are those of the app and may differ.
+Here you add the marketplace. That installs no plugin yet: it only gives you the possibility to install the plugins of this marketplace. Which ones they are is listed on the [start page](../../README.en.md). Account access, repository permissions and your organisation's policies apply. Menu labels are those of the app and may differ.
 
 ## Claude
 
-### Desktop
+### Claude Desktop App
 
-The labels below are those of the German interface of the desktop app.
-
-1. Open **Einstellungen** (settings).
+1. Open **Einstellungen**.
 2. Scroll to **Anpassungen** and select **Plugins**.
 3. Select **+ Hinzufügen → Marketplace hinzufügen**, then **Aus einem Repository hinzufügen**.
 4. Enter `https://github.com/draftm0de/ai.plugins` and select **Synchronisieren**.
-5. Select the plugin you want in the marketplace and install it.
 
-The `/plugin` commands only open the plugin settings in the desktop app, so use this path there.
+The `/plugin` commands in the desktop app only open the plugin settings. Use this path.
 
-### CLI
+### Claude CLI
 
 In a terminal session started with `claude`:
 
 ```text
 /plugin marketplace add https://github.com/draftm0de/ai.plugins
-/plugin install <plugin>@draftmode-ai-plugins
 ```
 
 ## Codex
 
-### Desktop
+### ChatGPT Desktop App
 
 1. Open the **user icon** and select **Settings**.
 2. Select **Integration → Plugins**.
 3. Select **+ Add → A Marketplace** and enter `https://github.com/draftm0de/ai.plugins`.
-4. Select the plugin you want and install it.
 
-### CLI
+### Codex CLI
 
 ```sh
 codex plugin marketplace add https://github.com/draftm0de/ai.plugins
-codex plugin add <plugin>@draftmode-ai-plugins
 ```
 
-Then open a new chat.
+### ChatGPT Workspace
+
+As a workspace administrator:
+
+1. Open **Admin → Plugins**.
+2. Select **Add → Import marketplace**.
+3. Enter `https://github.com/draftm0de/ai.plugins` as the repository URL.
+4. Leave **Path** and **Branch/Tag/Commit** empty to use the repository root on the default branch.
+5. Start the import and review the result.
+
+This admin path does not imply identical menus in every ChatGPT interface. No plugin ZIP is required.
 
 ## Update
 
@@ -55,7 +57,6 @@ Claude (terminal):
 
 ```sh
 claude plugin marketplace update draftmode-ai-plugins
-claude plugin update <plugin>@draftmode-ai-plugins
 ```
 
 Codex:
@@ -64,24 +65,24 @@ Codex:
 codex plugin marketplace upgrade draftmode-ai-plugins
 ```
 
-In the desktop apps update in the plugin settings, then open a new chat.
+In the desktop apps you update in the plugin settings. Open a new chat afterwards.
 
 ## Remove
 
 Claude (terminal):
 
 ```sh
-claude plugin uninstall <plugin>@draftmode-ai-plugins
+claude plugin marketplace remove draftmode-ai-plugins
 ```
 
 Codex:
 
 ```sh
-codex plugin remove <plugin>@draftmode-ai-plugins
+codex plugin marketplace remove draftmode-ai-plugins
 ```
 
-In the desktop apps remove the plugin in the plugin settings.
+In the desktop apps you remove the marketplace in the plugin settings.
 
----
+<hr>
 
-Documentation prepared with Plugin Manager. Source-product ownership remains unchanged.
+This page is created automatically by `/plugin-manager:docs`. Do not edit it by hand.

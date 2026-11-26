@@ -2,8 +2,8 @@
   "schema_version": 2,
   "files": {
     ".github/workflows/dm-verify.yml": {
-      "source_hash": "621a4e31297cc5ca8831ba242d1eaa48b4286437bbd20effef7bf03c4aadf765",
-      "local_hash": "621a4e31297cc5ca8831ba242d1eaa48b4286437bbd20effef7bf03c4aadf765"
+      "source_hash": "ab10a1dea4c52ee790cb43dc3c2cacae92c6211f4858b80051178a4ccb51ecf7",
+      "local_hash": "ab10a1dea4c52ee790cb43dc3c2cacae92c6211f4858b80051178a4ccb51ecf7"
     },
     "AGENTS.md": {
       "source_hash": "959056d4e31df3022dfde254c82bada637ada0c149a303b8785dbf2a463bfe2b",
@@ -14,8 +14,8 @@
       "local_hash": "d50241a8f54f9b9dc16bcc0c741754b2f3b9017c0dd4e9358068c74f6a31a638"
     },
     "Makefile": {
-      "source_hash": "37fb5c70da38a2fcf53863c7730a4a6cb588bcffbe259334686a325159d2d56e",
-      "local_hash": "37fb5c70da38a2fcf53863c7730a4a6cb588bcffbe259334686a325159d2d56e"
+      "source_hash": "2f493f22fc07e9746ab201135cf78e4432a7cce5ac1a0bc2ae3627dbb01df000",
+      "local_hash": "2f493f22fc07e9746ab201135cf78e4432a7cce5ac1a0bc2ae3627dbb01df000"
     },
     "SCOPE.md": {
       "source_hash": "aa5615c7c86317ef590fcef1c9862d81e91edc6da3d246c2764938ca46cb13ba",
@@ -38,12 +38,8 @@
       "local_hash": "82d0bd1429dc3afe5f4b206f41ccd3dc54fcaea5062c2bdb18ac8de949533345"
     },
     "docs/prerequisites.md": {
-      "source_hash": "bd31c420a6b66e58e16e7abea1d653301d14c44c2ee12e2ae700652fcf92ae32",
-      "local_hash": "bd31c420a6b66e58e16e7abea1d653301d14c44c2ee12e2ae700652fcf92ae32"
-    },
-    "scripts/docs_rules.py": {
-      "source_hash": "70946e077cd64dd5fa5863e4f46f8bd5271b682dd55279649af22eb23fda1ae1",
-      "local_hash": "70946e077cd64dd5fa5863e4f46f8bd5271b682dd55279649af22eb23fda1ae1"
+      "source_hash": "c638698408a7c315eb515fd5c85fae01a3a38946a9e9f20e750ebc2c0b94be71",
+      "local_hash": "c638698408a7c315eb515fd5c85fae01a3a38946a9e9f20e750ebc2c0b94be71"
     },
     "scripts/local_plugins.py": {
       "source_hash": "e43812e571110587816617f6ba81f9fc8b579a9baf236bef6e190cb5120e50d3",
@@ -61,9 +57,25 @@
       "source_hash": "210e1c86b5c90ce9770fc2f1bc5df1724315187a8b3c0999cf01e9db79e5f96d",
       "local_hash": "210e1c86b5c90ce9770fc2f1bc5df1724315187a8b3c0999cf01e9db79e5f96d"
     },
-    "scripts/verify.py": {
-      "source_hash": "15c3e9d8db08e899590cde66d6ca33a962ed48570859e303fdfebab25610960a",
-      "local_hash": "15c3e9d8db08e899590cde66d6ca33a962ed48570859e303fdfebab25610960a"
+    "scripts/verify/common.py": {
+      "source_hash": "e58a1f82664c114093a5723a6d7face9a7140e4b3344784c551bb7e0873b1873",
+      "local_hash": "e58a1f82664c114093a5723a6d7face9a7140e4b3344784c551bb7e0873b1873"
+    },
+    "scripts/verify/docs.py": {
+      "source_hash": "7f61cbf67d4a2cc087384400479c887d32a49f8e78b6778b50394f58d63b8681",
+      "local_hash": "7f61cbf67d4a2cc087384400479c887d32a49f8e78b6778b50394f58d63b8681"
+    },
+    "scripts/verify/scope.py": {
+      "source_hash": "0dda7f4b66b7ca0c0d2ad476288889813b6bb8bc85e5429492472c3e0f3192aa",
+      "local_hash": "0dda7f4b66b7ca0c0d2ad476288889813b6bb8bc85e5429492472c3e0f3192aa"
+    },
+    "scripts/verify/standards.py": {
+      "source_hash": "8c840f478a30e66127a61656047e388199aa6eabf372aee9ee0d21ab161e78fb",
+      "local_hash": "8c840f478a30e66127a61656047e388199aa6eabf372aee9ee0d21ab161e78fb"
+    },
+    "scripts/verify/structure.py": {
+      "source_hash": "8b3bf773ff392b02545df1bc1bc908470eef07f56009e458ae35d0aea2801841",
+      "local_hash": "8b3bf773ff392b02545df1bc1bc908470eef07f56009e458ae35d0aea2801841"
     },
     "tests/README.md": {
       "source_hash": "94b486e08d21e6c06e3e789fb46379b12e1ea83cbb5065b06ccfd9dc0396d5d1",

@@ -19,7 +19,9 @@ Die lokale Zuordnung eines Plugins zu seinem einen Marketplace richtet plugin-ma
 Direkte Python-Aufrufe im jeweiligen Checkout (ohne Make):
 
 ```sh
-python3 -B scripts/verify.py --source . --kind auto
+python3 -B scripts/verify/structure.py --source .
+python3 -B scripts/verify/standards.py --source .
+python3 -B scripts/verify/docs.py --source .
 # only in the marketplace:
 python3 -B scripts/local_plugins.py install-local --target claude
 ```
@@ -39,7 +41,9 @@ The local association of a plugin with its one marketplace is set up and changed
 Direct Python commands in the relevant checkout (without Make):
 
 ```sh
-python3 -B scripts/verify.py --source . --kind auto
+python3 -B scripts/verify/structure.py --source .
+python3 -B scripts/verify/standards.py --source .
+python3 -B scripts/verify/docs.py --source .
 # only in the marketplace:
 python3 -B scripts/local_plugins.py install-local --target claude
 ```
