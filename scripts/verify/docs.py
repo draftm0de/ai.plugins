@@ -307,11 +307,11 @@ def validate(output):
             headings = [re.sub(r'^[^\w]+', '', heading) for heading in headings]
         if name in EXACT_HEADINGS[kind]:
             if re.findall(r'^#{1,3} .+$', prose, re.MULTILINE) != EXACT_HEADINGS[kind][name]:
-                errors.append(f'{name}: the headings must be exactly those of the generated page; run /plugin-manager:docs')
+                errors.append(f'{name}: the headings must be exactly those of the generated page; run /plugin-manager:docs (in Codex: $plugin-manager:docs)')
         elif name.endswith('/skills.md') and listed:  # generated: title, section and one entry per skill, one to one
             expected = ['# 🛠 Skills', '## 📖 Skills'] + ['### ' + skill for skill in skills]
             if re.findall(r'^#{1,3} .+$', prose, re.MULTILINE) != expected:
-                errors.append(f'{name}: the headings must be exactly those of the generated page; run /plugin-manager:docs')
+                errors.append(f'{name}: the headings must be exactly those of the generated page; run /plugin-manager:docs (in Codex: $plugin-manager:docs)')
             for skill in skills:
                 if f'](skills/{skill}.md)' not in prose:
                     errors.append(f'{name}: {skill} is not linked to its page skills/{skill}.md')
@@ -373,7 +373,7 @@ def check(source):
         warnings = [str(exc)]
     result = {'valid': True, 'check': 'docs', 'documentation': 'checked', 'warnings': warnings}
     if warnings:
-        result['next'] = 'Run /plugin-manager:docs to create the missing pages; write the texts yourself.'
+        result['next'] = 'Run /plugin-manager:docs (in Codex: $plugin-manager:docs) to create the missing pages; write the texts yourself.'
     return result
 
 

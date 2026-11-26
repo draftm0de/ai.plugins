@@ -70,7 +70,7 @@ def standards(root, kind='plugin'):
         problems.append(copied[0][0] + ' copies standard text: ' + copied[0][1][:60] + '...')
     if problems:
         raise ValueError('The managed standards are not in place: ' + '; '.join(problems)
-                         + '. A standard is never edited in a repository; run /plugin-manager:setup to bring the managed files back.')
+                         + '. A standard is never edited in a repository; run /plugin-manager:setup (in Codex: $plugin-manager:setup) to bring the managed files back.')
 
 
 def main(argv=None):

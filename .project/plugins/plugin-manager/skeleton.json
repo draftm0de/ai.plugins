@@ -62,16 +62,16 @@
       "local_hash": "e58a1f82664c114093a5723a6d7face9a7140e4b3344784c551bb7e0873b1873"
     },
     "scripts/verify/docs.py": {
-      "source_hash": "7f61cbf67d4a2cc087384400479c887d32a49f8e78b6778b50394f58d63b8681",
-      "local_hash": "7f61cbf67d4a2cc087384400479c887d32a49f8e78b6778b50394f58d63b8681"
+      "source_hash": "82aaa3c5b21ee2adadf601fc3700847e683837d37eaf40c0977fa9f7c70409d8",
+      "local_hash": "82aaa3c5b21ee2adadf601fc3700847e683837d37eaf40c0977fa9f7c70409d8"
     },
     "scripts/verify/scope.py": {
       "source_hash": "7df7a7392b84a466f966ef7e6ff5076c507aa3ccc2e0b446a62de65e14aa4333",
       "local_hash": "7df7a7392b84a466f966ef7e6ff5076c507aa3ccc2e0b446a62de65e14aa4333"
     },
     "scripts/verify/standards.py": {
-      "source_hash": "8c840f478a30e66127a61656047e388199aa6eabf372aee9ee0d21ab161e78fb",
-      "local_hash": "8c840f478a30e66127a61656047e388199aa6eabf372aee9ee0d21ab161e78fb"
+      "source_hash": "faa7935a0f0c0e2ba235482612dbbde0bbd8c0ab77f845f255299e9ea6b3d7b1",
+      "local_hash": "faa7935a0f0c0e2ba235482612dbbde0bbd8c0ab77f845f255299e9ea6b3d7b1"
     },
     "scripts/verify/structure.py": {
       "source_hash": "8b3bf773ff392b02545df1bc1bc908470eef07f56009e458ae35d0aea2801841",
