@@ -33,10 +33,16 @@ def scope_review(root):
     def pointer(relative, field):
         parts = Path(relative).parts
         allowed = ('skills', 'scripts', 'tests') if field == 'Source' else ('tests',)
-        if (not parts or parts[0] not in allowed or any(p.startswith('.') or p in
+        name = Path(relative).name
+        suffix = Path(relative).suffix
+        # Published templates and hash files of a skill are source too, with their own file types.
+        delivered = field == 'Source' and len(parts) > 3 and parts[0] == 'skills' and parts[2] in ('templates', 'manifests')
+        readable = suffix in ('.py', '.md', '.sh', '.js', '.ts') or delivered and (
+            suffix in ('.json', '.yml') or name in ('Makefile', 'pre-commit'))
+        hidden = [p for p in parts if p.startswith('.') and not (delivered and p == '.github' and suffix == '.yml')]
+        if (not parts or parts[0] not in allowed or hidden or any(p in
                 ('fixtures', 'candidate', 'jobs', 'runs', 'node_modules', '__pycache__') for p in parts)
-                or Path(relative).suffix not in ('.py', '.md', '.sh', '.js', '.ts')
-                or Path(relative).name in ('state.md', 'profile.md')):
+                or not readable or name in ('state.md', 'profile.md')):
             raise ValueError('Outside the allowed public code/test evidence paths')
         return read_text(relative)
 

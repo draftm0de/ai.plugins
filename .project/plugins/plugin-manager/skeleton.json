@@ -66,8 +66,8 @@
       "local_hash": "7f61cbf67d4a2cc087384400479c887d32a49f8e78b6778b50394f58d63b8681"
     },
     "scripts/verify/scope.py": {
-      "source_hash": "0dda7f4b66b7ca0c0d2ad476288889813b6bb8bc85e5429492472c3e0f3192aa",
-      "local_hash": "0dda7f4b66b7ca0c0d2ad476288889813b6bb8bc85e5429492472c3e0f3192aa"
+      "source_hash": "7df7a7392b84a466f966ef7e6ff5076c507aa3ccc2e0b446a62de65e14aa4333",
+      "local_hash": "7df7a7392b84a466f966ef7e6ff5076c507aa3ccc2e0b446a62de65e14aa4333"
     },
     "scripts/verify/standards.py": {
       "source_hash": "8c840f478a30e66127a61656047e388199aa6eabf372aee9ee0d21ab161e78fb",
