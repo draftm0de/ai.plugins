@@ -4,33 +4,14 @@
 
 <img src="assets/icon.png" alt="draftmode.io" width="48">
 
-[Installation](docs/de/installation.md) · [Plugins](docs/de/plugins.md) · [Begriffe](docs/de/concepts.md) · [Entwicklung](docs/de/development.md)
+[Start](README.md) · [Installation](docs/de/installation.md) · [Begriffe](docs/de/concepts.md) · [Entwicklung](docs/de/development.md)
 
-Du fügst diesen Marketplace einmal hinzu und installierst daraus den Plugin Manager. Ein Marketplace ist ein Katalog, der Plugins auflistet. Ein Plugin ist ein installierbares Paket mit Anleitungen für den Assistenten, den Skills.
+Dieser Marketplace listet die Plugins von draftmode für Claude und Codex. Du fügst ihn einmal hinzu und installierst daraus, was du brauchst; wie das geht, steht unter [Installation](docs/de/installation.md).
 
-## Was es bietet
+## 📦 Plugins
 
-Der Marketplace `draftmode-ai-plugins` ist für Claude und Codex gedacht. Er listet ein Plugin:
+### Plugin Manager
 
-| Plugin | Wofür |
-| --- | --- |
-| [Plugin Manager](https://github.com/draftm0de/ai.plugin.plugin-manager) | Marketplaces und Plugins anlegen, zuordnen, dokumentieren und prüfen. |
+Damit erstellst, entwickelst und wartest du Plugins und Marketplaces auf eine einheitliche Art. Eigene Skills führen dich durch Einrichtung, Dokumentation, Änderungen und Prüfung.
 
-Das Plugin liegt in einem eigenen Repository. Der Marketplace enthält nur die Kataloge. Adresse zum Hinzufügen: `https://github.com/draftm0de/ai.plugins`.
-
-## Für wen
-
-Für alle, die den Plugin Manager in Claude oder Codex nutzen wollen. Zugang und Berechtigungen für das Repository brauchst du selbst.
-
-Wenn du den Marketplace pflegst, lies [Entwicklung](docs/de/development.md).
-
-## Dokumentation
-
-[Installation](docs/de/installation.md) · [Plugins](docs/de/plugins.md) · [Begriffe](docs/de/concepts.md) · [Entwicklung](docs/de/development.md)
-
-- [Struktur des Repositorys](docs/architecture.md)
-- [Lizenz (MIT)](LICENSE)
-
----
-
-Dokumentation mit Plugin Manager erstellt. Die Rechte am Quellprodukt bleiben unverändert.
+📖 [Plugin Manager – Mehr dazu](https://github.com/draftm0de/ai.plugin.plugin-manager#readme)
